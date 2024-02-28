@@ -3,6 +3,8 @@ package cardealershipapp.client.ui.vehicle;
 import cardealershipapp.common.domain.FuelType;
 import cardealershipapp.client.ui.vehicle.ci.VehicleAddController;
 
+import javax.swing.*;
+
 
 /**
  *
@@ -13,11 +15,19 @@ public class VehicleAddForm extends javax.swing.JDialog {
     /**
      * Creates new form VehicleAddForm
      */
+
+    private VehicleAddController vehicleAddController;
     public VehicleAddForm(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+        initController();
         populateCombo();
     }
+
+    private void initController() {
+        this.vehicleAddController = new VehicleAddController(this);
+    }
+
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -222,28 +232,6 @@ public class VehicleAddForm extends javax.swing.JDialog {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void txtEngineDisplacementActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtEngineDisplacementActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_txtEngineDisplacementActionPerformed
-
-    private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
-        VehicleAddController.save(comboBrand, comboModel, comboBodyType, comboFuelType, comboBusinessUnit, comboCurrency, txtViN, txtEngineDisplacement, txtEnginePower, txtYear, txtPrice, this);
-    }//GEN-LAST:event_btnSaveActionPerformed
-
-    private void comboBrandItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_comboBrandItemStateChanged
-       VehicleAddController.updateComboModel(comboBrand, comboModel, this);
-    }//GEN-LAST:event_comboBrandItemStateChanged
-
-    private void comboFuelTypeItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_comboFuelTypeItemStateChanged
-        // TODO add your handling code here:
-        if(comboFuelType.getSelectedItem() == FuelType.ELEKTRICNIPOGON){
-            lblEngineCapacity.setText("Kapacitet baterije:");
-        }else {
-            lblEngineCapacity.setText("Zapremina motora:");
-        }
-    }//GEN-LAST:event_comboFuelTypeItemStateChanged
-
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnSave;
     private javax.swing.JComboBox<Object> comboBodyType;
@@ -265,8 +253,65 @@ public class VehicleAddForm extends javax.swing.JDialog {
     private javax.swing.JTextField txtViN;
     private javax.swing.JTextField txtYear;
     // End of variables declaration//GEN-END:variables
+    private void txtEngineDisplacementActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtEngineDisplacementActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtEngineDisplacementActionPerformed
+
+    private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
+        vehicleAddController.save();
+    }//GEN-LAST:event_btnSaveActionPerformed
+
+    private void comboBrandItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_comboBrandItemStateChanged
+       vehicleAddController.updateComboModel();
+    }//GEN-LAST:event_comboBrandItemStateChanged
+
+    private void comboFuelTypeItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_comboFuelTypeItemStateChanged
+        vehicleAddController.comboFuelTypeState();
+    }//GEN-LAST:event_comboFuelTypeItemStateChanged
 
     private void populateCombo() {
-       VehicleAddController.populateCombo(comboBusinessUnit, comboBrand, comboBodyType, comboFuelType, comboCurrency, this);
+       vehicleAddController.populateCombo();
     }
+
+    public JTextField getTxtVin(){
+        return txtViN;
+    }
+    public JTextField getTxtEngineDisplacement(){
+        return txtEngineDisplacement;
+    }
+    public JTextField getTxtEnginePower(){
+        return txtEnginePower;
+    }
+    public JTextField getTxtYear(){
+        return txtYear;
+    }
+    public JTextField getTxtPrice(){
+        return txtPrice;
+    }
+
+    public JComboBox getComboBrand(){
+        return comboBrand;
+    }
+    public JComboBox getComboModel(){
+        return comboModel;
+    }
+    public JComboBox getComboBodyType(){
+        return comboBodyType;
+    }
+    public JComboBox getComboCurrency(){
+        return comboCurrency;
+    }
+    public JComboBox getComboBusinessUnit(){
+        return comboBusinessUnit;
+    }
+    public JComboBox getComboFuelType(){
+        return comboFuelType;
+    }
+
+    public JLabel getLblEngineCapacity(){
+        return lblEngineCapacity;
+    }
+
+
+
 }
