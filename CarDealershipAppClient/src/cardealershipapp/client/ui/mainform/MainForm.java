@@ -2,16 +2,37 @@ package cardealershipapp.client.ui.mainform;
 
 import cardealershipapp.client.ui.mainform.ci.MainController;
 
+import javax.swing.*;
+
 
 /**
- *
  * @author Miroslav Kološnjaji
  */
 public class MainForm extends javax.swing.JFrame {
 
-    
+    private MainController mainController;
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JMenuBar jMenuBar1;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JLabel lblLoggedUser;
+    private javax.swing.JMenu menuControlPanel;
+    private javax.swing.JMenuItem menuItemAllVehicles;
+    private javax.swing.JMenuItem menuItemGetAllPurchaseOrders;
+    private javax.swing.JMenuItem menuItemModel;
+    private javax.swing.JMenuItem menuItemPurchaseOrder;
+    private javax.swing.JMenuItem menuLogOffItem;
+    private javax.swing.JMenu menuLogin;
+    private javax.swing.JMenu menuProfile;
+    private javax.swing.JMenu menuPurchase;
+    private javax.swing.JMenu menuVehicle;
     public MainForm() {
         initComponents();
+        initController();
+    }
+
+    private void initController() {
+        this.mainController = new MainController(this);
     }
 
     /**
@@ -44,6 +65,7 @@ public class MainForm extends javax.swing.JFrame {
             public void windowActivated(java.awt.event.WindowEvent evt) {
                 formWindowActivated(evt);
             }
+
             public void windowClosing(java.awt.event.WindowEvent evt) {
                 formWindowClosing(evt);
             }
@@ -56,18 +78,18 @@ public class MainForm extends javax.swing.JFrame {
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(lblLoggedUser, javax.swing.GroupLayout.DEFAULT_SIZE, 1599, Short.MAX_VALUE)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGap(6, 6, 6)
-                .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(lblLoggedUser, javax.swing.GroupLayout.DEFAULT_SIZE, 1599, Short.MAX_VALUE)
+                        .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addGap(6, 6, 6)
+                                .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addComponent(lblLoggedUser, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 695, Short.MAX_VALUE))
+                jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addComponent(lblLoggedUser, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 695, Short.MAX_VALUE))
         );
 
         menuProfile.setText("Profil");
@@ -152,35 +174,35 @@ public class MainForm extends javax.swing.JFrame {
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
     private void menuItemAllVehiclesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuItemAllVehiclesActionPerformed
-        MainController.getVehicleSearchForm(this);
+        mainController.getVehicleSearchForm();
     }//GEN-LAST:event_menuItemAllVehiclesActionPerformed
 
     private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
-        MainController.closingApplication(this);
+        mainController.closingApplication();
     }//GEN-LAST:event_formWindowClosing
 
     private void menuItemModelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuItemModelActionPerformed
-        MainController.getModelSearchForm(this);
+        mainController.getModelSearchForm();
     }//GEN-LAST:event_menuItemModelActionPerformed
 
     private void formWindowActivated(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowActivated
-        MainController.availableOptions(menuProfile, menuPurchase, menuControlPanel, menuLogin, lblLoggedUser);
+        mainController.availableOptions();
     }//GEN-LAST:event_formWindowActivated
 
     private void menuLoginMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_menuLoginMouseClicked
-        MainController.logIn(menuLogin, this);
+        mainController.logIn();
     }//GEN-LAST:event_menuLoginMouseClicked
 
     private void menuLogOffItemMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_menuLogOffItemMouseClicked
@@ -188,37 +210,40 @@ public class MainForm extends javax.swing.JFrame {
     }//GEN-LAST:event_menuLogOffItemMouseClicked
 
     private void menuLogOffItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuLogOffItemActionPerformed
-        MainController.logOff(menuProfile, menuPurchase, menuControlPanel, menuLogin, lblLoggedUser, this);
+        mainController.logOff();
     }//GEN-LAST:event_menuLogOffItemActionPerformed
-
 
     private void menuLoginActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuLoginActionPerformed
 
     }//GEN-LAST:event_menuLoginActionPerformed
 
     private void menuItemPurchaseOrderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuItemPurchaseOrderActionPerformed
-        MainController.getPurchaseOrderCreateForm(this);
+        mainController.getPurchaseOrderCreateForm();
     }//GEN-LAST:event_menuItemPurchaseOrderActionPerformed
 
     private void menuItemGetAllPurchaseOrdersActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuItemGetAllPurchaseOrdersActionPerformed
-        MainController.getPurchaseOrderSearchForm(this);
+        mainController.getPurchaseOrderSearchForm();
     }//GEN-LAST:event_menuItemGetAllPurchaseOrdersActionPerformed
-
-
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JMenuBar jMenuBar1;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JLabel lblLoggedUser;
-    private javax.swing.JMenu menuControlPanel;
-    private javax.swing.JMenuItem menuItemAllVehicles;
-    private javax.swing.JMenuItem menuItemGetAllPurchaseOrders;
-    private javax.swing.JMenuItem menuItemModel;
-    private javax.swing.JMenuItem menuItemPurchaseOrder;
-    private javax.swing.JMenuItem menuLogOffItem;
-    private javax.swing.JMenu menuLogin;
-    private javax.swing.JMenu menuProfile;
-    private javax.swing.JMenu menuPurchase;
-    private javax.swing.JMenu menuVehicle;
     // End of variables declaration//GEN-END:variables
+
+    public JMenu getMenuProfile() {
+        return menuProfile;
+    }
+
+    public JMenu getMenuPurchase() {
+        return menuPurchase;
+    }
+
+    public JMenu getMenuControlPanel() {
+        return menuControlPanel;
+    }
+
+    public JMenu getMenuLogin() {
+        return menuLogin;
+    }
+
+    public JLabel getLblLoggedUser() {
+        return lblLoggedUser;
+    }
+
 }
