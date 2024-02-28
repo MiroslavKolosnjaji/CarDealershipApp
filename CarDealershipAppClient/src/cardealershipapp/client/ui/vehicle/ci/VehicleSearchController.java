@@ -1,6 +1,7 @@
 package cardealershipapp.client.ui.vehicle.ci;
 
 import cardealershipapp.client.communication.Communication;
+import cardealershipapp.client.ui.vehicle.VehicleSearchForm;
 import cardealershipapp.common.domain.Brand;
 import cardealershipapp.common.domain.BusinessUnit;
 import cardealershipapp.common.domain.CarBodyType;
@@ -22,6 +23,7 @@ import cardealershipapp.client.ui.vehicle.VehicleAddForm;
 import cardealershipapp.client.ui.vehicle.VehicleEditForm;
 import cardealershipapp.common.domain.PurchaseOrder;
 import cardealershipapp.common.validation.InputValidationException;
+
 import java.awt.Component;
 import java.net.SocketException;
 import java.time.LocalDate;
@@ -37,32 +39,47 @@ import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
+
 import static javax.swing.WindowConstants.EXIT_ON_CLOSE;
+
 import javax.swing.table.TableCellRenderer;
 
 /**
- *
  * @author Miroslav Kološnjaji
  */
 public class VehicleSearchController {
 
-    private static List<Vehicle> mainVehicleList = new ArrayList<>();
+    private List<Vehicle> mainVehicleList = new ArrayList<>();
+    private VehicleSearchForm vehicleSearchForm;
 
-    public static void add(JDialog dialog) {
+    public VehicleSearchController(VehicleSearchForm vehicleSearchForm) {
+        this.vehicleSearchForm = vehicleSearchForm;
+    }
+
+    private static int[] validateSelection(JTable tblCities) throws Exception {
+        int[] selectedRows = tblCities.getSelectedRows();
+
+        if (selectedRows.length == 0) {
+            throw new SelectRowException("Niste selektovali red u tabeli!");
+        }
+        return selectedRows;
+    }
+
+    public void add(JDialog dialog) {
         JDialog vehicleAddDialog = new VehicleAddForm(null, true);
         vehicleAddDialog.setLocationRelativeTo(dialog);
         vehicleAddDialog.setVisible(true);
     }
 
-    public static void edit(JTable tblVehicles, JDialog dialog) {
+    public void edit() {
         try {
-            int[] selectedRows = validateSelection(tblVehicles);
+            int[] selectedRows = validateSelection(vehicleSearchForm.getTblVehicles());
 
             if (selectedRows.length > 1) {
                 throw new SelectRowException("Funkcija nije omogucena, selektovano je vise od jednog reda!");
             }
 
-            String vin = (String) tblVehicles.getValueAt(selectedRows[0], 2);
+            String vin = (String) vehicleSearchForm.getTblVehicles().getValueAt(selectedRows[0], 2);
             Response response = getResponse(Operation.VEHICLE_GET_ALL, null);
 
             List<Vehicle> vehicles = ((List<Vehicle>) response.getResult()).stream().filter(vehicle -> vehicle.getViNumber().equals(vin)).collect(Collectors.toList());
@@ -70,37 +87,37 @@ public class VehicleSearchController {
             ApplicationSession.getInstance().setVehicle(vehicle);
 
             JDialog vehicleEditDialog = new VehicleEditForm(null, true);
-            vehicleEditDialog.setLocationRelativeTo(dialog);
+            vehicleEditDialog.setLocationRelativeTo(vehicleEditDialog);
             vehicleEditDialog.setVisible(true);
 
         } catch (SelectRowException sre) {
-            JOptionPane.showMessageDialog(dialog, sre.getMessage(), "Paznja!", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(vehicleSearchForm, sre.getMessage(), "Paznja!", JOptionPane.INFORMATION_MESSAGE);
         } catch (Exception ex) {
             ex.printStackTrace();
-            JOptionPane.showMessageDialog(dialog, ex.getMessage(), "Paznja!", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(vehicleSearchForm, ex.getMessage(), "Paznja!", JOptionPane.WARNING_MESSAGE);
         }
     }
 
-    public static void delete(JTable tblVehicles, JDialog dialog) {
+    public void delete() {
         try {
-            int[] selectedRows = validateSelection(tblVehicles);
+            int[] selectedRows = validateSelection(vehicleSearchForm.getTblVehicles());
             int answer;
-            String confirmMessage = "";
+            String confirmMessage;
 
             if (selectedRows.length == 1) {
-                String brand = (String) tblVehicles.getValueAt(selectedRows[0], 0);
-                String model = (String) tblVehicles.getValueAt(selectedRows[0], 1);
-                answer = option("Da li ste sigurni da zelite da obrisete vozilo " + brand.toUpperCase() + " " + model.toUpperCase(), dialog);
+                String brand = (String) vehicleSearchForm.getTblVehicles().getValueAt(selectedRows[0], 0);
+                String model = (String) vehicleSearchForm.getTblVehicles().getValueAt(selectedRows[0], 1);
+                answer = option("Da li ste sigurni da zelite da obrisete vozilo " + brand.toUpperCase() + " " + model.toUpperCase(), vehicleSearchForm);
                 confirmMessage = "Vozilo je uspesno obrisano!";
             } else {
-                answer = option("Da li ste sigurni da zelite da obrisete selektovane redove?", dialog);
+                answer = option("Da li ste sigurni da zelite da obrisete selektovane redove?", vehicleSearchForm);
                 confirmMessage = "Selektovana vozila su uspesno obrisana!";
             }
 
             if (answer == JOptionPane.YES_OPTION) {
                 List<Vehicle> checkList = new ArrayList<>();
                 if (selectedRows.length == 1) {
-                    String vin = (String) tblVehicles.getValueAt(selectedRows[0], 2);
+                    String vin = (String) vehicleSearchForm.getTblVehicles().getValueAt(selectedRows[0], 2);
                     Vehicle v = new Vehicle();
                     v.setViNumber(vin);
                     checkList.add(v);
@@ -111,50 +128,36 @@ public class VehicleSearchController {
                     List<Vehicle> vehicles = new ArrayList<>();
                     for (int row : selectedRows) {
                         Vehicle v = new Vehicle();
-                        v.setViNumber((String) tblVehicles.getValueAt(row, 2));
+                        v.setViNumber((String) vehicleSearchForm.getTblVehicles().getValueAt(row, 2));
                         vehicles.add(v);
                     }
                     getResponse(Operation.VEHICLE_DELETE_MULTIPLE_BY_VIN, vehicles);
 
                 }
 
-                JOptionPane.showMessageDialog(dialog, confirmMessage);
+                JOptionPane.showMessageDialog(vehicleSearchForm, confirmMessage);
 
             }
 
         } catch (SelectRowException | InputValidationException val) {
-            JOptionPane.showMessageDialog(dialog, val.getMessage(), "Paznja!", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(vehicleSearchForm, val.getMessage(), "Paznja!", JOptionPane.INFORMATION_MESSAGE);
         } catch (Exception ex) {
             ex.printStackTrace();
-            JOptionPane.showMessageDialog(dialog, ex.getMessage(), "Paznja!", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(vehicleSearchForm, ex.getMessage(), "Paznja!", JOptionPane.WARNING_MESSAGE);
         }
     }
 
-    private static void checkBeforeDelete(List<Vehicle> vehicleList) throws Exception {
-        List<PurchaseOrder> purchaseOrders = (List<PurchaseOrder>) getResponse(Operation.PURCHASE_ORDER_GET_ALL, null).getResult();
-
-        for (PurchaseOrder purchaseOrder : purchaseOrders) {
-
-            for (Vehicle v : vehicleList) {
-                if (v.getViNumber().equals(purchaseOrder.getVehicle().getViNumber())) {
-                    throw new InputValidationException("Vozila koja su prodata nije moguce obrisati iz baze!");
-                }
-
-            }
-        }
-    }
-
-    public static void addToPurchaseOrder(JTable tblVehicles, JDialog dialog) {
+    public void addToPurchaseOrder() {
 
         try {
 
-            int[] selectedRows = validateSelection(tblVehicles);
+            int[] selectedRows = validateSelection(vehicleSearchForm.getTblVehicles());
 
             if (selectedRows.length > 1) {
                 throw new SelectRowException("Dodavanje nije omoguceno, selektovano je vise od jednog reda!");
             }
 
-            String vin = (String) tblVehicles.getValueAt(selectedRows[0], 2);
+            String vin = (String) vehicleSearchForm.getTblVehicles().getValueAt(selectedRows[0], 2);
             List<PurchaseOrder> po = (List<PurchaseOrder>) getResponse(Operation.PURCHASE_ORDER_GET_ALL, null).getResult();
 
             for (PurchaseOrder purchaseOrder : po) {
@@ -167,81 +170,70 @@ public class VehicleSearchController {
             List<Vehicle> vehicles = (List<Vehicle>) vehicleResponse.getResult();
 
             List<Vehicle> selectedVehicles = vehicles.stream()
-            .filter(selectedVehicle -> selectedVehicle.getViNumber().equals(vin))
-            .collect(Collectors.toList());
+                    .filter(selectedVehicle -> selectedVehicle.getViNumber().equals(vin))
+                    .collect(Collectors.toList());
             ApplicationSession.getInstance().setOrderSelectedVehicle(selectedVehicles.get(0));
             if (ApplicationSession.getInstance().isPurchaseOrderFormIsOpen()) {
-                dialog.dispose();
+                vehicleSearchForm.dispose();
                 return;
             }
 
             JDialog purchaseOrderDialog = new PurchaseOrderCreateForm(null, true);
-            purchaseOrderDialog.setLocationRelativeTo(dialog);
+            purchaseOrderDialog.setLocationRelativeTo(vehicleSearchForm);
             purchaseOrderDialog.setVisible(true);
 
         } catch (SelectRowException | InputValidationException val) {
-            JOptionPane.showMessageDialog(dialog, val.getMessage(), "Paznja!", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(vehicleSearchForm, val.getMessage(), "Paznja!", JOptionPane.INFORMATION_MESSAGE);
         } catch (Exception ex) {
             ex.printStackTrace();
-            JOptionPane.showMessageDialog(dialog, ex.getMessage(), "Paznja!", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(vehicleSearchForm, ex.getMessage(), "Paznja!", JOptionPane.WARNING_MESSAGE);
         }
     }
 
-    private static int option(String message, JDialog dialog) {
-        String[] options = {"Da", "Ne"};
-        return JOptionPane.showOptionDialog(dialog, message, "Paznja!",
-        JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE, null, options, EXIT_ON_CLOSE);
-    }
-
-    private static int[] validateSelection(JTable tblCities) throws Exception {
-        int[] selectedRows = tblCities.getSelectedRows();
-
-        if (selectedRows.length == 0) {
-            throw new SelectRowException("Niste selektovali red u tabeli!");
-        }
-        return selectedRows;
-    }
-
-    public static void search(JTable tblVehicles, JComboBox comboBrand, JComboBox comboModel, JComboBox comboBodyType,
-    JComboBox comboYearFrom, JComboBox comboYearTo, JComboBox comboFuelType, JComboBox comboCity, JComboBox comboSortList, JDialog dialog) {
+    public void search() {
         try {
-            List<JComboBox> combos = Arrays.asList(comboBrand, comboModel, comboBodyType, comboFuelType, comboYearFrom, comboYearTo, comboCity);
+            List<JComboBox> combos = Arrays.asList(vehicleSearchForm.getComboBrand(), vehicleSearchForm.getComboModel(),
+                    vehicleSearchForm.getComboBodyType(), vehicleSearchForm.getComboFuelType(),
+                    vehicleSearchForm.getComboYearFrom(), vehicleSearchForm.getComboYearTo(), vehicleSearchForm.getComboCity());
+
             boolean selected = checkComboIndex(combos);
 
-            if (!selected && comboSortList.getSelectedIndex() == 0) {
-                fillTable(tblVehicles, dialog);
+            if (!selected && vehicleSearchForm.getComboSortList().getSelectedIndex() == 0) {
+                fillTable();
                 return;
-            } else if (!selected && comboSortList.getSelectedIndex() > 0) {
-                fillTable(tblVehicles, dialog);
-                sortMainList(tblVehicles, comboSortList);
+            } else if (!selected && vehicleSearchForm.getComboSortList().getSelectedIndex() > 0) {
+                fillTable();
+                sortMainList();
                 return;
             }
 
             List<Vehicle> allVehicles = (List<Vehicle>) getResponse(Operation.VEHICLE_GET_ALL, null).getResult();
 
-            Criterium criterium = new Criterium(allVehicles, comboBrand, comboModel, comboBodyType, comboYearFrom, comboYearTo, comboFuelType, comboCity);
+            Criterium criterium = new Criterium(allVehicles, vehicleSearchForm.getComboBrand(), vehicleSearchForm.getComboModel(),
+                    vehicleSearchForm.getComboBodyType(), vehicleSearchForm.getComboFuelType(),
+                    vehicleSearchForm.getComboYearFrom(), vehicleSearchForm.getComboYearTo(), vehicleSearchForm.getComboCity());
             mainVehicleList = criterium.getFilteredVehicles();
-            
-            if (comboSortList.getSelectedIndex() > 0) {
-                sortMainList(tblVehicles, comboSortList);
+
+            if (vehicleSearchForm.getComboSortList().getSelectedIndex() > 0) {
+                sortMainList();
             } else {
-                tblVehicles.setModel(new VehicleTableModel(mainVehicleList));
+                vehicleSearchForm.getTblVehicles().setModel(new VehicleTableModel(mainVehicleList));
             }
 
-            renderImage(tblVehicles);
+            renderImage(vehicleSearchForm.getTblVehicles());
 
         } catch (Exception ex) {
             ex.printStackTrace();
-            JOptionPane.showMessageDialog(dialog, "Doslo je do greske prilikom pretrage!!", "Paznja!", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(vehicleSearchForm, "Doslo je do greske prilikom pretrage!!", "Paznja!", JOptionPane.WARNING_MESSAGE);
         }
     }
 
-    public static void infoAdrea(JTextArea txtAreaBusinessUnitInfo, JTable tblVehicles, StringBuilder stringBuilder, JDialog dialog) {
+    public void infoAdrea() {
         try {
-            if (tblVehicles.getSelectedRow() != -1) {
-                stringBuilder.delete(0, stringBuilder.length());
-                int selectedRow = tblVehicles.getSelectedRow();
-                String vin = (String) tblVehicles.getValueAt(selectedRow, 2);
+            if (vehicleSearchForm.getTblVehicles().getSelectedRow() != -1) {
+                vehicleSearchForm.getStringBuilder().delete(0, vehicleSearchForm.getStringBuilder().length());
+                int selectedRow = vehicleSearchForm.getTblVehicles().getSelectedRow();
+                String vin = (String) vehicleSearchForm.getTblVehicles().getValueAt(selectedRow, 2);
 
                 List<Vehicle> allVehicles = (List<Vehicle>) getResponse(Operation.VEHICLE_GET_ALL, null).getResult();
                 List<Vehicle> infoVehicles = allVehicles.stream().filter(vehicle -> vehicle.getViNumber().equals(vin)).collect(Collectors.toList());
@@ -257,53 +249,52 @@ public class VehicleSearchController {
                 if (bu.getEmail() == null) {
                     bu.setEmail("");
                 }
-                txtAreaBusinessUnitInfo.setText(stringBuilder.append("\t======").append(bu.getName()).append("======").append("\n")
-                .append("Maticni broj: ").append(bu.getCompanyRegId()).append("\n")
-                .append("PIB: ").append(bu.getTaxId()).append("\n")
-                .append("Adresa: ").append(bu.getAddress()).append(", ").append(c.getName()).append("\n")
-                .append("Kontakt Telefon: ").append(bu.getPhone()).append("\n")
-                .append("Email: ").append(bu.getEmail()).toString());
+                vehicleSearchForm.getTxtAreaBusinessUnitInfo().setText(vehicleSearchForm.getStringBuilder().append("\t======").append(bu.getName()).append("======").append("\n")
+                        .append("Maticni broj: ").append(bu.getCompanyRegId()).append("\n")
+                        .append("PIB: ").append(bu.getTaxId()).append("\n")
+                        .append("Adresa: ").append(bu.getAddress()).append(", ").append(c.getName()).append("\n")
+                        .append("Kontakt Telefon: ").append(bu.getPhone()).append("\n")
+                        .append("Email: ").append(bu.getEmail()).toString());
             } else {
-                stringBuilder.delete(0, stringBuilder.length());
+                vehicleSearchForm.getStringBuilder().delete(0, vehicleSearchForm.getStringBuilder().length());
             }
 
         } catch (Exception ex) {
             ex.printStackTrace();
-            JOptionPane.showMessageDialog(dialog, ex.getMessage(), "Paznja!", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(vehicleSearchForm, ex.getMessage(), "Paznja!", JOptionPane.WARNING_MESSAGE);
         }
     }
 
-    public static void fillTable(JTable tblVehicles, JDialog dialog) {
+    public void fillTable() {
         try {
             List<Vehicle> allVehicles = (List<Vehicle>) getResponse(Operation.VEHICLE_GET_ALL, null).getResult();
 
             mainVehicleList = allVehicles.stream().sorted(Comparator.comparing(vehicle -> vehicle.getModel().getName())).collect(Collectors.toList());
-            tblVehicles.setModel(new VehicleTableModel(mainVehicleList));
-            renderImage(tblVehicles);
-            MyTableCustomComponents.setTblHeader(tblVehicles);
-            MyTableCustomComponents.centerCellText(tblVehicles);
+            vehicleSearchForm.getTblVehicles().setModel(new VehicleTableModel(mainVehicleList));
+            renderImage(vehicleSearchForm.getTblVehicles());
+            MyTableCustomComponents.setTblHeader(vehicleSearchForm.getTblVehicles());
+            MyTableCustomComponents.centerCellText(vehicleSearchForm.getTblVehicles());
 
         } catch (SocketException soe) {
-            JOptionPane.showMessageDialog(dialog, soe.getMessage(), "Upozorenje!", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(vehicleSearchForm, soe.getMessage(), "Upozorenje!", JOptionPane.ERROR_MESSAGE);
             System.exit(0);
         } catch (Exception ex) {
             ex.printStackTrace();
-            JOptionPane.showMessageDialog(dialog, ex.getMessage(), "Paznja!", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(vehicleSearchForm, ex.getMessage(), "Paznja!", JOptionPane.WARNING_MESSAGE);
         }
     }
 
-    public static void fillCombo(JComboBox comboBrand, JComboBox comboBodyType, JComboBox comboFuelType, JComboBox comboCity,
-    JComboBox comboYearFrom, JComboBox comboYearTo, JDialog dialog) {
+    public void fillCombo() {
 
         try {
 
             List<Brand> brands = (List<Brand>) getResponse(Operation.BRAND_GET_ALL, null).getResult();
             List<City> cities = (List<City>) getResponse(Operation.CITY_GET_ALL, null).getResult();
 
-            brands.stream().sorted(Comparator.comparing(Brand::getBrandName)).forEach(comboBrand::addItem);
-            Arrays.asList(CarBodyType.values()).forEach(comboBodyType::addItem);
-            Arrays.asList(FuelType.values()).forEach(comboFuelType::addItem);
-            cities.stream().sorted(Comparator.comparing(City::getName)).forEach(comboCity::addItem);
+            brands.stream().sorted(Comparator.comparing(Brand::getBrandName)).forEach(vehicleSearchForm.getComboBrand()::addItem);
+            Arrays.asList(CarBodyType.values()).forEach(vehicleSearchForm.getComboBodyType()::addItem);
+            Arrays.asList(FuelType.values()).forEach(vehicleSearchForm.getComboFuelType()::addItem);
+            cities.stream().sorted(Comparator.comparing(City::getName)).forEach(vehicleSearchForm.getComboCity()::addItem);
 
             LocalDate ld = LocalDate.now();
             int currentYear = ld.getYear();
@@ -312,65 +303,72 @@ public class VehicleSearchController {
                 years.add(i);
             }
 
-            years.forEach(comboYearFrom::addItem);
-            years.forEach(comboYearTo::addItem);
+            years.forEach(vehicleSearchForm.getComboYearFrom()::addItem);
+            years.forEach(vehicleSearchForm.getComboYearTo()::addItem);
 
         } catch (Exception ex) {
             ex.printStackTrace();
-            JOptionPane.showMessageDialog(dialog, ex.getMessage(), "Paznja!", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(vehicleSearchForm, ex.getMessage(), "Paznja!", JOptionPane.WARNING_MESSAGE);
         }
     }
 
-    public static void updateComboModel(JComboBox comboBrand, JComboBox comboModel, JDialog dialog) {
+    public void updateComboModel() {
         try {
-            comboModel.removeAllItems();
+            vehicleSearchForm.getComboModel().removeAllItems();
 
-            if (comboBrand.getSelectedIndex() == 0) {
-                comboModel.addItem("Model");
+            if (vehicleSearchForm.getComboBrand().getSelectedIndex() == 0) {
+                vehicleSearchForm.getComboModel().addItem("Model");
             } else {
-                Brand brand = (Brand) comboBrand.getSelectedItem();
-                comboModel.addItem("Svi modeli");
+                Brand brand = (Brand) vehicleSearchForm.getComboBrand().getSelectedItem();
+                vehicleSearchForm.getComboModel().addItem("Svi modeli");
                 List<Model> allModels = (List<Model>) getResponse(Operation.MODEL_GET_ALL, null).getResult();
                 allModels.stream().sorted(Comparator.comparing(Model::getName))
-                .filter(model -> model.getBrand().equals(brand)).forEach(comboModel::addItem);
+                        .filter(model -> model.getBrand().equals(brand)).forEach(vehicleSearchForm.getComboModel()::addItem);
             }
 
         } catch (Exception ex) {
             ex.printStackTrace();
-            JOptionPane.showMessageDialog(dialog, ex.getMessage(), "Paznja!", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(vehicleSearchForm, ex.getMessage(), "Paznja!", JOptionPane.WARNING_MESSAGE);
         }
     }
 
-    public static void sortMainList(JTable tblVehicles, JComboBox comboSortList) {
-        SortList sortList = new SortList(mainVehicleList, comboSortList);
-        tblVehicles.setModel(new VehicleTableModel(sortList.getSortedVehicles()));
-        renderImage(tblVehicles);
+    public void sortMainList() {
+        SortList sortList = new SortList(mainVehicleList, vehicleSearchForm.getComboSortList());
+        vehicleSearchForm.getTblVehicles().setModel(new VehicleTableModel(sortList.getSortedVehicles()));
+        renderImage(vehicleSearchForm.getTblVehicles());
+        vehicleSearchForm.setFiltered(true);
     }
 
-    public static void loadPurchaseOrders(JDialog dialog) {
+    public void loadPurchaseOrders() {
         try {
             List<PurchaseOrder> po = (List<PurchaseOrder>) getResponse(Operation.PURCHASE_ORDER_GET_ALL, null).getResult();
             VehicleTableModel.setPurchaseOrders(po);
-        }catch (SocketException soe) {
-            JOptionPane.showMessageDialog(dialog, soe.getMessage(),"Warning", JOptionPane.ERROR_MESSAGE);
+        } catch (SocketException soe) {
+            JOptionPane.showMessageDialog(vehicleSearchForm, soe.getMessage(), "Warning", JOptionPane.ERROR_MESSAGE);
             System.exit(0);
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             Logger.getLogger(VehicleSearchController.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
-    private static void renderImage(JTable tblVehicles) {
+    public void filterTable() {
+        if (!vehicleSearchForm.isFiltered()) {
+            fillTable();
+        } else {
+            sortMainList();
+        }
+    }
 
-        TableCellRenderer tblCellRenderer = (JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) -> {
-            return (Component) value;
-        };
-        
+
+    private void renderImage(JTable tblVehicles) {
+
+        TableCellRenderer tblCellRenderer = (JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) -> (Component) value;
+
         tblVehicles.getColumn("*").setCellRenderer(tblCellRenderer);
         tblVehicles.getColumnModel().getColumn(9).setMaxWidth(34);
     }
 
-    private static boolean checkComboIndex(List<JComboBox> combos) {
+    private boolean checkComboIndex(List<JComboBox> combos) {
         for (JComboBox c : combos) {
             if (c.getSelectedIndex() > 0) {
                 return true;
@@ -379,7 +377,7 @@ public class VehicleSearchController {
         return false;
     }
 
-    private static Response getResponse(Operation operation, Object argument) throws Exception {
+    private Response getResponse(Operation operation, Object argument) throws Exception {
         Request request = new Request(operation, argument);
         Communication.getInstance().getSender().writeObject(request);
         Response response = (Response) Communication.getInstance().getReceiver().readObject();
@@ -389,6 +387,27 @@ public class VehicleSearchController {
         }
 
         return response;
+    }
+
+
+    private void checkBeforeDelete(List<Vehicle> vehicleList) throws Exception {
+        List<PurchaseOrder> purchaseOrders = (List<PurchaseOrder>) getResponse(Operation.PURCHASE_ORDER_GET_ALL, null).getResult();
+
+        for (PurchaseOrder purchaseOrder : purchaseOrders) {
+
+            for (Vehicle v : vehicleList) {
+                if (v.getViNumber().equals(purchaseOrder.getVehicle().getViNumber())) {
+                    throw new InputValidationException("Vozila koja su prodata nije moguce obrisati iz baze!");
+                }
+
+            }
+        }
+    }
+
+    private int option(String message, JDialog dialog) {
+        String[] options = {"Da", "Ne"};
+        return JOptionPane.showOptionDialog(dialog, message, "Paznja!",
+                JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE, null, options, EXIT_ON_CLOSE);
     }
 
 }
