@@ -1,6 +1,7 @@
 package cardealershipapp.client.ui.model.ci;
 
 import cardealershipapp.client.communication.Communication;
+import cardealershipapp.client.ui.model.ModelAddForm;
 import cardealershipapp.common.domain.Brand;
 import cardealershipapp.common.domain.Model;
 import cardealershipapp.common.transfer.Operation;
@@ -19,46 +20,52 @@ import javax.swing.JTextField;
  */
 public class ModelAddController {
 
-    public static void save(JTextField txtModelName, JComboBox comboBrands, JDialog dialog) {
+    private final ModelAddForm modelAddForm;
+    public ModelAddController(ModelAddForm modelAddForm) {
+        this.modelAddForm = modelAddForm;
+    }
+
+    public void save() {
         try {
 
-            validateInput(txtModelName);
+            validateInput();
 
-            String name = txtModelName.getText().trim();
-            Brand brand = (Brand) comboBrands.getSelectedItem();
+            String name = modelAddForm.getTxtModelName().getText().trim();
+            Brand brand = (Brand) modelAddForm.getComboBrands().getSelectedItem();
 
             Model model = new Model(null, name, brand);
             getResponse(Operation.MODEL_ADD, model);
 
-            JOptionPane.showMessageDialog(dialog, "Model je uspesno unet!");
-            txtModelName.setText("");
+            JOptionPane.showMessageDialog(modelAddForm, "Model je uspesno unet!");
+            modelAddForm.getTxtModelName().setText("");
 
         } catch (InputValidationException ive) {
-            JOptionPane.showMessageDialog(dialog, ive.getMessage(), "Paznja!", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(modelAddForm, ive.getMessage(), "Paznja!", JOptionPane.WARNING_MESSAGE);
         } catch (Exception ex) {
             ex.printStackTrace();
-            JOptionPane.showMessageDialog(dialog, ex.getMessage());
+            JOptionPane.showMessageDialog(modelAddForm, ex.getMessage());
         }
     }
 
-    private static void validateInput(JTextField txtModelName) throws Exception {
-        if (txtModelName.getText().trim().isEmpty() || txtModelName.getText().trim().isBlank()) {
+
+    public void populateCombo() {
+        try {
+
+            List<Brand> brands = (List<Brand>) getResponse(Operation.BRAND_GET_ALL, null).getResult();
+            brands.forEach(modelAddForm.getComboBrands()::addItem);
+
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(modelAddForm, ex.getMessage(), "Paznja!", JOptionPane.WARNING_MESSAGE);
+        }
+    }
+
+    private void validateInput() throws Exception {
+        if (modelAddForm.getTxtModelName().getText().trim().isEmpty() || modelAddForm.getTxtModelName().getText().trim().isBlank()) {
             throw new InputValidationException("Niste uneli naziv modela!");
         }
     }
 
-    public static void populateCombo(JComboBox comboBrands, JDialog dialog) {
-        try {
-            
-            List<Brand> brands = (List<Brand>) getResponse(Operation.BRAND_GET_ALL, null).getResult();
-            brands.forEach(comboBrands::addItem);
-
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(dialog, ex.getMessage(), "Paznja!", JOptionPane.WARNING_MESSAGE);
-        }
-    }
-
-    private static Response getResponse(Operation operation, Object argument) throws Exception {
+    private Response getResponse(Operation operation, Object argument) throws Exception {
         Request request = new Request(operation, argument);
         Communication.getInstance().getSender().writeObject(request);
         Response response = (Response) Communication.getInstance().getReceiver().readObject();
