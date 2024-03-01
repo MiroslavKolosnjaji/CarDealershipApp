@@ -616,7 +616,7 @@ public class PurchaseOrderDetailsForm extends javax.swing.JDialog {
     private void formWindowActivated(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowActivated
         fillTable();
     }//GEN-LAST:event_formWindowActivated
-    
+
     private void fillTable() {
         purchaseOrderDetailsController.fillTable();
     }
