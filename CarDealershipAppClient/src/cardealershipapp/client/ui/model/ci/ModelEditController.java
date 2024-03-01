@@ -1,25 +1,20 @@
 package cardealershipapp.client.ui.model.ci;
 
-import cardealershipapp.client.communication.Communication;
 import cardealershipapp.client.ui.model.ModelEditForm;
+import cardealershipapp.client.ui.response.Responsive;
 import cardealershipapp.common.domain.Brand;
 import cardealershipapp.common.domain.Model;
 import cardealershipapp.client.session.ApplicationSession;
 import cardealershipapp.common.validation.InputValidationException;
 import cardealershipapp.common.transfer.Operation;
-import cardealershipapp.common.transfer.Request;
-import cardealershipapp.common.transfer.Response;
 
 import java.util.List;
-import javax.swing.JComboBox;
-import javax.swing.JDialog;
 import javax.swing.JOptionPane;
-import javax.swing.JTextField;
 
 /**
  * @author Miroslav Kološnjaji
  */
-public class ModelEditController {
+public class ModelEditController implements Responsive {
 
     private final ModelEditForm modelEditForm;
 
@@ -81,18 +76,6 @@ public class ModelEditController {
             JOptionPane.showMessageDialog(modelEditForm, ex.getMessage(), "Paznja!", JOptionPane.WARNING_MESSAGE);
         }
 
-    }
-
-    private Response getResponse(Operation operation, Object argument) throws Exception {
-        Request request = new Request(operation, argument);
-        Communication.getInstance().getSender().writeObject(request);
-        Response response = (Response) Communication.getInstance().getReceiver().readObject();
-
-        if (response.getException() != null) {
-            throw response.getException();
-        }
-
-        return response;
     }
 
 }

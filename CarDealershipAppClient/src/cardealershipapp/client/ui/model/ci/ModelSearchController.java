@@ -1,7 +1,7 @@
 package cardealershipapp.client.ui.model.ci;
 
-import cardealershipapp.client.communication.Communication;
 import cardealershipapp.client.ui.model.ModelSearchForm;
+import cardealershipapp.client.ui.response.Responsive;
 import cardealershipapp.common.domain.Brand;
 import cardealershipapp.common.domain.Model;
 import cardealershipapp.client.session.ApplicationSession;
@@ -10,15 +10,12 @@ import cardealershipapp.client.ui.component.table.model.ModelTableModel;
 import cardealershipapp.client.ui.model.ModelEditForm;
 import cardealershipapp.client.ui.validation.SelectRowException;
 import cardealershipapp.common.transfer.Operation;
-import cardealershipapp.common.transfer.Request;
-import cardealershipapp.common.transfer.Response;
 
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
-import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
@@ -28,7 +25,7 @@ import static javax.swing.WindowConstants.EXIT_ON_CLOSE;
 /**
  * @author Miroslav Kološnjaji
  */
-public class ModelSearchController {
+public class ModelSearchController implements Responsive {
 
     private final ModelSearchForm modelSearchForm;
 
@@ -155,17 +152,4 @@ public class ModelSearchController {
             JOptionPane.showMessageDialog(modelSearchForm, "Doslo je do greske prilikom ucitavanja podataka za comboBox!", "Paznja!", JOptionPane.ERROR_MESSAGE);
         }
     }
-
-    private Response getResponse(Operation operation, Object argument) throws Exception {
-        Request request = new Request(operation, argument);
-        Communication.getInstance().getSender().writeObject(request);
-        Response response = (Response) Communication.getInstance().getReceiver().readObject();
-
-        if (response.getException() != null) {
-            throw response.getException();
-        }
-
-        return response;
-    }
-
 }

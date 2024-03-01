@@ -1,26 +1,22 @@
 package cardealershipapp.client.ui.model.ci;
 
-import cardealershipapp.client.communication.Communication;
 import cardealershipapp.client.ui.model.ModelAddForm;
+import cardealershipapp.client.ui.response.Responsive;
 import cardealershipapp.common.domain.Brand;
 import cardealershipapp.common.domain.Model;
 import cardealershipapp.common.transfer.Operation;
-import cardealershipapp.common.transfer.Request;
-import cardealershipapp.common.transfer.Response;
 import cardealershipapp.common.validation.InputValidationException;
+
 import java.util.List;
-import javax.swing.JComboBox;
-import javax.swing.JDialog;
 import javax.swing.JOptionPane;
-import javax.swing.JTextField;
 
 /**
- *
  * @author Miroslav Kološnjaji
  */
-public class ModelAddController {
+public class ModelAddController implements Responsive {
 
     private final ModelAddForm modelAddForm;
+
     public ModelAddController(ModelAddForm modelAddForm) {
         this.modelAddForm = modelAddForm;
     }
@@ -63,18 +59,6 @@ public class ModelAddController {
         if (modelAddForm.getTxtModelName().getText().trim().isEmpty() || modelAddForm.getTxtModelName().getText().trim().isBlank()) {
             throw new InputValidationException("Niste uneli naziv modela!");
         }
-    }
-
-    private Response getResponse(Operation operation, Object argument) throws Exception {
-        Request request = new Request(operation, argument);
-        Communication.getInstance().getSender().writeObject(request);
-        Response response = (Response) Communication.getInstance().getReceiver().readObject();
-
-        if (response.getException() != null) {
-            throw response.getException();
-        }
-
-        return response;
     }
 
 }
