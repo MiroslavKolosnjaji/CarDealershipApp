@@ -1,24 +1,19 @@
 package cardealershipapp.client.ui.login.ci;
 
-import cardealershipapp.client.communication.Communication;
 import cardealershipapp.client.session.ApplicationSession;
 import cardealershipapp.client.ui.login.LoginForm;
+import cardealershipapp.client.ui.response.Responsive;
 import cardealershipapp.common.domain.UserProfile;
 import cardealershipapp.common.transfer.Operation;
-import cardealershipapp.common.transfer.Request;
-import cardealershipapp.common.transfer.Response;
 import cardealershipapp.common.validation.InputValidationException;
 
 import java.net.SocketException;
-import javax.swing.JDialog;
 import javax.swing.JOptionPane;
-import javax.swing.JPasswordField;
-import javax.swing.JTextField;
 
 /**
  * @author Miroslav Kološnjaji
  */
-public class LoginController {
+public class LoginController implements Responsive {
 
     private LoginForm loginForm;
 
@@ -62,17 +57,5 @@ public class LoginController {
         if (password.isEmpty() || password.isBlank()) {
             throw new InputValidationException("Polje sifra nije popunjeno!");
         }
-    }
-
-    private Response getResponse(Operation operation, Object argument) throws Exception {
-        Request request = new Request(operation, argument);
-        Communication.getInstance().getSender().writeObject(request);
-        Response response = (Response) Communication.getInstance().getReceiver().readObject();
-
-        if (response.getException() != null) {
-            throw response.getException();
-        }
-
-        return response;
     }
 }
