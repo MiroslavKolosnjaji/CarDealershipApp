@@ -14,9 +14,7 @@ import cardealershipapp.common.domain.Vehicle;
 import java.math.BigDecimal;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import javax.swing.JLabel;
-import javax.swing.JTable;
-import javax.swing.JTextField;
+
 
 /**
  * @author Miroslav Kološnjaji

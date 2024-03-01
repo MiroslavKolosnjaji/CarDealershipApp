@@ -1,9 +1,7 @@
 package cardealershipapp.client.ui.purchaseorder.ci;
 
-import cardealershipapp.client.communication.Communication;
+import cardealershipapp.client.ui.response.Responsive;
 import cardealershipapp.common.transfer.Operation;
-import cardealershipapp.common.transfer.Request;
-import cardealershipapp.common.transfer.Response;
 import cardealershipapp.common.domain.Customer;
 import cardealershipapp.common.domain.Equipment;
 import cardealershipapp.common.domain.FuelType;
@@ -31,14 +29,13 @@ import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.swing.JSpinner;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 
 /**
  * @author Miroslav Kološnjaji
  */
-public class PurchaseOrderEditController {
+public class PurchaseOrderEditController implements Responsive {
 
     private final PurchaseOrderEditForm purchaseOrderEditForm;
     private Vehicle vehicleSession;
@@ -64,18 +61,6 @@ public class PurchaseOrderEditController {
         } catch (Exception ex) {
             Logger.getLogger(PurchaseOrderEditForm.class.getName()).log(Level.SEVERE, null, ex);
         }
-    }
-
-    private static Response getResponse(Operation operation, Object argument) throws Exception {
-        Request request = new Request(operation, argument);
-        Communication.getInstance().getSender().writeObject(request);
-        Response response = (Response) Communication.getInstance().getReceiver().readObject();
-
-        if (response.getException() != null) {
-            throw response.getException();
-        }
-
-        return response;
     }
 
     public void prepareForm() {

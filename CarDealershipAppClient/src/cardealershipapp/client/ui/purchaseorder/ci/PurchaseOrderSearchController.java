@@ -1,7 +1,7 @@
 package cardealershipapp.client.ui.purchaseorder.ci;
 
 import cardealershipapp.client.ui.purchaseorder.PurchaseOrderDetailsForm;
-import cardealershipapp.client.communication.Communication;
+import cardealershipapp.client.ui.response.Responsive;
 import cardealershipapp.common.domain.PurchaseOrder;
 import cardealershipapp.common.domain.PurchaseOrderItem;
 import cardealershipapp.client.session.ApplicationSession;
@@ -12,9 +12,6 @@ import cardealershipapp.client.ui.purchaseorder.PurchaseOrderSearchForm;
 import cardealershipapp.client.ui.validation.SelectRowException;
 import cardealershipapp.common.domain.Customer;
 import cardealershipapp.common.transfer.Operation;
-import cardealershipapp.common.transfer.Request;
-import cardealershipapp.common.transfer.Response;
-import com.toedter.calendar.JDateChooser;
 
 import java.net.SocketException;
 import java.time.LocalDate;
@@ -34,7 +31,7 @@ import static javax.swing.WindowConstants.EXIT_ON_CLOSE;
 /**
  * @author Miroslav Kološnjaji
  */
-public class PurchaseOrderSearchController {
+public class PurchaseOrderSearchController implements Responsive {
 
     private final PurchaseOrderSearchForm purchaseOrderSearchForm;
 
@@ -187,16 +184,5 @@ public class PurchaseOrderSearchController {
             Logger.getLogger(PurchaseOrderSearchController.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-    }
-
-    private Response getResponse(Operation operation, Object argument) throws Exception {
-        Request request = new Request(operation, argument);
-        Communication.getInstance().getSender().writeObject(request);
-        Response response = (Response) Communication.getInstance().getReceiver().readObject();
-
-        if (response.getException() != null) {
-            throw response.getException();
-        }
-        return response;
     }
 }

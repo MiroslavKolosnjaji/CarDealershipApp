@@ -1,6 +1,6 @@
 package cardealershipapp.client.ui.purchaseorder.ci;
 
-import cardealershipapp.client.communication.Communication;
+import cardealershipapp.client.ui.response.Responsive;
 import cardealershipapp.common.domain.Customer;
 import cardealershipapp.common.domain.Equipment;
 import cardealershipapp.common.domain.FuelType;
@@ -15,7 +15,6 @@ import cardealershipapp.client.ui.purchaseorder.PurchaseOrderCreateForm;
 import cardealershipapp.common.validation.InputValidationException;
 import cardealershipapp.common.domain.Currency;
 import cardealershipapp.common.transfer.Operation;
-import cardealershipapp.common.transfer.Request;
 import cardealershipapp.common.transfer.Response;
 
 import java.math.BigDecimal;
@@ -25,19 +24,16 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.swing.JSpinner;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 
 /**
  * @author Miroslav Kološnjaji
  */
-public class PurchaseOrderCreateController {
+public class PurchaseOrderCreateController implements Responsive {
 
     private final PurchaseOrderCreateForm purchaseOrderCreateForm;
     private Vehicle vehicleSession;
@@ -265,15 +261,4 @@ public class PurchaseOrderCreateController {
         dialog.dispose();
     }
 
-    private Response getResponse(Operation operation, Object argument) throws Exception {
-        Request request = new Request(operation, argument);
-        Communication.getInstance().getSender().writeObject(request);
-        Response response = (Response) Communication.getInstance().getReceiver().readObject();
-
-        if (response.getException() != null) {
-            throw response.getException();
-        }
-
-        return response;
-    }
 }
