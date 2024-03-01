@@ -73,7 +73,7 @@ public class MainForm extends javax.swing.JFrame {
 
         jPanel1.setForeground(new java.awt.Color(60, 63, 65));
 
-        jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/cardealershipapp/client/ui/resources/bmw_main.png"))); // NOI18N
+        jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/cardealershipapp/client/ui/resources/images/bmw_main.png"))); // NOI18N
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
