@@ -1,21 +1,39 @@
 package cardealershipapp.client.ui.purchaseorder;
 
 import cardealershipapp.client.ui.purchaseorder.ci.PurchaseOrderSearchController;
+import com.toedter.calendar.JDateChooser;
+
+import javax.swing.*;
 import java.util.Date;
 
 /**
- *
  * @author Miroslav Kološnjaji
  */
 public class PurchaseOrderSearchForm extends javax.swing.JDialog {
 
-    boolean filtered = false;
-
+    private PurchaseOrderSearchController purchaseOrderSearchController;
+    private boolean filtered = false;
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnChoose;
+    private javax.swing.JButton btnDelete;
+    private javax.swing.JButton btnPurchaseOrderDetails;
+    private javax.swing.JButton btnUndo;
+    private javax.swing.JButton btnUpdate;
+    private com.toedter.calendar.JDateChooser dCDate;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JTable tblPurchaseOrders;
     public PurchaseOrderSearchForm(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+        initController();
         dCDate.setDate(new Date());
         fillTable();
+    }
+
+    private void initController() {
+        purchaseOrderSearchController = new PurchaseOrderSearchController(this);
     }
 
     /**
@@ -49,12 +67,12 @@ public class PurchaseOrderSearchForm extends javax.swing.JDialog {
         jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(""));
 
         tblPurchaseOrders.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
+                new Object[][]{
 
-            },
-            new String [] {
-                "Broj porudzbenice", "Kupac", "Vozilo", "Broj sasije", "Datum"
-            }
+                },
+                new String[]{
+                        "Broj porudzbenice", "Kupac", "Vozilo", "Broj sasije", "Datum"
+                }
         ));
         tblPurchaseOrders.setRowHeight(30);
         jScrollPane1.setViewportView(tblPurchaseOrders);
@@ -101,124 +119,155 @@ public class PurchaseOrderSearchForm extends javax.swing.JDialog {
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(0, 304, Short.MAX_VALUE)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                                .addComponent(btnUpdate, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(43, 43, 43)
-                                .addComponent(btnDelete, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(293, 293, 293))
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                                .addComponent(btnPurchaseOrderDetails, javax.swing.GroupLayout.PREFERRED_SIZE, 171, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(369, 369, 369))))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                        .addComponent(jScrollPane1)
-                        .addContainerGap())))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jLabel1)
-                .addGap(18, 18, 18)
-                .addComponent(dCDate, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(btnChoose, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(btnUndo, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(22, 22, 22))
+                jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addContainerGap()
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addGroup(jPanel1Layout.createSequentialGroup()
+                                                .addGap(0, 304, Short.MAX_VALUE)
+                                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                                                                .addComponent(btnUpdate, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                                .addGap(43, 43, 43)
+                                                                .addComponent(btnDelete, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                                .addGap(293, 293, 293))
+                                                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                                                                .addComponent(btnPurchaseOrderDetails, javax.swing.GroupLayout.PREFERRED_SIZE, 171, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                                .addGap(369, 369, 369))))
+                                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                                                .addComponent(jScrollPane1)
+                                                .addContainerGap())))
+                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(jLabel1)
+                                .addGap(18, 18, 18)
+                                .addComponent(dCDate, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(btnChoose, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(btnUndo, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(22, 22, 22))
         );
         jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addContainerGap(19, Short.MAX_VALUE)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(btnChoose)
-                        .addComponent(btnUndo))
-                    .addComponent(dCDate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel1))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 416, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnDelete)
-                    .addComponent(btnUpdate))
-                .addGap(18, 18, 18)
-                .addComponent(btnPurchaseOrderDetails, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(19, 19, 19))
+                jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                                .addContainerGap(19, Short.MAX_VALUE)
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                                .addComponent(btnChoose)
+                                                .addComponent(btnUndo))
+                                        .addComponent(dCDate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(jLabel1))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 416, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                        .addComponent(btnDelete)
+                                        .addComponent(btnUpdate))
+                                .addGap(18, 18, 18)
+                                .addComponent(btnPurchaseOrderDetails, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(19, 19, 19))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createSequentialGroup()
+                                .addContainerGap()
+                                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addContainerGap())
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createSequentialGroup()
+                                .addContainerGap()
+                                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addContainerGap())
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+    // End of variables declaration//GEN-END:variables
 
     private void btnDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteActionPerformed
-        PurchaseOrderSearchController.delete(tblPurchaseOrders, this);
+        purchaseOrderSearchController.delete();
     }//GEN-LAST:event_btnDeleteActionPerformed
 
     private void formWindowActivated(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowActivated
-
         if (!filtered) {
             fillTable();
-        }else{
-            PurchaseOrderSearchController.filterByDate(tblPurchaseOrders, dCDate);
+        } else {
+            purchaseOrderSearchController.filterByDate();
         }
     }//GEN-LAST:event_formWindowActivated
 
     private void btnUpdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUpdateActionPerformed
-        PurchaseOrderSearchController.edit(tblPurchaseOrders, this);
+        purchaseOrderSearchController.edit();
     }//GEN-LAST:event_btnUpdateActionPerformed
 
     private void btnPurchaseOrderDetailsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPurchaseOrderDetailsActionPerformed
-        PurchaseOrderSearchController.details(tblPurchaseOrders, this);
+        purchaseOrderSearchController.details();
     }//GEN-LAST:event_btnPurchaseOrderDetailsActionPerformed
 
     private void btnChooseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnChooseActionPerformed
-        PurchaseOrderSearchController.filterByDate(tblPurchaseOrders, dCDate);
+        purchaseOrderSearchController.filterByDate();
         filtered = true;
     }//GEN-LAST:event_btnChooseActionPerformed
 
     private void btnUndoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUndoActionPerformed
-        if(filtered){
+        if (filtered) {
             fillTable();
             filtered = false;
         }
     }//GEN-LAST:event_btnUndoActionPerformed
 
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton btnChoose;
-    private javax.swing.JButton btnDelete;
-    private javax.swing.JButton btnPurchaseOrderDetails;
-    private javax.swing.JButton btnUndo;
-    private javax.swing.JButton btnUpdate;
-    private com.toedter.calendar.JDateChooser dCDate;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTable tblPurchaseOrders;
-    // End of variables declaration//GEN-END:variables
 
     private void fillTable() {
-        PurchaseOrderSearchController.fillTable(tblPurchaseOrders, this);
+        purchaseOrderSearchController.fillTable();
+    }
 
+    public boolean isFiltered() {
+        return filtered;
+    }
+
+    public JButton getBtnChoose() {
+        return btnChoose;
+    }
+
+    public JButton getBtnDelete() {
+        return btnDelete;
+    }
+
+    public JButton getBtnPurchaseOrderDetails() {
+        return btnPurchaseOrderDetails;
+    }
+
+    public JButton getBtnUndo() {
+        return btnUndo;
+    }
+
+    public JButton getBtnUpdate() {
+        return btnUpdate;
+    }
+
+    public JDateChooser getdCDate() {
+        return dCDate;
+    }
+
+    public JLabel getjLabel1() {
+        return jLabel1;
+    }
+
+    public JPanel getjPanel1() {
+        return jPanel1;
+    }
+
+    public JScrollPane getjScrollPane1() {
+        return jScrollPane1;
+    }
+
+    public JTable getTblPurchaseOrders() {
+        return tblPurchaseOrders;
     }
 }
