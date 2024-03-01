@@ -460,7 +460,7 @@ public class PurchaseOrderDetailsForm extends javax.swing.JDialog {
 
         jPanel2.setBackground(new java.awt.Color(0, 153, 102));
 
-        jLabel23.setIcon(new javax.swing.ImageIcon(getClass().getResource("/cardealershipapp/client/ui/resources/purchaseOrderLogo.png"))); // NOI18N
+        jLabel23.setIcon(new javax.swing.ImageIcon(getClass().getResource("/cardealershipapp/client/ui/resources/images/purchaseOrderLogo.png"))); // NOI18N
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
