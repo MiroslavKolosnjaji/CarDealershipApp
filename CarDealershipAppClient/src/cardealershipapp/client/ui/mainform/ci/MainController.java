@@ -1,24 +1,20 @@
 package cardealershipapp.client.ui.mainform.ci;
 
-import cardealershipapp.client.communication.Communication;
 import cardealershipapp.client.session.ApplicationSession;
 import cardealershipapp.client.ui.login.LoginForm;
 import cardealershipapp.client.ui.mainform.MainForm;
 import cardealershipapp.client.ui.model.ModelSearchForm;
 import cardealershipapp.client.ui.purchaseorder.PurchaseOrderCreateForm;
 import cardealershipapp.client.ui.purchaseorder.PurchaseOrderSearchForm;
+import cardealershipapp.client.ui.response.Responsive;
 import cardealershipapp.client.ui.vehicle.VehicleSearchForm;
 import cardealershipapp.common.transfer.Operation;
-import cardealershipapp.common.transfer.Request;
-import cardealershipapp.common.transfer.Response;
 
 import java.net.SocketException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JMenu;
 import javax.swing.JOptionPane;
 
 import static javax.swing.WindowConstants.EXIT_ON_CLOSE;
@@ -26,7 +22,7 @@ import static javax.swing.WindowConstants.EXIT_ON_CLOSE;
 /**
  * @author Miroslav Kološnjaji
  */
-public class MainController {
+public class MainController implements Responsive {
 
     private MainForm mainForm;
 
@@ -125,15 +121,4 @@ public class MainController {
         return answer;
     }
 
-    private Response getResponse(Operation operation, Object argument) throws Exception {
-        Request request = new Request(operation, argument);
-        Communication.getInstance().getSender().writeObject(request);
-        Response response = (Response) Communication.getInstance().getReceiver().readObject();
-
-        if (response.getException() != null) {
-            throw response.getException();
-        }
-
-        return response;
-    }
 }
