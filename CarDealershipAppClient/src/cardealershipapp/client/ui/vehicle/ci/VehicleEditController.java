@@ -1,7 +1,6 @@
 package cardealershipapp.client.ui.vehicle.ci;
 
-import cardealershipapp.client.communication.Communication;
-import cardealershipapp.client.ui.vehicle.VehicleAddForm;
+import cardealershipapp.client.ui.response.Responsive;
 import cardealershipapp.client.ui.vehicle.VehicleEditForm;
 import cardealershipapp.common.domain.Brand;
 import cardealershipapp.common.domain.BusinessUnit;
@@ -14,23 +13,17 @@ import cardealershipapp.common.domain.Vehicle;
 import cardealershipapp.client.session.ApplicationSession;
 import cardealershipapp.common.validation.InputValidationException;
 import cardealershipapp.common.transfer.Operation;
-import cardealershipapp.common.transfer.Request;
-import cardealershipapp.common.transfer.Response;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
-import javax.swing.JComboBox;
-import javax.swing.JDialog;
 import javax.swing.JOptionPane;
-import javax.swing.JTextField;
 
 /**
  * @author Miroslav Kološnjaji
  */
-public class VehicleEditController {
+public class VehicleEditController implements Responsive {
 
     private VehicleEditForm vehicleEditForm;
 
@@ -174,19 +167,6 @@ public class VehicleEditController {
         }
 
     }
-
-    private Response getResponse(Operation operation, Object argument) throws Exception {
-        Request request = new Request(operation, argument);
-        Communication.getInstance().getSender().writeObject(request);
-        Response response = (Response) Communication.getInstance().getReceiver().readObject();
-
-        if (response.getException() != null) {
-            throw response.getException();
-        }
-
-        return response;
-    }
-
     public void prepareForm() {
         Vehicle vehicle = ApplicationSession.getInstance().getVehicle();
 

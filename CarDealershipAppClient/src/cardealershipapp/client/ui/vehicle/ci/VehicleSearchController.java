@@ -1,6 +1,6 @@
 package cardealershipapp.client.ui.vehicle.ci;
 
-import cardealershipapp.client.communication.Communication;
+import cardealershipapp.client.ui.response.Responsive;
 import cardealershipapp.client.ui.vehicle.VehicleSearchForm;
 import cardealershipapp.common.domain.Brand;
 import cardealershipapp.common.domain.BusinessUnit;
@@ -17,7 +17,6 @@ import cardealershipapp.client.ui.validation.SelectRowException;
 import cardealershipapp.client.ui.vehicle.filter.Criterium;
 import cardealershipapp.client.ui.vehicle.sort.SortList;
 import cardealershipapp.common.transfer.Operation;
-import cardealershipapp.common.transfer.Request;
 import cardealershipapp.common.transfer.Response;
 import cardealershipapp.client.ui.vehicle.VehicleAddForm;
 import cardealershipapp.client.ui.vehicle.VehicleEditForm;
@@ -38,7 +37,7 @@ import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
-import javax.swing.JTextArea;
+
 
 import static javax.swing.WindowConstants.EXIT_ON_CLOSE;
 
@@ -47,7 +46,7 @@ import javax.swing.table.TableCellRenderer;
 /**
  * @author Miroslav Kološnjaji
  */
-public class VehicleSearchController {
+public class VehicleSearchController implements Responsive {
 
     private List<Vehicle> mainVehicleList = new ArrayList<>();
     private VehicleSearchForm vehicleSearchForm;
@@ -376,19 +375,6 @@ public class VehicleSearchController {
         }
         return false;
     }
-
-    private Response getResponse(Operation operation, Object argument) throws Exception {
-        Request request = new Request(operation, argument);
-        Communication.getInstance().getSender().writeObject(request);
-        Response response = (Response) Communication.getInstance().getReceiver().readObject();
-
-        if (response.getException() != null) {
-            throw response.getException();
-        }
-
-        return response;
-    }
-
 
     private void checkBeforeDelete(List<Vehicle> vehicleList) throws Exception {
         List<PurchaseOrder> purchaseOrders = (List<PurchaseOrder>) getResponse(Operation.PURCHASE_ORDER_GET_ALL, null).getResult();
