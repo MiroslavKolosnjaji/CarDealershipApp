@@ -17,6 +17,7 @@ import cardealershipapp.common.domain.Currency;
 import cardealershipapp.common.transfer.Operation;
 import cardealershipapp.common.transfer.Request;
 import cardealershipapp.common.transfer.Response;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -34,26 +35,33 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 
 /**
- *
  * @author Miroslav Kološnjaji
  */
 public class PurchaseOrderCreateController {
 
-    private static Vehicle vehicleSession;
-    private static BigDecimal totalPrice = BigDecimal.ZERO;
-    private static Currency currency = Currency.EUR;
-    private static Long counter = 1L;
+    private final PurchaseOrderCreateForm purchaseOrderCreateForm;
+    private Vehicle vehicleSession;
+    private BigDecimal totalPrice = BigDecimal.ZERO;
+    private Currency currency = Currency.EUR;
+    private Long counter = 1L;
 
-    public static void add(JTextField txtCustomerName, JTextField txtCustomerCompany, JTextField txtCustomerAddress, JTextField txtCustomerPhone, JTextField txtCustomerEmail,
-    List<PurchaseOrderItem> purchaseOrderItems, JDialog dialog) {
+    public PurchaseOrderCreateController(PurchaseOrderCreateForm purchaseOrderCreateForm) {
+        this.purchaseOrderCreateForm = purchaseOrderCreateForm;
+    }
+
+    private static void fillTable(JTable tblItems, List<PurchaseOrderItem> purchaseOrderItems) {
+        tblItems.setModel(new PurchaseOrderItemTableModel(purchaseOrderItems));
+    }
+
+    public void add() {
         try {
-            String customerName = txtCustomerName.getText().trim();
-            String customerCompany = txtCustomerCompany.getText().trim();
-            String customerAddress = txtCustomerAddress.getText().trim();
-            String customerPhone = txtCustomerPhone.getText().trim();
-            String customerEmail = txtCustomerEmail.getText().trim();
+            String customerName = purchaseOrderCreateForm.getTxtCustomerName().getText().trim();
+            String customerCompany = purchaseOrderCreateForm.getTxtCustomerCompany().getText().trim();
+            String customerAddress = purchaseOrderCreateForm.getTxtCustomerAddress().getText().trim();
+            String customerPhone = purchaseOrderCreateForm.getTxtCustomerPhone().getText().trim();
+            String customerEmail = purchaseOrderCreateForm.getTxtCustomerEmail().getText().trim();
 
-            validateInput(txtCustomerName, txtCustomerAddress, txtCustomerPhone);
+            validateInput();
 
             Vehicle vehicle = ApplicationSession.getInstance().getOrderSelectedVehicle();
             User salesPerson = ApplicationSession.getInstance().getLoggedUser().getUser();
@@ -66,155 +74,157 @@ public class PurchaseOrderCreateController {
             purchaseOrder.setCustomer(customer);
             purchaseOrder.setVehicle(vehicle);
             purchaseOrder.setSalesPerson(salesPerson);
-            purchaseOrder.setPurchaseOrderItems(purchaseOrderItems);
+            purchaseOrder.setPurchaseOrderItems(purchaseOrderCreateForm.getPurchaseOrderItems());
 
             getResponse(Operation.PURCHASE_ORDER_ADD, purchaseOrder);
-           
 
-            JOptionPane.showMessageDialog(dialog, "Porudzbenica je uspesno kreirana");
-            closeForm(dialog);
+
+            JOptionPane.showMessageDialog(purchaseOrderCreateForm, "Porudzbenica je uspesno kreirana");
+            closeForm(purchaseOrderCreateForm);
 
         } catch (InputValidationException ive) {
-            JOptionPane.showMessageDialog(dialog, ive.getMessage());
+            JOptionPane.showMessageDialog(purchaseOrderCreateForm, ive.getMessage());
         } catch (Exception ex) {
             ex.printStackTrace();
-            JOptionPane.showMessageDialog(dialog, ex.getMessage(), "Upozorenje!", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(purchaseOrderCreateForm, ex.getMessage(), "Upozorenje!", JOptionPane.WARNING_MESSAGE);
         }
 
     }
 
-    public static void activeForm(JTextField txtSalesPersonName, JTextField txtCompany, JTextField txtAddress, JTextField txtPhone, JTextField txtEmail,
-    JLabel lblEngineDisplacement, JComboBox comboItem) {
+    public void activeForm() {
 
         UserProfile user = ApplicationSession.getInstance().getLoggedUser();
-        txtSalesPersonName.setText(user.getUser().getFirstName() + " " + user.getUser().getLastName());
+        purchaseOrderCreateForm.getTxtSalesPersonName().setText(user.getUser().getFirstName() + " " + user.getUser().getLastName());
 
-        if (ApplicationSession.getInstance().getOrderSelectedVehicle() != null) {
-            Vehicle vehicle = ApplicationSession.getInstance().getOrderSelectedVehicle();
-            vehicleSession = vehicle;
+        if (ApplicationSession.getInstance().getOrderSelectedVehicle() == null)
+            return;
 
-            if (vehicle.getFuelType() == FuelType.ELEKTRICNIPOGON) {
-                lblEngineDisplacement.setText("Kapacitet baterije:");
-            } else {
-                lblEngineDisplacement.setText("Zapremina motora:");
-            }
+        Vehicle vehicle = ApplicationSession.getInstance().getOrderSelectedVehicle();
+        vehicleSession = vehicle;
 
-            txtCompany.setText(vehicle.getBusinessUnit().getName());
-            txtAddress.setText(vehicle.getBusinessUnit().getAddress());
-            txtPhone.setText(vehicle.getBusinessUnit().getPhone());
-            txtEmail.setText(vehicle.getBusinessUnit().getEmail());
+        if (vehicle.getFuelType() == FuelType.ELEKTRICNIPOGON) {
+            purchaseOrderCreateForm.getLblEngineDisplacement().setText("Kapacitet baterije:");
+        } else {
+            purchaseOrderCreateForm.getLblEngineDisplacement().setText("Zapremina motora:");
         }
-    }
 
-    public static void populateVehicleInfoFields(JTextField txtVehicleBrand, JTextField txtVehicleModel, JTextField txtVehicleVinNumber, JTextField txtVehicleBodyType,
-    JTextField txtVehicleEngineDispl, JTextField txtVehicleEnginePow, JTextField txtVehicleFuelType, JTextField txtVehicleYearOfProduction, JTextField txtVehiclePrice, JTextField txtTotalPrice, JComboBox comboItem) {
-
-        if (ApplicationSession.getInstance().getOrderSelectedVehicle() != null) {
-            try {
-                Vehicle vehicle = vehicleSession;
-                txtVehicleBrand.setText(vehicle.getModel().getBrandName());
-                txtVehicleModel.setText(vehicle.getModel().getName());
-                txtVehicleVinNumber.setText(vehicle.getViNumber());
-                txtVehicleBodyType.setText(vehicle.getBodyType().toString());
-                txtVehicleEngineDispl.setText(String.valueOf(vehicle.getEngineDisplacement()));
-                txtVehicleEnginePow.setText(String.valueOf(vehicle.getEnginePower()));
-                txtVehicleFuelType.setText(vehicle.getFuelType().toString());
-                txtVehicleYearOfProduction.setText(String.valueOf(vehicle.getYearOfProd()));
-                txtVehiclePrice.setText(String.valueOf(vehicle.getPrice()) + " " + vehicle.getCurrency().toString());
-                totalPrice = vehicle.getPrice();
-                currency = vehicle.getCurrency();
-                
-                Response equipmentResponse = getResponse(Operation.EQUIPMENT_GET_ALL, null);
-                List<Equipment> equipments = (List<Equipment>) equipmentResponse.getResult();
-                populateCombo(vehicle, comboItem, equipments);
-                totalAmount(txtTotalPrice);
-            } catch (Exception ex) {
-                Logger.getLogger(PurchaseOrderCreateController.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
+        purchaseOrderCreateForm.getTxtCompany().setText(vehicle.getBusinessUnit().getName());
+        purchaseOrderCreateForm.getTxtAddress().setText(vehicle.getBusinessUnit().getAddress());
+        purchaseOrderCreateForm.getTxtPhone().setText(vehicle.getBusinessUnit().getPhone());
+        purchaseOrderCreateForm.getTxtEmail().setText(vehicle.getBusinessUnit().getEmail());
 
     }
 
-    private static void validateInput(JTextField txtCustomerName, JTextField txtCustomerAddress, JTextField txtCustomerPhone) throws InputValidationException {
+    public void populateVehicleInfoFields() {
 
-        String phoneNumber = txtCustomerPhone.getText().trim();
-        
-        if (txtCustomerName.getText().trim().isEmpty()) {
+        if (ApplicationSession.getInstance().getOrderSelectedVehicle() == null)
+            return;
+
+        try {
+            Vehicle vehicle = vehicleSession;
+            purchaseOrderCreateForm.getTxtVehicleBrand().setText(vehicle.getModel().getBrandName());
+            purchaseOrderCreateForm.getTxtVehicleModel().setText(vehicle.getModel().getName());
+            purchaseOrderCreateForm.getTxtVehicleVinNumber().setText(vehicle.getViNumber());
+            purchaseOrderCreateForm.getTxtVehicleBodyType().setText(vehicle.getBodyType().toString());
+            purchaseOrderCreateForm.getTxtVehicleEngineDispl().setText(String.valueOf(vehicle.getEngineDisplacement()));
+            purchaseOrderCreateForm.getTxtVehicleEnginePow().setText(String.valueOf(vehicle.getEnginePower()));
+            purchaseOrderCreateForm.getTxtVehicleFuelType().setText(vehicle.getFuelType().toString());
+            purchaseOrderCreateForm.getTxtVehicleYearOfProduction().setText(String.valueOf(vehicle.getYearOfProd()));
+            purchaseOrderCreateForm.getTxtVehiclePrice().setText(vehicle.getPrice().toString());
+            System.out.println("Vehicle price: " + purchaseOrderCreateForm.getTxtVehiclePrice().getText());
+            totalPrice = vehicle.getPrice();
+            currency = vehicle.getCurrency();
+
+            Response equipmentResponse = getResponse(Operation.EQUIPMENT_GET_ALL, null);
+            List<Equipment> equipments = (List<Equipment>) equipmentResponse.getResult();
+            populateCombo(vehicle, purchaseOrderCreateForm.getComboItem(), equipments);
+            totalAmount(purchaseOrderCreateForm.getTxtTotalPrice());
+        } catch (Exception ex) {
+            Logger.getLogger(PurchaseOrderCreateController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    private void validateInput() throws InputValidationException {
+
+        String phoneNumber = purchaseOrderCreateForm.getTxtCustomerPhone().getText().trim();
+
+        if (purchaseOrderCreateForm.getTxtCustomerName().getText().trim().isEmpty()) {
             throw new InputValidationException("Polje Ime i prezime nije popunjeno!");
-        } else if (txtCustomerAddress.getText().trim().isEmpty()) {
+        } else if (purchaseOrderCreateForm.getTxtCustomerName().getText().trim().isEmpty()) {
             throw new InputValidationException("Polje Adresa nije popunjeno!");
         }
-        
+
         if (phoneNumber.isEmpty()) {
             throw new InputValidationException("Polje Telefon nije popunjeno!");
-        } if(phoneNumber.length() != 11){
+        }
+        if (phoneNumber.length() != 11) {
             throw new InputValidationException("Duzina broja telefona zajedno sa (/) i (-) treba da bude 11");
-        }else if(!phoneNumber.substring(3, 4).equals("/") || !phoneNumber.substring(7,8).equals("-")){
+        } else if (!phoneNumber.substring(3, 4).equals("/") || !phoneNumber.substring(7, 8).equals("-")) {
             throw new InputValidationException("Broj telefona mora biti bbb/bbb-bbb formata");
         }
 
     }
 
-    public static void addItem(JTable tblItems, JComboBox comboItem, List<PurchaseOrderItem> purchaseOrderItems, JTextField txtTotalPrice, JSpinner spinnerQuantity, JButton btnDeleteItem, JDialog dialog) {
-        if (comboItem.getSelectedIndex() == 0) {
-            JOptionPane.showMessageDialog(dialog, "Niste izabrali opremu!");
+    public void addItem() {
+        if (purchaseOrderCreateForm.getComboItem().getSelectedIndex() == 0) {
+            JOptionPane.showMessageDialog(purchaseOrderCreateForm, "Niste izabrali opremu!");
             return;
         }
 
-        Equipment equipment = (Equipment) comboItem.getSelectedItem();
-        Integer quantity = (Integer) spinnerQuantity.getValue();
+        Equipment equipment = (Equipment) purchaseOrderCreateForm.getComboItem().getSelectedItem();
+        Integer quantity = (Integer) purchaseOrderCreateForm.getSpinnerQuantity().getValue();
 
         PurchaseOrderItem purchaseOrderItem = new PurchaseOrderItem();
         purchaseOrderItem.setEquipment(equipment);
         purchaseOrderItem.setQuantity(quantity);
         purchaseOrderItem.setOrdinalNum(counter++);
-        purchaseOrderItems.add(purchaseOrderItem);
+        purchaseOrderCreateForm.getPurchaseOrderItems().add(purchaseOrderItem);
 
         totalPrice = totalPrice.add(equipment.getPrice().multiply(BigDecimal.valueOf(quantity.longValue())));
 
-        if (!purchaseOrderItems.isEmpty()) {
-            btnDeleteItem.setEnabled(true);
+        if (!purchaseOrderCreateForm.getPurchaseOrderItems().isEmpty()) {
+            purchaseOrderCreateForm.getBtnDeleteItem().setEnabled(true);
         }
 
-        spinnerQuantity.setValue(1);
+        purchaseOrderCreateForm.getSpinnerQuantity().setValue(1);
 
-        fillTable(tblItems, purchaseOrderItems);
-        totalAmount(txtTotalPrice);
+        fillTable(purchaseOrderCreateForm.getTblItems(), purchaseOrderCreateForm.getPurchaseOrderItems());
+        totalAmount(purchaseOrderCreateForm.getTxtTotalPrice());
     }
 
-    public static void deleteItem(JTable tblItems, List<PurchaseOrderItem> purchaseOrderItems, JTextField txtTotalPrice, JButton btnDeleteItem) {
-        int[] selectedRows = tblItems.getSelectedRows();
+    public void deleteItem() {
+        int[] selectedRows = purchaseOrderCreateForm.getTblItems().getSelectedRows();
 
         for (int selectedRow : selectedRows) {
-            Long ordinalNum = (Long) tblItems.getValueAt(selectedRow, 0);
-            BigDecimal price = (BigDecimal) tblItems.getValueAt(selectedRow, 3);
+            Long ordinalNum = (Long) purchaseOrderCreateForm.getTblItems().getValueAt(selectedRow, 0);
+            BigDecimal price = (BigDecimal) purchaseOrderCreateForm.getTblItems().getValueAt(selectedRow, 3);
 
             PurchaseOrderItem purchaseOrderItem = new PurchaseOrderItem();
             purchaseOrderItem.setOrdinalNum(ordinalNum);
 
             totalPrice = totalPrice.subtract(price);
 
-            purchaseOrderItems.remove(purchaseOrderItem);
-            swapItemOrdinalNumber(ordinalNum, purchaseOrderItems);
+            purchaseOrderCreateForm.getPurchaseOrderItems().remove(purchaseOrderItem);
+            swapItemOrdinalNumber(ordinalNum, purchaseOrderCreateForm.getPurchaseOrderItems());
             counter--;
         }
 
-        if (purchaseOrderItems.isEmpty()) {
-            btnDeleteItem.setEnabled(false);
+        if (purchaseOrderCreateForm.getPurchaseOrderItems().isEmpty()) {
+            purchaseOrderCreateForm.getBtnDeleteItem().setEnabled(false);
         }
 
-        fillTable(tblItems, purchaseOrderItems);
-        totalAmount(txtTotalPrice);
+        fillTable(purchaseOrderCreateForm.getTblItems(), purchaseOrderCreateForm.getPurchaseOrderItems());
+        totalAmount(purchaseOrderCreateForm.getTxtTotalPrice());
     }
 
-    private static void populateCombo(Vehicle vehicle, JComboBox comboItem, List<Equipment> equipments) {
+    private void populateCombo(Vehicle vehicle, JComboBox comboItem, List<Equipment> equipments) {
         try {
 
             comboItem.removeAll();
 
             List<Equipment> equipmentsByBrand = equipments.stream()
-            .filter(equipment -> equipment.getBrand().getBrandName().equals(vehicle.getModel().getBrandName()))
-            .collect(Collectors.toList());
+                    .filter(equipment -> equipment.getBrand().getBrandName().equals(vehicle.getModel().getBrandName()))
+                    .collect(Collectors.toList());
             equipmentsByBrand.forEach(comboItem::addItem);
 
         } catch (Exception ex) {
@@ -222,19 +232,15 @@ public class PurchaseOrderCreateController {
         }
     }
 
-    private static void fillTable(JTable tblItems, List<PurchaseOrderItem> purchaseOrderItems) {
-        tblItems.setModel(new PurchaseOrderItemTableModel(purchaseOrderItems));
+    public void totalAmount(JTextField txtTotalPrice) {
+        txtTotalPrice.setText(totalPrice + " " + currency.toString());
     }
 
-    public static void totalAmount(JTextField txtTotalPrice) {
-        txtTotalPrice.setText(String.valueOf(totalPrice) + " " + currency.toString());
+    public void setLabeldate() {
+        purchaseOrderCreateForm.getLblPurchaseDate().setText(purchaseOrderCreateForm.getDate().format(DateTimeFormatter.ofPattern("dd.MM.yyyy")));
     }
 
-    public static void setLabeldate(JLabel lblPurchaseDate, LocalDate date) {
-        lblPurchaseDate.setText(date.format(DateTimeFormatter.ofPattern("dd.MM.yyyy")));
-    }
-
-    private static void swapItemOrdinalNumber(Long ordinalNum, List<PurchaseOrderItem> purchaseOrderItems) {
+    private void swapItemOrdinalNumber(Long ordinalNum, List<PurchaseOrderItem> purchaseOrderItems) {
         if (purchaseOrderItems.isEmpty()) {
             return;
         }
@@ -247,19 +253,19 @@ public class PurchaseOrderCreateController {
         }
     }
 
-    public static int confirmDialog(String message, JDialog dialog) {
+    public int confirmDialog(String message, JDialog dialog) {
         String[] options = {"Da", "Ne", "Odustani"};
         int answer = JOptionPane.showOptionDialog(dialog, message, "Upozorenje!", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, null);
         return answer;
     }
 
-    public static void closeForm(JDialog dialog) {
+    public void closeForm(JDialog dialog) {
         ApplicationSession.getInstance().setOrderSelectedVehicle(null);
         ApplicationSession.getInstance().setPurchaseOrderFormIsOpen(false);
         dialog.dispose();
     }
-    
-     private static Response getResponse(Operation operation, Object argument) throws Exception {
+
+    private Response getResponse(Operation operation, Object argument) throws Exception {
         Request request = new Request(operation, argument);
         Communication.getInstance().getSender().writeObject(request);
         Response response = (Response) Communication.getInstance().getReceiver().readObject();

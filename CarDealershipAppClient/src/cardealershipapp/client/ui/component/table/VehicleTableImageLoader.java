@@ -43,7 +43,7 @@ public class VehicleTableImageLoader {
 
             assert availableInputStream != null;
             assert soldInputStream != null;
-            
+
             BufferedImage availablePng = ImageIO.read(availableInputStream);
             BufferedImage soldPng = ImageIO.read(soldInputStream);
 
