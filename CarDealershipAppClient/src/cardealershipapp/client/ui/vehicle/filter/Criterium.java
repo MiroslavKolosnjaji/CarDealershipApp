@@ -36,7 +36,7 @@ public class Criterium {
         this.comboCity = comboCity;
         filteredVehicles = new ArrayList<>();
         try {
-            filter = FilterFactoryMethod.filterList(comboBrand, comboModel, comboBodyType, comboYearFrom, comboYearTo, comboFuelType, comboCity);
+            filter = FilterFactoryMethod.getInstance().filterList(comboBrand, comboModel, comboBodyType, comboYearFrom, comboYearTo, comboFuelType, comboCity);
         } catch (Exception ex) {
             Logger.getLogger(Criterium.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -46,6 +46,7 @@ public class Criterium {
     private void setFilterSettings() {
         try {
             if (filter == null) {
+                System.out.println("FILTER IS: " + filter);
                 filteredVehicles = allVehicles;
                 JOptionPane.showMessageDialog(null, "Criteria not supported yet!", "Information", JOptionPane.INFORMATION_MESSAGE);
                 return;
