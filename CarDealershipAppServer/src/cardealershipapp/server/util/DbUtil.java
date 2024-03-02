@@ -1,7 +1,9 @@
 package cardealershipapp.server.util;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -18,7 +20,7 @@ public class DbUtil {
     private DbUtil() {
         properties = new Properties();
         try {
-            properties.load(new FileInputStream("db.properties"));
+            properties.load(new FileInputStream("CarDealershipAppServer/db.properties"));
         } catch (IOException ex) {
             Logger.getLogger(DbUtil.class.getName()).log(Level.SEVERE, null, ex);
         }
