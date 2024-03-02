@@ -59,7 +59,7 @@ public class Controller {
         } catch (Exception ex) {
             Logger.getLogger(Controller.class.getName()).log(Level.SEVERE, null, ex);
         }
-
+        System.out.println("Kontroler je inicijalizovan");
     }
 
     public static Controller getInstance() {

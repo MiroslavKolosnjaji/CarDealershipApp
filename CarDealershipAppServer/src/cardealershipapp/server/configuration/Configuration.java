@@ -30,7 +30,7 @@ public class Configuration {
 
     private Configuration() {
         try {
-            PROPERTIES.load(new FileInputStream("settings.properties"));
+            PROPERTIES.load(new FileInputStream("CarDealershipAppServer/settings.properties"));
         } catch (IOException ioe) {
             Logger.getLogger(Configuration.class.getName()).log(Level.SEVERE, null, ioe);
         }
