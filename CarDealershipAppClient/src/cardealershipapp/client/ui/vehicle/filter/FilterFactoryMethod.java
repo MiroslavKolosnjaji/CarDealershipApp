@@ -32,8 +32,10 @@ import cardealershipapp.client.ui.vehicle.filter.filters.yearfrom.FilterYearFrom
 import cardealershipapp.client.ui.vehicle.filter.filters.yearto.FilterYearTo;
 import cardealershipapp.client.ui.vehicle.filter.filters.yearto.FilterYearToCity;
 import cardealershipapp.client.ui.vehicle.filter.filters.yearto.FilterYearToFuelType;
+import cardealershipapp.common.domain.Model;
 
 import javax.swing.*;
+import java.util.*;
 
 /**
  *
@@ -51,9 +53,9 @@ public class FilterFactoryMethod {
         final int YEARTO = comboYearTo.getSelectedIndex();
         final int FUELTYPE = comboFuelType.getSelectedIndex();
         final int CITY = comboCity.getSelectedIndex();
-        
+
         if(BRAND == 0 && MODEL == 0 && BODYTYPE == 0 && YEARFROM == 0 && YEARTO == 0 && FUELTYPE == 0 && CITY == 0) {
-           return filter = new DefaultList();
+            return filter = new DefaultList();
         }
         
 

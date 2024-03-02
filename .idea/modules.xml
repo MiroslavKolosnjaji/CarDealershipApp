@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/CarDealershipApp.iml" filepath="$PROJECT_DIR$/.idea/CarDealershipApp.iml" />
+      <module fileurl="file://$PROJECT_DIR$/CarDealershipAppClient/CarDealershipAppClient.iml" filepath="$PROJECT_DIR$/CarDealershipAppClient/CarDealershipAppClient.iml" />
+      <module fileurl="file://$PROJECT_DIR$/CarDealershipAppCommon/CarDealershipAppCommon.iml" filepath="$PROJECT_DIR$/CarDealershipAppCommon/CarDealershipAppCommon.iml" />
+      <module fileurl="file://$PROJECT_DIR$/CarDealershipAppServer/CarDealershipAppServer.iml" filepath="$PROJECT_DIR$/CarDealershipAppServer/CarDealershipAppServer.iml" />
+    </modules>
+  </component>
+</project>
