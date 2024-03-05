@@ -19,6 +19,11 @@ public class Key {
         return  Arrays.toString(key);
     }
 
+
+    public Integer[] getKey() {
+        return key;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

@@ -46,7 +46,6 @@ public class Criterium {
     private void setFilterSettings() {
         try {
             if (filter == null) {
-                System.out.println("FILTER IS: " + filter);
                 filteredVehicles = allVehicles;
                 JOptionPane.showMessageDialog(null, "Criteria not supported yet!", "Information", JOptionPane.INFORMATION_MESSAGE);
                 return;
