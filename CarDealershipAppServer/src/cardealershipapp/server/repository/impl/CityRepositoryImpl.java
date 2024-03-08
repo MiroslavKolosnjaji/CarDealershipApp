@@ -3,9 +3,13 @@ package cardealershipapp.server.repository.impl;
 import cardealershipapp.server.database.DataBase;
 import java.sql.*;
 import cardealershipapp.common.domain.City;
+import cardealershipapp.server.exception.DatabaseException;
 import cardealershipapp.server.repository.Repository;
+
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Queue;
 
 /**
  *
@@ -14,26 +18,16 @@ import java.util.List;
 public class CityRepositoryImpl implements Repository<City, Long> {
 
     private final DataBase db = DataBase.getInstance();
+    private final Queue<Object> paramsQueue = new ArrayDeque<>();
 
     @Override
     public void add(City city) throws Exception {
         try {
             String query = "INSERT INTO city(ZipCode, CityName) VALUES(?,?)";
-            PreparedStatement preparedStatement = db.getConnection().prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-            preparedStatement.setInt(1, city.getZipCode());
-            preparedStatement.setString(2, city.getName());
-            preparedStatement.executeUpdate();
-
-            ResultSet rsId = preparedStatement.getGeneratedKeys();
-            if (rsId.next()) {
-                city.setId(rsId.getLong(1));
-            }
-            rsId.close();
-            preparedStatement.close();
-            db.confirmTransaction();
-        } catch (SQLException sqle) {
-            db.cancelTransaction();
-            sqle.printStackTrace();
+            paramsQueue.addAll(List.of(city.getZipCode(), city.getName()));
+            db.executeSqlUpdate(query, paramsQueue);
+        } catch (DatabaseException dbe) {
+            dbe.printStackTrace();
             throw new Exception("Doslo je do greske prilikom dodavanja novog Grada u bazu!");
         }
     }
@@ -42,17 +36,12 @@ public class CityRepositoryImpl implements Repository<City, Long> {
     public void update(City city) throws Exception {
         try {
             String query = "UPDATE city SET ZipCode = ?, CityName = ? WHERE Id = ?";
-            PreparedStatement preparedStatement = db.getConnection().prepareStatement(query);
-            preparedStatement.setInt(1, city.getZipCode());
-            preparedStatement.setString(2, city.getName());
-            preparedStatement.setLong(3, city.getId());
-            preparedStatement.executeUpdate();
-
-            preparedStatement.close();
-            db.confirmTransaction();
-        } catch (SQLException sqle) {
-            db.cancelTransaction();
-            sqle.printStackTrace();
+            paramsQueue.addAll(List.of(city.getZipCode(),
+                    city.getName(),
+                    city.getId()));
+            db.executeSqlUpdate(query, paramsQueue);
+        } catch (DatabaseException dbe) {
+            dbe.printStackTrace();
             throw new Exception("Doslo je do greske prilikom azuriranja podataka Grada u bazi!");
 
         }
@@ -62,15 +51,10 @@ public class CityRepositoryImpl implements Repository<City, Long> {
     public void delete(City city) throws Exception {
         try {
             String query = "DELETE FROM city WHERE Id = ?";
-            PreparedStatement preparedStatement = db.getConnection().prepareStatement(query);
-            preparedStatement.setLong(1, city.getId());
-            preparedStatement.executeUpdate();
-
-            preparedStatement.close();
-            db.confirmTransaction();
-        } catch (SQLException sqle) {
-            db.cancelTransaction();
-            sqle.printStackTrace();
+            paramsQueue.add(city.getId());
+            db.executeSqlUpdate(query, paramsQueue);
+        } catch (DatabaseException dbe) {
+            dbe.printStackTrace();
             throw new Exception("Doslo je do greske prilikom brisanja Grada iz baze!");
         }
     }
@@ -78,39 +62,14 @@ public class CityRepositoryImpl implements Repository<City, Long> {
      @Override
     public void deleteMultiple(List<City> cities) throws Exception {
         try {
-
-            String query = generateDeleteMultiQuery(cities);
-            PreparedStatement preparedStatement = db.getConnection().prepareStatement(query);
-            
-            int counter = 1;
-            for (City city : cities) {
-                preparedStatement.setLong(counter++, city.getId());
-            }
-            preparedStatement.executeUpdate();
-            
-            preparedStatement.close();
-            db.confirmTransaction();
-
-        } catch (SQLException sqle) {
-            sqle.printStackTrace();
-            db.cancelTransaction();
+            String query = db.generateDeleteMultiQuery(cities, "city");
+            cities.forEach(city -> paramsQueue.add(city.getId()));
+            db.executeSqlUpdate(query, paramsQueue);
+        } catch (DatabaseException dbe) {
+            dbe.printStackTrace();
             throw new Exception("Doslo je do greske prilikom brisanja brendova iz baze!");
         }
 
-    }
-
-    private String generateDeleteMultiQuery(List<City> cities) {
-        StringBuffer bufferedQuery = new StringBuffer("DELETE FROM city WHERE Id IN(");
-
-        for (int i = 0; i < cities.size(); i++) {
-            if (i != 0) {
-                bufferedQuery.append(",");
-            }
-            bufferedQuery.append("?");
-        }
-        bufferedQuery.append(")");
-
-        return bufferedQuery.toString();
     }
 
     @Override
