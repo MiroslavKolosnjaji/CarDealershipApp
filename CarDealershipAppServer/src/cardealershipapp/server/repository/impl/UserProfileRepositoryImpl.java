@@ -6,10 +6,13 @@ import cardealershipapp.common.domain.City;
 import cardealershipapp.common.domain.Gender;
 import cardealershipapp.common.domain.User;
 import cardealershipapp.common.domain.UserProfile;
+import cardealershipapp.server.exception.DatabaseException;
 import cardealershipapp.server.repository.Repository;
 import java.time.LocalDate;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Queue;
 
 /**
  *
@@ -18,26 +21,20 @@ import java.util.List;
 public class UserProfileRepositoryImpl implements Repository<UserProfile, String> {
 
     private final DataBase db = DataBase.getInstance();
+    private Queue<Object> paramQueue = new ArrayDeque<>();
 
     @Override
     public void add(UserProfile userProfile) throws Exception {
 
         try {
             String query = "INSERT INTO user_profile(Email, Password, UserId) VALUES(?,?,?)";
-
-            PreparedStatement prepStat = db.getConnection().prepareStatement(query);
-            prepStat.setString(1, userProfile.getEmail());
-            prepStat.setString(2, userProfile.getPassword());
-            prepStat.setObject(3, userProfile.getUser());
-
-            prepStat.executeUpdate();
-
-            prepStat.close();
-            db.confirmTransaction();
-        } catch (SQLException sqle) {
-            sqle.printStackTrace();
-            db.cancelTransaction();
-            throw new Exception("Doslo je do greske prilikom dodavanja novog profila u bazu!\n" + sqle.getMessage());
+            paramQueue.addAll(List.of(userProfile.getEmail(),
+                    userProfile.getPassword(),
+                    userProfile.getUser()));
+            db.executeSqlUpdate(query, paramQueue);
+        } catch (DatabaseException dbe) {
+            dbe.printStackTrace();
+            throw new Exception("Doslo je do greske prilikom dodavanja novog profila u bazu!\n" + dbe.getMessage());
 
         }
 
@@ -47,21 +44,14 @@ public class UserProfileRepositoryImpl implements Repository<UserProfile, String
     public void update(UserProfile userProfile) throws Exception {
         try {
             String query = "UPDATE user_profile SET Email = ?, Password = ?, UserId = ? WHERE Id = ?";
-
-            PreparedStatement prepStat = db.getConnection().prepareStatement(query);
-            prepStat.setString(1, userProfile.getEmail());
-            prepStat.setString(2, userProfile.getPassword());
-            prepStat.setObject(3, userProfile.getUser());
-            prepStat.setString(4, userProfile.getEmail());
-
-            prepStat.executeUpdate();
-
-            prepStat.close();
-            db.confirmTransaction();
-        } catch (SQLException sqle) {
-            db.cancelTransaction();
-            sqle.printStackTrace();
-            throw new Exception("Doslo je do greske prilikom azuriranja podataka profila u bazi!\n" + sqle.getMessage());
+            paramQueue.addAll(List.of(userProfile.getEmail(),
+                    userProfile.getPassword(),
+                    userProfile.getUser(),
+                    userProfile.getEmail()));
+            db.executeSqlUpdate(query, paramQueue);
+        } catch (DatabaseException dbe) {
+            dbe.printStackTrace();
+            throw new Exception("Doslo je do greske prilikom azuriranja podataka profila u bazi!\n" + dbe.getMessage());
 
         }
     }
@@ -70,18 +60,11 @@ public class UserProfileRepositoryImpl implements Repository<UserProfile, String
     public void delete(UserProfile userProfile) throws Exception {
         try {
             String query = "DELETE FROM user_profile WHERE id = ?";
-
-            PreparedStatement prepStat = db.getConnection().prepareStatement(query);
-            prepStat.setString(1, userProfile.getEmail());
-
-            prepStat.executeUpdate();
-
-            prepStat.close();
-            db.confirmTransaction();
-        } catch (SQLException sqle) {
-            sqle.printStackTrace();
-            db.cancelTransaction();
-            throw new Exception("Doslo je do greske prilikom brisanja profila iz baze!\n" + sqle.getMessage());
+            paramQueue.add(userProfile.getEmail());
+            db.executeSqlUpdate(query, paramQueue);
+        } catch (DatabaseException dbe) {
+            dbe.printStackTrace();
+            throw new Exception("Doslo je do greske prilikom brisanja profila iz baze!\n" + dbe.getMessage());
         }
     }
     
@@ -89,39 +72,17 @@ public class UserProfileRepositoryImpl implements Repository<UserProfile, String
     public void deleteMultiple(List<UserProfile> userProfiles) throws Exception {
         try {
 
-            String query = generateDeleteMultiQuery(userProfiles);
-            PreparedStatement preparedStatement = db.getConnection().prepareStatement(query);
-            
-            int counter = 1;
-            for (UserProfile userProfile : userProfiles) {
-                preparedStatement.setString(counter++, userProfile.getEmail());
-            }
-            preparedStatement.executeUpdate();
-            
-            preparedStatement.close();
-            db.confirmTransaction();
+            String query = db.generateDeleteMultiQuery(userProfiles,"user_profile");
+            userProfiles.forEach(userProfile -> paramQueue.add(userProfile.getEmail()));
+            db.executeSqlUpdate(query, paramQueue);
 
-        } catch (SQLException sqle) {
-            sqle.printStackTrace();
-            db.cancelTransaction();
+        } catch (DatabaseException dbe) {
+            dbe.printStackTrace();
             throw new Exception("Doslo je do greske prilikom brisanja brendova iz baze!");
         }
 
     }
 
-    private String generateDeleteMultiQuery(List<UserProfile> userProfiles) {
-        StringBuffer bufferedQuery = new StringBuffer("DELETE FROM user_profile WHERE Id IN(");
-
-        for (int i = 0; i < userProfiles.size(); i++) {
-            if (i != 0) {
-                bufferedQuery.append(",");
-            }
-            bufferedQuery.append("?");
-        }
-        bufferedQuery.append(")");
-
-        return bufferedQuery.toString();
-    }
 
     @Override
     public List<UserProfile> getAll() throws Exception {
