@@ -74,7 +74,6 @@ public class VehicleServiceImpl implements VehicleService {
             bufferedQuery.append("'").append(vehicles.get(i).getViNumber()).append("'");
         }
         bufferedQuery.append(")");
-
         return bufferedQuery.toString();
     }
 }

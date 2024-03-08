@@ -4,6 +4,7 @@ import cardealershipapp.server.exception.DatabaseException;
 import cardealershipapp.server.util.DbUtil;
 
 import java.sql.*;
+import java.util.List;
 import java.util.Queue;
 
 /**
@@ -79,6 +80,7 @@ public class DataBase implements DatabaseOperations {
             PreparedStatement preparedStatement = getConnection().prepareStatement(query);
             setParameters(preparedStatement, params);
             preparedStatement.executeUpdate();
+            preparedStatement.close();
             confirmTransaction();
         } catch (SQLException e) {
             cancelTransaction();
@@ -95,4 +97,20 @@ public class DataBase implements DatabaseOperations {
     public void executeSqlQuery(String query, Queue<Object> params) throws DatabaseException {
 
     }
+
+    public <T> String generateDeleteMultiQuery(List<T> list, String tableName) {
+        StringBuffer bufferedQuery = new StringBuffer("DELETE FROM " + tableName.trim() + " WHERE Id IN(");
+
+        for (int i = 0; i < list.size(); i++) {
+            if (i != 0) {
+                bufferedQuery.append(",");
+            }
+            bufferedQuery.append("?");
+        }
+        bufferedQuery.append(")");
+
+        return bufferedQuery.toString();
+    }
+
+
 }

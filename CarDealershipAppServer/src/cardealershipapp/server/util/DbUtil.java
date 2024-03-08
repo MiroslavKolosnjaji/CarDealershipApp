@@ -1,13 +1,8 @@
 package cardealershipapp.server.util;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.util.Properties;
-import java.util.Queue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 

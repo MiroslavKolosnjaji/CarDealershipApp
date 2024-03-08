@@ -1,6 +1,7 @@
 package cardealershipapp.server.repository.impl;
 
 import java.sql.*;
+
 import cardealershipapp.server.database.DataBase;
 import cardealershipapp.common.domain.Brand;
 import cardealershipapp.common.domain.BusinessUnit;
@@ -10,46 +11,40 @@ import cardealershipapp.common.domain.Currency;
 import cardealershipapp.common.domain.FuelType;
 import cardealershipapp.common.domain.Model;
 import cardealershipapp.common.domain.Vehicle;
+import cardealershipapp.server.exception.DatabaseException;
 import cardealershipapp.server.repository.Repository;
+
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+
 /**
- *
  * @author Miroslav Kološnjaji
  */
 public class VehicleRepositoryImpl implements Repository<Vehicle, Long> {
 
     private final DataBase db = DataBase.getInstance();
+    private final Queue<Object> paramsQueue = new ArrayDeque();
 
     @Override
     public void add(Vehicle vehicle) throws Exception {
         try {
             String query = "INSERT INTO vehicle(ViNumber, BodyType, EngDispl, EngPowerKW, YearOFProd, FuelType, Price, Currency, ModelId, BusinessUId) VALUES(?,?,?,?,?,?,?,?,?,?)";
-            PreparedStatement prepStat = db.getConnection().prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-            prepStat.setString(1, vehicle.getViNumber());
-            prepStat.setString(2, vehicle.getBodyType().toString());
-            prepStat.setInt(3, vehicle.getEngineDisplacement());
-            prepStat.setInt(4, vehicle.getEnginePower());
-            prepStat.setInt(5, vehicle.getYearOfProd());
-            prepStat.setString(6, vehicle.getFuelType().toString());
-            prepStat.setBigDecimal(7, vehicle.getPrice());
-            prepStat.setString(8, vehicle.getCurrency().toString());
-            prepStat.setLong(9, vehicle.getModel().getId());
-            prepStat.setLong(10, vehicle.getBusinessUnit().getId());
-            prepStat.executeUpdate();
+            paramsQueue.addAll(List.of(vehicle.getViNumber(),
+                    vehicle.getBodyType().toString(),
+                    vehicle.getEngineDisplacement(),
+                    vehicle.getEnginePower(),
+                    vehicle.getYearOfProd(),
+                    vehicle.getFuelType().toString(),
+                    vehicle.getPrice(),
+                    vehicle.getCurrency().toString(),
+                    vehicle.getModel().getId(),
+                    vehicle.getBusinessUnit().getId()));
 
-            ResultSet rsId = prepStat.getGeneratedKeys();
-            if (rsId.next()) {
-                vehicle.setId(rsId.getLong(1));
-            }
-            rsId.close();
-            prepStat.close();
-            db.confirmTransaction();
-        } catch (SQLException sqle) {
-            sqle.printStackTrace();
-            db.cancelTransaction();
-            throw new Exception("Doslo je do greske prilikom dodavanja novog vozila u bazu!\n" + sqle.getMessage());
+            db.executeSqlUpdate(query, paramsQueue);
+
+        } catch (DatabaseException dbe) {
+            dbe.printStackTrace();
+            throw new Exception("Doslo je do greske prilikom dodavanja novog vozila u bazu!\n" + dbe.getMessage());
         }
     }
 
@@ -58,26 +53,23 @@ public class VehicleRepositoryImpl implements Repository<Vehicle, Long> {
 
         try {
             String query = "UPDATE vehicle SET ViNumber = ?, BodyType = ?, EngDispl = ?, EngPowerKW = ?, YearOFProd = ?, FuelType = ?, Price = ?, Currency = ?, ModelId = ?, BusinessUId = ? WHERE Id = ?";
-            PreparedStatement prepStat = db.getConnection().prepareStatement(query);
-            prepStat.setString(1, vehicle.getViNumber());
-            prepStat.setString(2, vehicle.getBodyType().toString());
-            prepStat.setInt(3, vehicle.getEngineDisplacement());
-            prepStat.setInt(4, vehicle.getEnginePower());
-            prepStat.setInt(5, vehicle.getYearOfProd());
-            prepStat.setString(6, vehicle.getFuelType().toString());
-            prepStat.setBigDecimal(7, vehicle.getPrice());
-            prepStat.setString(8, vehicle.getCurrency().toString());
-            prepStat.setLong(9, vehicle.getModel().getId());
-            prepStat.setLong(10, vehicle.getBusinessUnit().getId());
-            prepStat.setLong(11, vehicle.getId());
-            prepStat.executeUpdate();
+            paramsQueue.addAll(List.of(vehicle.getViNumber(),
+                    vehicle.getBodyType().toString(),
+                    vehicle.getEngineDisplacement(),
+                    vehicle.getEnginePower(),
+                    vehicle.getYearOfProd(),
+                    vehicle.getFuelType().toString(),
+                    vehicle.getPrice(),
+                    vehicle.getCurrency().toString(),
+                    vehicle.getModel().getId(),
+                    vehicle.getBusinessUnit().getId(),
+                    vehicle.getId()));
 
-            prepStat.close();
-            db.confirmTransaction();
-        } catch (SQLException sqle) {
-            sqle.printStackTrace();
-            db.cancelTransaction();
-            throw new Exception("Doslo je do greske prilikom azuriranja podataka vozila u bazi!\n" + sqle.getMessage());
+            db.executeSqlUpdate(query, paramsQueue);
+
+        } catch (DatabaseException dbe) {
+            dbe.printStackTrace();
+            throw new Exception("Doslo je do greske prilikom azuriranja podataka vozila u bazi!\n" + dbe.getMessage());
         }
     }
 
@@ -85,56 +77,28 @@ public class VehicleRepositoryImpl implements Repository<Vehicle, Long> {
     public void delete(Vehicle vehicle) throws Exception {
         try {
             String query = "DELETE FROM vehicle WHERE Id = ?";
-            PreparedStatement prepStat = db.getConnection().prepareStatement(query);
-            prepStat.setLong(1, vehicle.getId());
-            prepStat.executeUpdate();
-
-            prepStat.close();
-            db.confirmTransaction();
-        } catch (SQLException sqle) {
-            sqle.printStackTrace();
+            paramsQueue.add(vehicle.getId());
+            db.executeSqlUpdate(query, paramsQueue);
+        } catch (DatabaseException dbe) {
+            dbe.printStackTrace();
             db.cancelTransaction();
-            throw new Exception("Doslo je do greske prilikom brisanja vozila iz baze!\n" + sqle.getMessage());
+            throw new Exception("Doslo je do greske prilikom brisanja vozila iz baze!\n" + dbe.getMessage());
         }
     }
-    
-     @Override
+
+    @Override
     public void deleteMultiple(List<Vehicle> vehicles) throws Exception {
         try {
 
-            String query = generateDeleteMultiQuery(vehicles);
-            System.out.println("MultiQuery: " + query);
-            PreparedStatement preparedStatement = db.getConnection().prepareStatement(query);
-            
-            int counter = 1;
-            for (Vehicle vehicle : vehicles) {
-                preparedStatement.setLong(counter++, vehicle.getId());
-            }
-            preparedStatement.executeUpdate();
-            
-            preparedStatement.close();
-            db.confirmTransaction();
+            String query = db.generateDeleteMultiQuery(vehicles, "vehicle");
+            vehicles.forEach(v -> paramsQueue.add(v.getId()));
+            db.executeSqlUpdate(query, paramsQueue);
 
-        } catch (SQLException sqle) {
-            sqle.printStackTrace();
-            db.cancelTransaction();
+        } catch (DatabaseException dbe) {
+            dbe.printStackTrace();
             throw new Exception("Doslo je do greske prilikom brisanja vozila iz baze!");
         }
 
-    }
-
-    private String generateDeleteMultiQuery(List<Vehicle> vehicles) {
-        StringBuffer bufferedQuery = new StringBuffer("DELETE FROM vehicle WHERE Id IN(");
-
-        for (int i = 0; i < vehicles.size(); i++) {
-            if (i != 0) {
-                bufferedQuery.append(",");
-            }
-            bufferedQuery.append("?");
-        }
-        bufferedQuery.append(")");
-
-        return bufferedQuery.toString();
     }
 
     @Override
@@ -143,8 +107,8 @@ public class VehicleRepositoryImpl implements Repository<Vehicle, Long> {
             List<Vehicle> vehicles = new ArrayList<>();
 
             String query = "SELECT V.Id, V.ViNumber, V.BodyType, V.EngDispl, V.EngPowerKW, V.YearOfProd, V.FuelType, V.Price, V.Currency, V.ModelId, V.BusinessUId, "
-            + "M.ModelName, M.BrandId, BR.BrandName, BU.Name, BU.CompanyRegNum, BU.TaxId, BU.Address, BU.CityId, BU.Phone, BU.Email, C.ZipCode, C.CityName FROM vehicle V JOIN model M ON V.ModelId = M.Id "
-            + "JOIN brand BR ON M.BrandId = BR.Id JOIN business_unit BU ON V.BusinessUId = BU.Id JOIN city C ON BU.CityId = C.Id;";
+                    + "M.ModelName, M.BrandId, BR.BrandName, BU.Name, BU.CompanyRegNum, BU.TaxId, BU.Address, BU.CityId, BU.Phone, BU.Email, C.ZipCode, C.CityName FROM vehicle V JOIN model M ON V.ModelId = M.Id "
+                    + "JOIN brand BR ON M.BrandId = BR.Id JOIN business_unit BU ON V.BusinessUId = BU.Id JOIN city C ON BU.CityId = C.Id;";
             Statement statement = db.getConnection().createStatement();
             ResultSet rs = statement.executeQuery(query);
 
@@ -162,7 +126,7 @@ public class VehicleRepositoryImpl implements Repository<Vehicle, Long> {
                 //BRAND
                 Brand brand = new Brand(rs.getLong("M.BrandId"));
                 brand.setBrandName(rs.getString("BR.BrandName"));
-                
+
                 //MODEL
                 Model model = new Model(rs.getLong("V.ModelId"));
                 model.setName(rs.getString("M.ModelName"));

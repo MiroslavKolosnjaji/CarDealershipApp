@@ -381,6 +381,7 @@ public class VehicleSearchForm extends javax.swing.JDialog {
     private void formWindowActivated(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowActivated
         loadPurchaseOrders();
         vehicleSearchController.filterTable();
+        vehicleSearchController.search();
         infoArea();
         optionArea();
     }//GEN-LAST:event_formWindowActivated
