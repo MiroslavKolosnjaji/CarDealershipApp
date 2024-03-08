@@ -16,7 +16,7 @@ import java.util.*;
 public class BrandRepositoryImpl implements Repository<Brand, Long> {
 
     private final DataBase db = DataBase.getInstance();
-    private Queue<Object> paramsQueue = new ArrayDeque<>();
+    private final Queue<Object> paramsQueue = new ArrayDeque<>();
 
     @Override
     public void add(Brand brand) throws Exception {
@@ -49,8 +49,8 @@ public class BrandRepositoryImpl implements Repository<Brand, Long> {
             String query = "DELETE FROM brand WHERE Id = ?";
             paramsQueue.add(brand.getId());
             db.executeSqlUpdate(query, paramsQueue);
-        } catch (SQLException sqle) {
-            sqle.printStackTrace();
+        } catch (DatabaseException dbe) {
+            dbe.printStackTrace();
             db.cancelTransaction();
             throw new Exception("Doslo je do greske prilikom brisanja brenda iz baze!");
         }

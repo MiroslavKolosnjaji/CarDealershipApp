@@ -4,9 +4,13 @@ import java.sql.*;
 import cardealershipapp.server.database.DataBase;
 import cardealershipapp.common.domain.BusinessUnit;
 import cardealershipapp.common.domain.City;
+import cardealershipapp.server.exception.DatabaseException;
 import cardealershipapp.server.repository.Repository;
+
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Queue;
 
 /**
  *
@@ -15,33 +19,23 @@ import java.util.List;
 public class BusinessUnitRepositoryImpl implements Repository<BusinessUnit, Long> {
 
     private final DataBase db = DataBase.getInstance();
+    private final Queue<Object> paramsQueue = new ArrayDeque<>();
 
     @Override
     public void add(BusinessUnit businessUnit) throws Exception {
         try {
             String query = "INSERT INTO business_unit(`Name`, CompanyRegNum, TaxId, Address, CityId, Phone, Email) VALUES(?,?,?,?,?,?,?)";
-            PreparedStatement prepStat = db.getConnection().prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-            prepStat.setString(1, businessUnit.getName());
-            prepStat.setString(2, businessUnit.getCompanyRegId());
-            prepStat.setString(3, businessUnit.getTaxId());
-            prepStat.setString(4, businessUnit.getAddress());
-            prepStat.setLong(5, businessUnit.getCity().getId());
-            prepStat.setString(6, businessUnit.getPhone());
-            prepStat.setString(7, businessUnit.getEmail());
-            prepStat.executeUpdate();
-
-            ResultSet rsId = prepStat.getGeneratedKeys();
-            if (rsId.next()) {
-                businessUnit.setId(rsId.getLong(1));
-            }
-
-            rsId.close();
-            prepStat.close();
-            db.confirmTransaction();
-        } catch (SQLException sqle) {
-            db.cancelTransaction();
-            sqle.printStackTrace();
-            throw new Exception("Doslo je do greske prilikom dodavanja nove poslovne jedinice u bazu!\n" + sqle.getMessage());
+            paramsQueue.addAll(List.of(businessUnit.getName(),
+                    businessUnit.getCompanyRegId(),
+                    businessUnit.getTaxId(),
+                    businessUnit.getAddress(),
+                    businessUnit.getCity().getId(),
+                    businessUnit.getPhone(),
+                    businessUnit.getEmail()));
+            db.executeSqlUpdate(query, paramsQueue);
+        } catch (DatabaseException dbe) {
+            dbe.printStackTrace();
+            throw new Exception("Doslo je do greske prilikom dodavanja nove poslovne jedinice u bazu!\n" + dbe.getMessage());
         }
     }
 
@@ -49,23 +43,18 @@ public class BusinessUnitRepositoryImpl implements Repository<BusinessUnit, Long
     public void update(BusinessUnit businessUnit) throws Exception {
         try {
             String query = "UPDATE business_unit SET `Name` = ?, CompanyRegNum = ?, TaxId = ?, Address = ?,  CityId = ?, Phone = ?, Email = ? WHERE Id = ?";
-            PreparedStatement prepStat = db.getConnection().prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-            prepStat.setString(1, businessUnit.getName());
-            prepStat.setString(2, businessUnit.getCompanyRegId());
-            prepStat.setString(3, businessUnit.getTaxId());
-            prepStat.setString(4, businessUnit.getAddress());
-            prepStat.setLong(5, businessUnit.getCity().getId());
-            prepStat.setString(6, businessUnit.getPhone());
-            prepStat.setString(7, businessUnit.getEmail());
-            prepStat.setLong(8, businessUnit.getId());
-            prepStat.executeUpdate();
-
-            prepStat.close();
-            db.confirmTransaction();
-        } catch (SQLException sqle) {
-            db.cancelTransaction();
-            sqle.printStackTrace();
-            throw new Exception("Doslo je do greske prilikom azuriranja podataka poslovne jedinice u bazi!\n" + sqle.getMessage());
+            paramsQueue.addAll(List.of(businessUnit.getName(),
+                    businessUnit.getCompanyRegId(),
+                    businessUnit.getTaxId(),
+                    businessUnit.getAddress(),
+                    businessUnit.getCity().getId(),
+                    businessUnit.getPhone(),
+                    businessUnit.getEmail(),
+                    businessUnit.getId()));
+            db.executeSqlUpdate(query, paramsQueue);
+        } catch (DatabaseException dbe) {
+            dbe.printStackTrace();
+            throw new Exception("Doslo je do greske prilikom azuriranja podataka poslovne jedinice u bazi!\n" + dbe.getMessage());
         }
     }
 
@@ -73,57 +62,27 @@ public class BusinessUnitRepositoryImpl implements Repository<BusinessUnit, Long
     public void delete(BusinessUnit businessUnit) throws Exception {
         try {
             String query = "DELETE FROM business_unit WHERE Id = ?";
-            PreparedStatement prepStat = db.getConnection().prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-            prepStat.setLong(1, businessUnit.getId());
-            prepStat.executeUpdate();
-
-            prepStat.close();
-            db.confirmTransaction();
-        } catch (SQLException sqle) {
-            db.cancelTransaction();
-            sqle.printStackTrace();
-            throw new Exception("Doslo je do greske prilikom brisanja poslovne jedinice iz baze!\n" + sqle.getMessage());
+            paramsQueue.add(businessUnit.getId());
+            db.executeSqlUpdate(query, paramsQueue);
+        } catch (DatabaseException dbe) {
+            dbe.printStackTrace();
+            throw new Exception("Doslo je do greske prilikom brisanja poslovne jedinice iz baze!\n" + dbe.getMessage());
         }
     }
     
      @Override
     public void deleteMultiple(List<BusinessUnit> businessUnits) throws Exception {
         try {
-
-            String query = generateDeleteMultiQuery(businessUnits);
-            PreparedStatement preparedStatement = db.getConnection().prepareStatement(query);
-            
-            int counter = 1;
-            for (BusinessUnit businessUnit : businessUnits) {
-                preparedStatement.setLong(counter++, businessUnit.getId());
-            }
-            preparedStatement.executeUpdate();
-            
-            preparedStatement.close();
-            db.confirmTransaction();
-
-        } catch (SQLException sqle) {
-            sqle.printStackTrace();
-            db.cancelTransaction();
+            String query = db.generateDeleteMultiQuery(businessUnits, "business_unit");
+            businessUnits.forEach(businessUnit -> paramsQueue.add(businessUnit.getId()));
+            db.executeSqlUpdate(query, paramsQueue);
+        } catch (DatabaseException dbe) {
+            dbe.printStackTrace();
             throw new Exception("Doslo je do greske prilikom brisanja brendova iz baze!");
         }
 
     }
 
-    private String generateDeleteMultiQuery(List<BusinessUnit> businessUnits) {
-        StringBuffer bufferedQuery = new StringBuffer("DELETE FROM business_unit WHERE Id IN(");
-
-        for (int i = 0; i < businessUnits.size(); i++) {
-            if (i != 0) {
-                bufferedQuery.append(",");
-            }
-            bufferedQuery.append("?");
-        }
-        bufferedQuery.append(")");
-
-        return bufferedQuery.toString();
-    }
-    
 
     @Override
     public List<BusinessUnit> getAll() throws Exception {

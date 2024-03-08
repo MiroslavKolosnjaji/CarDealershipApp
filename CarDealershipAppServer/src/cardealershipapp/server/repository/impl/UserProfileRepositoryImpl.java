@@ -21,17 +21,17 @@ import java.util.Queue;
 public class UserProfileRepositoryImpl implements Repository<UserProfile, String> {
 
     private final DataBase db = DataBase.getInstance();
-    private Queue<Object> paramQueue = new ArrayDeque<>();
+    private Queue<Object> paramsQueue = new ArrayDeque<>();
 
     @Override
     public void add(UserProfile userProfile) throws Exception {
 
         try {
             String query = "INSERT INTO user_profile(Email, Password, UserId) VALUES(?,?,?)";
-            paramQueue.addAll(List.of(userProfile.getEmail(),
+            paramsQueue.addAll(List.of(userProfile.getEmail(),
                     userProfile.getPassword(),
                     userProfile.getUser()));
-            db.executeSqlUpdate(query, paramQueue);
+            db.executeSqlUpdate(query, paramsQueue);
         } catch (DatabaseException dbe) {
             dbe.printStackTrace();
             throw new Exception("Doslo je do greske prilikom dodavanja novog profila u bazu!\n" + dbe.getMessage());
@@ -44,11 +44,11 @@ public class UserProfileRepositoryImpl implements Repository<UserProfile, String
     public void update(UserProfile userProfile) throws Exception {
         try {
             String query = "UPDATE user_profile SET Email = ?, Password = ?, UserId = ? WHERE Id = ?";
-            paramQueue.addAll(List.of(userProfile.getEmail(),
+            paramsQueue.addAll(List.of(userProfile.getEmail(),
                     userProfile.getPassword(),
                     userProfile.getUser(),
                     userProfile.getEmail()));
-            db.executeSqlUpdate(query, paramQueue);
+            db.executeSqlUpdate(query, paramsQueue);
         } catch (DatabaseException dbe) {
             dbe.printStackTrace();
             throw new Exception("Doslo je do greske prilikom azuriranja podataka profila u bazi!\n" + dbe.getMessage());
@@ -60,8 +60,8 @@ public class UserProfileRepositoryImpl implements Repository<UserProfile, String
     public void delete(UserProfile userProfile) throws Exception {
         try {
             String query = "DELETE FROM user_profile WHERE id = ?";
-            paramQueue.add(userProfile.getEmail());
-            db.executeSqlUpdate(query, paramQueue);
+            paramsQueue.add(userProfile.getEmail());
+            db.executeSqlUpdate(query, paramsQueue);
         } catch (DatabaseException dbe) {
             dbe.printStackTrace();
             throw new Exception("Doslo je do greske prilikom brisanja profila iz baze!\n" + dbe.getMessage());
@@ -73,8 +73,8 @@ public class UserProfileRepositoryImpl implements Repository<UserProfile, String
         try {
 
             String query = db.generateDeleteMultiQuery(userProfiles,"user_profile");
-            userProfiles.forEach(userProfile -> paramQueue.add(userProfile.getEmail()));
-            db.executeSqlUpdate(query, paramQueue);
+            userProfiles.forEach(userProfile -> paramsQueue.add(userProfile.getEmail()));
+            db.executeSqlUpdate(query, paramsQueue);
 
         } catch (DatabaseException dbe) {
             dbe.printStackTrace();
