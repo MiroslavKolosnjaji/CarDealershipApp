@@ -209,8 +209,8 @@ public class VehicleSearchController implements Responsive {
             List<Vehicle> allVehicles = (List<Vehicle>) getResponse(Operation.VEHICLE_GET_ALL, null).getResult();
 
             Criterium criterium = new Criterium(allVehicles, vehicleSearchForm.getComboBrand(), vehicleSearchForm.getComboModel(),
-                    vehicleSearchForm.getComboBodyType(), vehicleSearchForm.getComboFuelType(),
-                    vehicleSearchForm.getComboYearFrom(), vehicleSearchForm.getComboYearTo(), vehicleSearchForm.getComboCity());
+                    vehicleSearchForm.getComboBodyType(),vehicleSearchForm.getComboYearFrom(), vehicleSearchForm.getComboYearTo(),  vehicleSearchForm.getComboFuelType(),
+                    vehicleSearchForm.getComboCity());
             mainVehicleList = criterium.getFilteredVehicles();
 
             if (vehicleSearchForm.getComboSortList().getSelectedIndex() > 0) {

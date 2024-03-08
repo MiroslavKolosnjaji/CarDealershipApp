@@ -1,6 +1,7 @@
 package cardealershipapp.client.ui.vehicle.filter;
 
 import java.util.ArrayDeque;
+import java.util.Arrays;
 import java.util.Queue;
 
 /**
