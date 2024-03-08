@@ -5,10 +5,13 @@ import cardealershipapp.server.database.DataBase;
 import cardealershipapp.common.domain.Brand;
 import cardealershipapp.common.domain.Currency;
 import cardealershipapp.common.domain.Equipment;
+import cardealershipapp.server.exception.DatabaseException;
 import cardealershipapp.server.repository.Repository;
 import java.math.BigDecimal;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Queue;
 
 /**
  *
@@ -17,31 +20,21 @@ import java.util.List;
 public class EquipmentRepositoryImpl implements Repository<Equipment, Long> {
 
     private final DataBase db = DataBase.getInstance();
+    private final Queue<Object> paramsQueue = new ArrayDeque<>();
 
     @Override
     public void add(Equipment equipment) throws Exception {
         try {
             String query = "INSERT INTO equipment(BrandId, Name, Price, Currency) VALUES(?,?,?,?)";
-            PreparedStatement preparedStatement = db.getConnection().prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-            preparedStatement.setLong(1, equipment.getBrand().getId());
-            preparedStatement.setString(2, equipment.getName());
-            preparedStatement.setBigDecimal(3, equipment.getPrice());
-            preparedStatement.setString(4, equipment.getCurrency().toString());
-            preparedStatement.executeUpdate();
+            paramsQueue.addAll(List.of(equipment.getBrand().getId(),
+                    equipment.getName(),
+                    equipment.getPrice(),
+                    equipment.getCurrency().toString()));
+            db.executeSqlUpdate(query, paramsQueue);
 
-            ResultSet rsId = preparedStatement.getGeneratedKeys();
-
-            if (rsId.next()) {
-                equipment.setId(rsId.getLong(1));
-            }
-
-            rsId.close();
-            preparedStatement.close();
-            db.confirmTransaction();
-        } catch (SQLException sqle) {
-            db.cancelTransaction();
-            sqle.printStackTrace();
-            throw new Exception("Doslo je do greske prilikom dodavanja nove opreme u bazu!\n" + sqle.getMessage());
+        } catch (DatabaseException dbe) {
+            dbe.printStackTrace();
+            throw new Exception("Doslo je do greske prilikom dodavanja nove opreme u bazu!\n" + dbe.getMessage());
         }
     }
 
@@ -49,20 +42,15 @@ public class EquipmentRepositoryImpl implements Repository<Equipment, Long> {
     public void update(Equipment equipment) throws Exception {
         try {
             String query = "UPDATE equipment SET BrandId = ?, 'Name' = ?, Price = ?, Currency = ? WHERE Id = ?";
-            PreparedStatement preparedStatement = db.getConnection().prepareStatement(query);
-            preparedStatement.setLong(1, equipment.getBrand().getId());
-            preparedStatement.setString(2, equipment.getName());
-            preparedStatement.setBigDecimal(3, equipment.getPrice());
-            preparedStatement.setString(4, equipment.getCurrency().toString());
-            preparedStatement.setLong(5, equipment.getId());
-            preparedStatement.executeUpdate();
-
-            preparedStatement.close();
-            db.confirmTransaction();
-        } catch (SQLException sqle) {
-            db.cancelTransaction();
-            sqle.printStackTrace();
-            throw new Exception("Doslo je do greske prilikom azuriranja podataka opreme!\n" + sqle.getMessage());
+            paramsQueue.addAll(List.of(equipment.getBrand().getId(),
+                    equipment.getName(),
+                    equipment.getPrice(),
+                    equipment.getCurrency().toString(),
+                    equipment.getId()));
+            db.executeSqlUpdate(query, paramsQueue);
+        } catch (DatabaseException dbe) {
+            dbe.printStackTrace();
+            throw new Exception("Doslo je do greske prilikom azuriranja podataka opreme!\n" + dbe.getMessage());
         }
     }
 
@@ -70,16 +58,11 @@ public class EquipmentRepositoryImpl implements Repository<Equipment, Long> {
     public void delete(Equipment equipment) throws Exception {
         try {
             String query = "DELETE FROM equipment WHERE Id = ?";
-            PreparedStatement preparedStatement = db.getConnection().prepareStatement(query);
-            preparedStatement.setLong(1, equipment.getId());
-            preparedStatement.executeUpdate();
-
-            preparedStatement.close();
-            db.confirmTransaction();
-        } catch (SQLException sqle) {
-            db.cancelTransaction();
-            sqle.printStackTrace();
-            throw new Exception("Doslo je do greske prilikom brisanja opreme iz baze!\n" + sqle.getMessage());
+            paramsQueue.add(equipment.getId());
+            db.executeSqlUpdate(query, paramsQueue);
+        } catch (DatabaseException dbe) {
+            dbe.printStackTrace();
+            throw new Exception("Doslo je do greske prilikom brisanja opreme iz baze!\n" + dbe.getMessage());
         }
     }
     
@@ -87,38 +70,14 @@ public class EquipmentRepositoryImpl implements Repository<Equipment, Long> {
     public void deleteMultiple(List<Equipment> equipments) throws Exception {
         try {
 
-            String query = generateDeleteMultiQuery(equipments);
-            PreparedStatement preparedStatement = db.getConnection().prepareStatement(query);
-            
-            int counter = 1;
-            for (Equipment equipment : equipments) {
-                preparedStatement.setLong(counter++, equipment.getId());
-            }
-            preparedStatement.executeUpdate();
-            
-            preparedStatement.close();
-            db.confirmTransaction();
-
-        } catch (SQLException sqle) {
-            sqle.printStackTrace();
-            db.cancelTransaction();
+            String query = db.generateDeleteMultiQuery(equipments, "equipment");
+            equipments.forEach(equipment -> paramsQueue.add(equipment.getId()));
+            db.executeSqlUpdate(query, paramsQueue);
+        } catch (DatabaseException dbe) {
+            dbe.printStackTrace();
             throw new Exception("Doslo je do greske prilikom brisanja brendova iz baze!");
         }
 
-    }
-
-    private String generateDeleteMultiQuery(List<Equipment> equipments) {
-        StringBuffer bufferedQuery = new StringBuffer("DELETE FROM equipment WHERE Id IN(");
-
-        for (int i = 0; i < equipments.size(); i++) {
-            if (i != 0) {
-                bufferedQuery.append(",");
-            }
-            bufferedQuery.append("?");
-        }
-        bufferedQuery.append(")");
-
-        return bufferedQuery.toString();
     }
 
     @Override
