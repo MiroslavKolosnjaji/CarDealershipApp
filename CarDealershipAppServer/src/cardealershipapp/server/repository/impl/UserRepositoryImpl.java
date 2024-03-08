@@ -5,10 +5,13 @@ import cardealershipapp.server.database.DataBase;
 import cardealershipapp.common.domain.City;
 import cardealershipapp.common.domain.Gender;
 import cardealershipapp.common.domain.User;
+import cardealershipapp.server.exception.DatabaseException;
 import cardealershipapp.server.repository.Repository;
 import java.time.LocalDate;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Queue;
 
 /**
  *
@@ -17,32 +20,22 @@ import java.util.List;
 public class UserRepositoryImpl implements Repository<User, Long> {
 
     private final DataBase db = DataBase.getInstance();
+    private final Queue<Object> paramsQueue = new ArrayDeque<>();
 
     @Override
     public void add(User user) throws Exception {
         try {
             String query = "INSERT INTO `user`(FirstName, LastName, DateOfBirth, Gender, CityId) VALUES(?,?,?,?,?)";
+            paramsQueue.addAll(List.of(user.getFirstName(),
+                    user.getLastName(),
+                    user.getDateOfBirth(),
+                    user.getGender().toString(),
+                    user.getResidence().getId()));
+            db.executeSqlUpdate(query, paramsQueue);
 
-            PreparedStatement prepStat = db.getConnection().prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-            prepStat.setString(1, user.getFirstName());
-            prepStat.setString(2, user.getLastName());
-            prepStat.setObject(3, user.getDateOfBirth());
-            prepStat.setString(4, user.getGender().toString());
-            prepStat.setObject(5, user.getResidence().getId());
-
-            prepStat.executeUpdate();
-
-            ResultSet rsId = prepStat.getGeneratedKeys();
-            if (rsId.next()) {
-                user.setId(rsId.getLong(1));
-            }
-            rsId.close();
-            prepStat.close();
-            db.confirmTransaction();
-        } catch (SQLException sqle) {
-            sqle.printStackTrace();
-            db.cancelTransaction();
-            throw new Exception("Doslo je do greske prilikom dodavanja korisnika u bazu!\n" + sqle.getMessage());
+        } catch (DatabaseException dbe) {
+            dbe.printStackTrace();
+            throw new Exception("Doslo je do greske prilikom dodavanja korisnika u bazu!\n" + dbe.getMessage());
         }
     }
 
@@ -51,23 +44,17 @@ public class UserRepositoryImpl implements Repository<User, Long> {
 
         try {
             String query = "UPDATE `user` SET FirstName = ?, LastName = ?, DateOfBirth = ?, Gender = ?, CityId = ? WHERE Id = ?";
+            paramsQueue.addAll(List.of(user.getFirstName(),
+                    user.getLastName(),
+                    user.getDateOfBirth(),
+                    user.getGender().toString(),
+                    user.getResidence().getId(),
+                    user.getId()));
+            db.executeSqlUpdate(query, paramsQueue);
 
-            PreparedStatement prepStat = db.getConnection().prepareStatement(query);
-            prepStat.setString(1, user.getFirstName());
-            prepStat.setString(2, user.getLastName());
-            prepStat.setObject(3, user.getDateOfBirth());
-            prepStat.setString(4, user.getGender().toString());
-            prepStat.setObject(5, user.getResidence().getId());
-            prepStat.setLong(6, user.getId());
-
-            prepStat.executeUpdate();
-
-            prepStat.close();
-            db.confirmTransaction();
-        } catch (SQLException sqle) {
-            sqle.printStackTrace();
-            db.cancelTransaction();
-            throw new Exception("Doslo je do greske prilikom azuriranja podataka korisnika u bazi!\n" + sqle.getMessage());
+        } catch (DatabaseException dbe) {
+            dbe.printStackTrace();
+            throw new Exception("Doslo je do greske prilikom azuriranja podataka korisnika u bazi!\n" + dbe.getMessage());
         }
 
     }
@@ -76,17 +63,11 @@ public class UserRepositoryImpl implements Repository<User, Long> {
     public void delete(User user) throws Exception {
         try {
             String query = "DELETE FROM `user` WHERE id= ?";
-
-            PreparedStatement prepStat = db.getConnection().prepareStatement(query);
-            prepStat.setLong(1, user.getId());
-            prepStat.executeUpdate();
-
-            prepStat.close();
-            db.confirmTransaction();
-        } catch (SQLException sqle) {
-            sqle.printStackTrace();
-            db.cancelTransaction();
-            throw new Exception("Doslo je do greske prilikom brisanja korisnika iz baze!\n" + sqle.getMessage());
+            paramsQueue.add(user.getId());
+            db.executeSqlUpdate(query, paramsQueue);
+        } catch (DatabaseException dbe) {
+            dbe.printStackTrace();
+            throw new Exception("Doslo je do greske prilikom brisanja korisnika iz baze!\n" + dbe.getMessage());
         }
     }
     
@@ -94,39 +75,18 @@ public class UserRepositoryImpl implements Repository<User, Long> {
     public void deleteMultiple(List<User> users) throws Exception {
         try {
 
-            String query = generateDeleteMultiQuery(users);
-            PreparedStatement preparedStatement = db.getConnection().prepareStatement(query);
-            
-            int counter = 1;
-            for (User user : users) {
-                preparedStatement.setLong(counter++, user.getId());
-            }
-            preparedStatement.executeUpdate();
-            
-            preparedStatement.close();
-            db.confirmTransaction();
+            String query = db.generateDeleteMultiQuery(users,"user");
+            users.forEach(user -> paramsQueue.add(user.getId()));
+            db.executeSqlUpdate(query, paramsQueue);
 
-        } catch (SQLException sqle) {
-            sqle.printStackTrace();
-            db.cancelTransaction();
+        } catch (DatabaseException dbe) {
+            dbe.printStackTrace();
             throw new Exception("Doslo je do greske prilikom brisanja brendova iz baze!");
         }
 
     }
 
-    private String generateDeleteMultiQuery(List<User> users) {
-        StringBuffer bufferedQuery = new StringBuffer("DELETE FROM user WHERE Id IN(");
 
-        for (int i = 0; i < users.size(); i++) {
-            if (i != 0) {
-                bufferedQuery.append(",");
-            }
-            bufferedQuery.append("?");
-        }
-        bufferedQuery.append(")");
-
-        return bufferedQuery.toString();
-    }
 
     @Override
     public List<User> getAll() throws Exception {
