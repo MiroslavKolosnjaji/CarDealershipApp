@@ -1,127 +1,86 @@
 package cardealershipapp.server.repository.impl;
 
 import java.sql.*;
+
 import cardealershipapp.server.database.DataBase;
 import cardealershipapp.common.domain.Customer;
+import cardealershipapp.server.exception.DatabaseException;
 import cardealershipapp.server.repository.Repository;
+
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Queue;
 
 /**
- *
  * @author Miroslav Kološnjaji
  */
 public class CustomerRepositoryImpl implements Repository<Customer, Long> {
 
     private final DataBase db = DataBase.getInstance();
+    private final Queue<Object> paramsQueue = new ArrayDeque<>();
 
     @Override
     public void add(Customer customer) throws Exception {
         try {
             String query = "INSERT INTO customer(Name, CompanyName, Address, Phone, Email) VALUES(?,?,?,?,?)";
-            PreparedStatement preparedStatement = db.getConnection().prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-            preparedStatement.setString(1, customer.getName());
-            preparedStatement.setString(2, customer.getCompanyName());
-            preparedStatement.setString(3, customer.getAddress());
-            preparedStatement.setString(4, customer.getPhone());
-            preparedStatement.setString(5, customer.getEmail());
-            preparedStatement.executeUpdate();
-
-            ResultSet rsId = preparedStatement.getGeneratedKeys();
-            if (rsId.next()) {
-                customer.setId(rsId.getLong(1));
-            }
-
-            rsId.close();
-            preparedStatement.close();
-            db.confirmTransaction();
-
-        } catch (SQLException sqle) {
-            db.cancelTransaction();
-            sqle.printStackTrace();
-            throw new Exception("Doslo je do greske prilikom dodavanja novog kupca u bazu!\n" + sqle.getMessage());
+            paramsQueue.addAll(List.of(customer.getName(),
+                    customer.getCompanyName(),
+                    customer.getAddress(),
+                    customer.getPhone(),
+                    customer.getEmail()));
+            db.executeSqlUpdate(query, paramsQueue);
+        } catch (DatabaseException dbe) {
+            dbe.printStackTrace();
+            throw new Exception("Doslo je do greske prilikom dodavanja novog kupca u bazu!\n" + dbe.getMessage());
         }
     }
 
     @Override
     public void update(Customer customer) throws Exception {
         try {
-
             String query = "UPDATE customer SET Name = ?, CompanyName = ?, Address = ?, Phone = ?, Email = ? WHERE Id = ?";
-            PreparedStatement preparedStatement = db.getConnection().prepareStatement(query);
-            preparedStatement.setString(1, customer.getName());
-            preparedStatement.setString(2, customer.getCompanyName());
-            preparedStatement.setString(3, customer.getAddress());
-            preparedStatement.setString(4, customer.getPhone());
-            preparedStatement.setString(5, customer.getEmail());
-            preparedStatement.setLong(6, customer.getId());
-            preparedStatement.executeUpdate();
-
-            preparedStatement.close();
-            db.confirmTransaction();
-        } catch (SQLException sqle) {
-            db.cancelTransaction();
-            sqle.printStackTrace();
-            throw new Exception("Doslo je do greske prilikom azuriranja podataka kupca!\n" + sqle.getMessage());
+            paramsQueue.addAll(List.of(customer.getName(),
+                    customer.getCompanyName(),
+                    customer.getAddress(),
+                    customer.getPhone(),
+                    customer.getEmail(),
+                    customer.getId()));
+            db.executeSqlUpdate(query, paramsQueue);
+        } catch (DatabaseException dbe) {
+            dbe.printStackTrace();
+            throw new Exception("Doslo je do greske prilikom azuriranja podataka kupca!\n" + dbe.getMessage());
         }
     }
 
     @Override
     public void delete(Customer customer) throws Exception {
         try {
-
             String query = "DELETE FROM customer WHERE Id = ?";
-            PreparedStatement preparedStatement = db.getConnection().prepareStatement(query);
-            preparedStatement.setLong(1, customer.getId());
-            preparedStatement.executeUpdate();
-
-            preparedStatement.close();
-            db.confirmTransaction();
-        } catch (SQLException sqle) {
-            db.cancelTransaction();
-            sqle.printStackTrace();
-            throw new Exception("Doslo je do greske prilikom brisanja kupca iz baze!\n" + sqle.getMessage());
+            paramsQueue.add(customer.getId());
+            db.executeSqlUpdate(query, paramsQueue);
+        } catch (DatabaseException dbe) {
+            dbe.printStackTrace();
+            throw new Exception("Doslo je do greske prilikom brisanja kupca iz baze!\n" + dbe.getMessage());
         }
     }
-    
-     @Override
+
+    @Override
     public void deleteMultiple(List<Customer> customers) throws Exception {
         try {
 
-            String query = generateDeleteMultiQuery(customers);
-            PreparedStatement preparedStatement = db.getConnection().prepareStatement(query);
-            
-            int counter = 1;
-            for (Customer customer : customers) {
-                preparedStatement.setLong(counter++, customer.getId());
-            }
-            preparedStatement.executeUpdate();
-            
-            preparedStatement.close();
-            db.confirmTransaction();
+            String query = db.generateDeleteMultiQuery(customers, "customer");
+            customers.forEach(customer -> paramsQueue.add(customer.getId()));
+            db.executeSqlUpdate(query, paramsQueue);
 
-        } catch (SQLException sqle) {
-            sqle.printStackTrace();
+        } catch (DatabaseException dbe) {
+            dbe.printStackTrace();
             db.cancelTransaction();
             throw new Exception("Doslo je do greske prilikom brisanja brendova iz baze!");
         }
 
     }
 
-    private String generateDeleteMultiQuery(List<Customer> customers) {
-        StringBuffer bufferedQuery = new StringBuffer("DELETE FROM customer WHERE Id IN(");
-
-        for (int i = 0; i < customers.size(); i++) {
-            if (i != 0) {
-                bufferedQuery.append(",");
-            }
-            bufferedQuery.append("?");
-        }
-        bufferedQuery.append(")");
-
-        return bufferedQuery.toString();
-    }
-    
 
     @Override
     public List<Customer> getAll() throws Exception {
