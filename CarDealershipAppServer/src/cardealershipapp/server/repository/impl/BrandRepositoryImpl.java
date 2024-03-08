@@ -1,38 +1,31 @@
 package cardealershipapp.server.repository.impl;
 
 import cardealershipapp.server.database.DataBase;
+
 import java.sql.*;
+
 import cardealershipapp.common.domain.Brand;
+import cardealershipapp.server.exception.DatabaseException;
 import cardealershipapp.server.repository.Repository;
-import java.util.ArrayList;
-import java.util.List;
+
+import java.util.*;
 
 /**
- *
  * @author Miroslav Kološnjaji
  */
 public class BrandRepositoryImpl implements Repository<Brand, Long> {
 
     private final DataBase db = DataBase.getInstance();
+    private Queue<Object> paramsQueue = new ArrayDeque<>();
 
     @Override
     public void add(Brand brand) throws Exception {
         try {
             String query = "INSERT INTO Brand(BrandName) VALUES(?)";
-            PreparedStatement preparedStatement = db.getConnection().prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-            preparedStatement.setString(1, brand.getBrandName());
-            preparedStatement.executeUpdate();
-
-            ResultSet rsId = preparedStatement.getGeneratedKeys();
-            if (rsId.next()) {
-                brand.setId(rsId.getLong("Id"));
-            }
-            rsId.close();
-            preparedStatement.close();
-            db.confirmTransaction();
-        } catch (SQLException sqle) {
-            sqle.printStackTrace();
-            db.cancelTransaction();
+            paramsQueue.add(brand.getBrandName());
+            db.executeSqlUpdate(query, paramsQueue);
+        } catch (DatabaseException dbe) {
+            dbe.printStackTrace();
             throw new Exception("Doslo je do greske prilikom dodavanja novog brenda u bazu!");
         }
     }
@@ -41,16 +34,10 @@ public class BrandRepositoryImpl implements Repository<Brand, Long> {
     public void update(Brand brand) throws Exception {
         try {
             String query = "UPDATE brand SET BrandName = ? WHERE Id = ?";
-            PreparedStatement preparedStatement = db.getConnection().prepareStatement(query);
-            preparedStatement.setString(1, brand.getBrandName());
-            preparedStatement.setLong(2, brand.getId());
-            preparedStatement.executeUpdate();
-
-            preparedStatement.close();
-            db.confirmTransaction();
-        } catch (SQLException sqle) {
-            sqle.printStackTrace();
-            db.cancelTransaction();
+            paramsQueue.addAll(List.of(brand.getBrandName(), brand.getId()));
+            db.executeSqlUpdate(query, paramsQueue);
+        } catch (DatabaseException dbe) {
+            dbe.printStackTrace();
             throw new Exception("Doslo je do greske prilikom azuriranja podataka brenda u bazi!");
 
         }
@@ -60,12 +47,8 @@ public class BrandRepositoryImpl implements Repository<Brand, Long> {
     public void delete(Brand brand) throws Exception {
         try {
             String query = "DELETE FROM brand WHERE Id = ?";
-            PreparedStatement preparedStatement = db.getConnection().prepareStatement(query);
-            preparedStatement.setLong(1, brand.getId());
-            preparedStatement.executeUpdate();
-
-            preparedStatement.close();
-            db.confirmTransaction();
+            paramsQueue.add(brand.getId());
+            db.executeSqlUpdate(query, paramsQueue);
         } catch (SQLException sqle) {
             sqle.printStackTrace();
             db.cancelTransaction();
@@ -76,39 +59,13 @@ public class BrandRepositoryImpl implements Repository<Brand, Long> {
     @Override
     public void deleteMultiple(List<Brand> brands) throws Exception {
         try {
-
-            String query = generateDeleteMultiQuery(brands);
-            PreparedStatement preparedStatement = db.getConnection().prepareStatement(query);
-            
-            int counter = 1;
-            for (Brand brand : brands) {
-                preparedStatement.setLong(counter++, brand.getId());
-            }
-            preparedStatement.executeUpdate();
-            
-            preparedStatement.close();
-            db.confirmTransaction();
-
-        } catch (SQLException sqle) {
-            sqle.printStackTrace();
-            db.cancelTransaction();
+            String query = db.generateDeleteMultiQuery(brands, "brand");
+            paramsQueue.addAll(brands);
+            db.executeSqlUpdate(query, paramsQueue);
+        } catch (DatabaseException dbe) {
+            dbe.printStackTrace();
             throw new Exception("Doslo je do greske prilikom brisanja brendova iz baze!");
         }
-
-    }
-
-    private String generateDeleteMultiQuery(List<Brand> brands) {
-        StringBuffer bufferedQuery = new StringBuffer("DELETE FROM brand WHERE Id IN(");
-
-        for (int i = 0; i < brands.size(); i++) {
-            if (i != 0) {
-                bufferedQuery.append(",");
-            }
-            bufferedQuery.append("?");
-        }
-        bufferedQuery.append(")");
-
-        return bufferedQuery.toString();
     }
 
     @Override
