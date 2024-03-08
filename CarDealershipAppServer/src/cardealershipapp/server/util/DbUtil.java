@@ -4,7 +4,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.Properties;
+import java.util.Queue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -12,7 +15,7 @@ import java.util.logging.Logger;
  *
  * @author Miroslav Kološnjaji
  */
-public class DbUtil {
+public class DbUtil{
     
     private static final DbUtil instance = new DbUtil();
     private Properties properties;
@@ -44,5 +47,4 @@ public class DbUtil {
         String currentDb = properties.getProperty("current_db");
         return properties.getProperty(currentDb + "_" + "password" );
     }
-    
 }
