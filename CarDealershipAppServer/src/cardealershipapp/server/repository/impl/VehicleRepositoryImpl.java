@@ -12,7 +12,10 @@ import cardealershipapp.common.domain.FuelType;
 import cardealershipapp.common.domain.Model;
 import cardealershipapp.common.domain.Vehicle;
 import cardealershipapp.server.exception.DatabaseException;
+import cardealershipapp.server.exception.EntityNotFoundException;
+import cardealershipapp.server.exception.RepositoryException;
 import cardealershipapp.server.repository.Repository;
+import cardealershipapp.server.repository.query.SqlQueries;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -23,12 +26,12 @@ import java.util.*;
 public class VehicleRepositoryImpl implements Repository<Vehicle, Long> {
 
     private final DataBase db = DataBase.getInstance();
-    private final Queue<Object> paramsQueue = new ArrayDeque();
+    private final Queue<Object> paramsQueue = new ArrayDeque<>();
 
     @Override
-    public void add(Vehicle vehicle) throws Exception {
+    public void save(Vehicle vehicle) throws RepositoryException {
         try {
-            String query = "INSERT INTO vehicle(ViNumber, BodyType, EngDispl, EngPowerKW, YearOFProd, FuelType, Price, Currency, ModelId, BusinessUId) VALUES(?,?,?,?,?,?,?,?,?,?)";
+
             paramsQueue.addAll(List.of(vehicle.getViNumber(),
                     vehicle.getBodyType().toString(),
                     vehicle.getEngineDisplacement(),
@@ -39,20 +42,19 @@ public class VehicleRepositoryImpl implements Repository<Vehicle, Long> {
                     vehicle.getCurrency().toString(),
                     vehicle.getModel().getId(),
                     vehicle.getBusinessUnit().getId()));
-
-            db.executeSqlUpdate(query, paramsQueue);
+            db.executeSqlUpdate(SqlQueries.Vehicles.INSERT, paramsQueue);
 
         } catch (DatabaseException dbe) {
             dbe.printStackTrace();
-            throw new Exception("Doslo je do greske prilikom dodavanja novog vozila u bazu!\n" + dbe.getMessage());
+            throw new RepositoryException("Doslo je do greske prilikom unosa vozila u bazu!");
         }
     }
 
     @Override
-    public void update(Vehicle vehicle) throws Exception {
+    public void update(Vehicle vehicle) throws RepositoryException {
 
         try {
-            String query = "UPDATE vehicle SET ViNumber = ?, BodyType = ?, EngDispl = ?, EngPowerKW = ?, YearOFProd = ?, FuelType = ?, Price = ?, Currency = ?, ModelId = ?, BusinessUId = ? WHERE Id = ?";
+
             paramsQueue.addAll(List.of(vehicle.getViNumber(),
                     vehicle.getBodyType().toString(),
                     vehicle.getEngineDisplacement(),
@@ -64,53 +66,49 @@ public class VehicleRepositoryImpl implements Repository<Vehicle, Long> {
                     vehicle.getModel().getId(),
                     vehicle.getBusinessUnit().getId(),
                     vehicle.getId()));
-
-            db.executeSqlUpdate(query, paramsQueue);
+            db.executeSqlUpdate(SqlQueries.Vehicles.UPDATE, paramsQueue);
 
         } catch (DatabaseException dbe) {
             dbe.printStackTrace();
-            throw new Exception("Doslo je do greske prilikom azuriranja podataka vozila u bazi!\n" + dbe.getMessage());
+            throw new RepositoryException("Doslo je do greske prilikom azuriranja podataka vozila u bazi!");
         }
     }
 
     @Override
-    public void delete(Vehicle vehicle) throws Exception {
+    public void delete(Vehicle vehicle) throws RepositoryException {
         try {
-            String query = "DELETE FROM vehicle WHERE Id = ?";
+
             paramsQueue.add(vehicle.getId());
-            db.executeSqlUpdate(query, paramsQueue);
+            db.executeSqlUpdate(SqlQueries.Vehicles.DELETE_BY_ID, paramsQueue);
+
         } catch (DatabaseException dbe) {
             dbe.printStackTrace();
-            db.cancelTransaction();
-            throw new Exception("Doslo je do greske prilikom brisanja vozila iz baze!\n" + dbe.getMessage());
+            throw new RepositoryException("Doslo je do greske prilikom brisanja vozila iz baze!");
         }
     }
 
     @Override
-    public void deleteMultiple(List<Vehicle> vehicles) throws Exception {
+    public void deleteMultiple(List<Vehicle> vehicles) throws RepositoryException {
         try {
 
-            String query = db.generateDeleteMultiQuery(vehicles, "vehicle");
+            String query = db.generateDeleteMultiQuery(vehicles, SqlQueries.Vehicles.DELETE_MULTIPLE_ID);
             vehicles.forEach(v -> paramsQueue.add(v.getId()));
             db.executeSqlUpdate(query, paramsQueue);
 
         } catch (DatabaseException dbe) {
             dbe.printStackTrace();
-            throw new Exception("Doslo je do greske prilikom brisanja vozila iz baze!");
+            throw new RepositoryException("Doslo je do greske prilikom brisanja vise vozila iz baze!");
         }
 
     }
 
     @Override
-    public List<Vehicle> getAll() throws Exception {
+    public List<Vehicle> getAll() throws RepositoryException {
         try {
-            List<Vehicle> vehicles = new ArrayList<>();
 
-            String query = "SELECT V.Id, V.ViNumber, V.BodyType, V.EngDispl, V.EngPowerKW, V.YearOfProd, V.FuelType, V.Price, V.Currency, V.ModelId, V.BusinessUId, "
-                    + "M.ModelName, M.BrandId, BR.BrandName, BU.Name, BU.CompanyRegNum, BU.TaxId, BU.Address, BU.CityId, BU.Phone, BU.Email, C.ZipCode, C.CityName FROM vehicle V JOIN model M ON V.ModelId = M.Id "
-                    + "JOIN brand BR ON M.BrandId = BR.Id JOIN business_unit BU ON V.BusinessUId = BU.Id JOIN city C ON BU.CityId = C.Id;";
+            List<Vehicle> vehicles = new ArrayList<>();
             Statement statement = db.getConnection().createStatement();
-            ResultSet rs = statement.executeQuery(query);
+            ResultSet rs = statement.executeQuery(SqlQueries.Vehicles.SELECT_ALL);
 
             while (rs.next()) {
                 Long vehicleId = rs.getLong("V.Id");
@@ -155,22 +153,24 @@ public class VehicleRepositoryImpl implements Repository<Vehicle, Long> {
             }
             rs.close();
             statement.close();
-            db.confirmTransaction();
             return vehicles;
+
         } catch (SQLException sqle) {
-            db.cancelTransaction();
             sqle.printStackTrace();
-            throw new Exception("Doslo je do greske prilikom azuriranja podataka vozila u bazi!\n" + sqle.getMessage());
+            throw new RepositoryException("Doslo je do greske prilikom ucitavanja vozila iz baze!");
         }
+
     }
 
     @Override
-    public Vehicle findById(Long id) throws Exception {
+    public Vehicle findById(Long id) throws RepositoryException, EntityNotFoundException {
 
         try {
-            String query = "SELECT ViNumber, BodyType, EngDispl, EngPowerKW, YearOfProd, FuelType, Price, Currency, ModelId, BusinessUId WHERE Id = ?";
-            PreparedStatement prepStat = db.getConnection().prepareStatement(query);
+
+            PreparedStatement prepStat = db.getConnection().prepareStatement(SqlQueries.Vehicles.SELECT_BY_ID);
+            prepStat.setLong(1, id);
             ResultSet rs = prepStat.executeQuery();
+
 
             if (rs.next()) {
                 Vehicle vehicle = new Vehicle();
@@ -188,23 +188,21 @@ public class VehicleRepositoryImpl implements Repository<Vehicle, Long> {
 
                 rs.close();
                 prepStat.close();
-                db.confirmTransaction();
                 return vehicle;
             }
 
-            throw new Exception("Vozilo sa ovim Id brojem ne postoji!");
+            throw new EntityNotFoundException("Vozilo sa ovim Id brojem ne postoji");
 
         } catch (SQLException sqle) {
             sqle.printStackTrace();
-            db.cancelTransaction();
-            throw new Exception("Doslo je do greske prilikom pretrazivanja vozila po id-u!\n" + sqle.getMessage());
+            throw new RepositoryException("Doslo je do greske prilikom pretrage vozila po ID broju!");
         }
     }
 
     @Override
-    public List<Vehicle> findByQuery(String query) throws Exception {
-
+    public List<Vehicle> findByQuery(String query) throws RepositoryException {
         try {
+
             List<Vehicle> vehicles = new ArrayList<>();
             Statement statement = db.getConnection().createStatement();
             ResultSet rs = statement.executeQuery(query);
@@ -228,13 +226,11 @@ public class VehicleRepositoryImpl implements Repository<Vehicle, Long> {
 
             rs.close();
             statement.close();
-            db.confirmTransaction();
             return vehicles;
 
         } catch (SQLException sqle) {
             sqle.printStackTrace();
-            db.cancelTransaction();
-            throw new Exception("Doslo je do greske prilikom pretrazivanja vozila po id-u!\n" + sqle.getMessage());
+            throw new RepositoryException("Doslo je do greske prilikom pretrazivanja vozila po upitu!");
         }
     }
 

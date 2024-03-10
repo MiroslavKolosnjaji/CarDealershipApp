@@ -2,7 +2,9 @@ package cardealershipapp.server.database;
 
 import cardealershipapp.server.exception.DatabaseException;
 import cardealershipapp.server.util.DbUtil;
+import cardealershipapp.server.util.ExceptionUtils;
 
+import javax.xml.crypto.Data;
 import java.sql.*;
 import java.util.List;
 import java.util.Queue;
@@ -76,15 +78,34 @@ public class DataBase implements DatabaseOperations {
      */
     @Override
     public void executeSqlUpdate(String query, Queue<Object> params) throws DatabaseException {
-        try {
-            PreparedStatement preparedStatement = getConnection().prepareStatement(query);
+        try(PreparedStatement preparedStatement = getConnection().prepareStatement(query)) {
+
             setParameters(preparedStatement, params);
             preparedStatement.executeUpdate();
-            preparedStatement.close();
-            confirmTransaction();
+
         } catch (SQLException e) {
-            cancelTransaction();
             e.printStackTrace();
+            throw new DatabaseException(ExceptionUtils.DATABASE_SQL_QUERY_EXECUTION_ERROR_MESSAGE + e.getMessage());
+
+        }
+    }
+
+    @Override
+    public Long executeSqlUpdateAndGenerateKey(String query, Queue<Object> params) throws DatabaseException {
+        try(PreparedStatement preparedStatement = getConnection().prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
+
+            setParameters(preparedStatement, params);
+            preparedStatement.executeUpdate();
+            ResultSet rs = preparedStatement.getGeneratedKeys();
+
+            if(rs.next())
+                return rs.getLong(1);
+            else
+                throw new DatabaseException("Nije pronadjen generisani kljuc nakon izvrsenja SQL upita: " + query);
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new DatabaseException(ExceptionUtils.DATABASE_SQL_QUERY_EXECUTION_ERROR_MESSAGE + e.getMessage());
         }
     }
 
@@ -98,8 +119,10 @@ public class DataBase implements DatabaseOperations {
 
     }
 
-    public <T> String generateDeleteMultiQuery(List<T> list, String tableName) {
-        StringBuffer bufferedQuery = new StringBuffer("DELETE FROM " + tableName.trim() + " WHERE Id IN(");
+    public <T> String generateDeleteMultiQuery(List<T> list, String query) {
+        StringBuffer bufferedQuery = new StringBuffer(query);
+
+        bufferedQuery.append("(");
 
         for (int i = 0; i < list.size(); i++) {
             if (i != 0) {

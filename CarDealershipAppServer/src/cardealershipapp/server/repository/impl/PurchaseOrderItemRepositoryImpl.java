@@ -5,94 +5,85 @@ import cardealershipapp.common.domain.Brand;
 import cardealershipapp.common.domain.Currency;
 import cardealershipapp.common.domain.Equipment;
 import cardealershipapp.common.domain.PurchaseOrder;
+
 import java.sql.*;
+
 import cardealershipapp.common.domain.PurchaseOrderItem;
+import cardealershipapp.server.exception.DatabaseException;
+import cardealershipapp.server.exception.EntityNotFoundException;
+import cardealershipapp.server.exception.RepositoryException;
 import cardealershipapp.server.repository.PurchaseOrderItemRepository;
+import cardealershipapp.server.repository.query.SqlQueries;
+
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Queue;
 
 /**
- *
  * @author Miroslav Kološnjaji
  */
 public class PurchaseOrderItemRepositoryImpl implements PurchaseOrderItemRepository {
 
     private final DataBase db = DataBase.getInstance();
+    private Queue<Object> paramsQueue = new ArrayDeque<>();
 
     @Override
-    public void addItems(List<PurchaseOrderItem> purchaseOrderItems) throws Exception {
+    public void saveItems(List<PurchaseOrderItem> purchaseOrderItems) throws RepositoryException {
         try {
-
-            String query = "INSERT INTO purchase_order_item(PONumber, OrdinalNumber, EquipmentId, Quantity) VALUES(?,?,?,?)";
-            PreparedStatement preparedStatement = db.getConnection().prepareStatement(query);
 
             for (PurchaseOrderItem purchaseOrderItem : purchaseOrderItems) {
-
-                preparedStatement.setLong(1, purchaseOrderItem.getPurchaseOrder().getPurchaseOrderNum());
-                preparedStatement.setLong(2, purchaseOrderItem.getOrdinalNum());
-                preparedStatement.setLong(3, purchaseOrderItem.getEquipment().getId());
-                preparedStatement.setInt(4, purchaseOrderItem.getQuantity());
-                preparedStatement.executeUpdate();
-
+                paramsQueue.addAll(List.of(purchaseOrderItem.getPurchaseOrder().getPurchaseOrderNum(),
+                        purchaseOrderItem.getOrdinalNum(),
+                        purchaseOrderItem.getEquipment().getId(),
+                        purchaseOrderItem.getQuantity()));
+                db.executeSqlUpdate(SqlQueries.PurchaseOrderItems.INSERT, paramsQueue);
             }
 
-            preparedStatement.close();
-
-        } catch (SQLException sqle) {
-            sqle.printStackTrace();
-            throw new Exception("Dogodila se greska prilikom unosa stavki u bazu!\n" + sqle.getMessage());
+        } catch (DatabaseException dbe) {
+            dbe.printStackTrace();
+            throw new RepositoryException("Dogodila se greska prilikom unosa stavki u bazu!");
         }
 
     }
 
     @Override
-    public void updateItems(List<PurchaseOrderItem> purchaseOrderItems) throws Exception {
+    public void updateItems(List<PurchaseOrderItem> purchaseOrderItems) throws RepositoryException {
         try {
-            String query = "UPDATE purchase_order_item SET EquipmentId = ?, Quantity = ? WHERE PONumber = ? AND OrdinalNumber = ?";
-            PreparedStatement preparedStatement = db.getConnection().prepareStatement(query);
 
             for (PurchaseOrderItem purchaseOrderItem : purchaseOrderItems) {
-
-                preparedStatement.setLong(1, purchaseOrderItem.getEquipment().getId());
-                preparedStatement.setInt(2, purchaseOrderItem.getQuantity());
-                preparedStatement.setLong(3, purchaseOrderItem.getPurchaseOrder().getPurchaseOrderNum());
-                preparedStatement.setLong(4, purchaseOrderItem.getOrdinalNum());
-                preparedStatement.executeUpdate();
-
+                paramsQueue.addAll(List.of(purchaseOrderItem.getEquipment().getId(),
+                        purchaseOrderItem.getQuantity(),
+                        purchaseOrderItem.getPurchaseOrder().getPurchaseOrderNum(),
+                        purchaseOrderItem.getOrdinalNum()));
+                db.executeSqlUpdate(SqlQueries.PurchaseOrderItems.UPDATE, paramsQueue);
             }
 
-            preparedStatement.close();
-            db.confirmTransaction();
-        } catch (SQLException sqle) {
-            db.cancelTransaction();
-            sqle.printStackTrace();
-            throw new Exception("Doslo je do greske prilikom azuriranja podataka stavke!\n" + sqle.getMessage());
+
+        } catch (DatabaseException dbe) {
+            dbe.printStackTrace();
+            throw new RepositoryException("Doslo je do greske prilikom azuriranja podataka stavke!");
         }
     }
 
     @Override
-    public void deleteItem(PurchaseOrderItem purchaseOrderItem) throws Exception {
+    public void deleteItem(PurchaseOrderItem purchaseOrderItem) throws RepositoryException {
         try {
 
-            String query = "DELETE FROM purchase_order_item WHERE PONumber = ?";
-            PreparedStatement preparedStatement = db.getConnection().prepareStatement(query);
-            preparedStatement.setLong(1, purchaseOrderItem.getPurchaseOrder().getPurchaseOrderNum());
-            preparedStatement.executeUpdate();
+             paramsQueue.add(purchaseOrderItem.getPurchaseOrder().getPurchaseOrderNum());
+             db.executeSqlUpdate(SqlQueries.PurchaseOrderItems.DELETE_BY_ID, paramsQueue);
 
-            preparedStatement.close();
-            db.confirmTransaction();
-        } catch (SQLException sqle) {
-            db.cancelTransaction();
-            sqle.printStackTrace();
-            throw new Exception("Doslo je do greske prilikom brisanja stavke iz baze!\n" + sqle.getMessage());
+        } catch (DatabaseException dbe) {
+            dbe.printStackTrace();
+            throw new RepositoryException("Doslo je do greske prilikom brisanja stavke iz baze!");
         }
     }
 
     @Override
-    public PurchaseOrderItem findItemById(Long id) throws Exception {
+    public PurchaseOrderItem findItemById(Long id) throws RepositoryException, EntityNotFoundException {
         try {
-            String query = "SELECT OrdinalNumber, EquipmentId, Quantity FROM purchase_order_item WHERE PONumber = ?";
-            PreparedStatement preparedStatement = db.getConnection().prepareStatement(query);
+
+            PreparedStatement preparedStatement = db.getConnection().prepareStatement(SqlQueries.PurchaseOrderItems.SELECT_BY_ID);
             preparedStatement.setLong(1, id);
             ResultSet rs = preparedStatement.executeQuery();
 
@@ -105,21 +96,19 @@ public class PurchaseOrderItemRepositoryImpl implements PurchaseOrderItemReposit
 
                 rs.close();
                 preparedStatement.close();
-                db.confirmTransaction();
                 return purchaseOrderItem;
             }
 
-            throw new Exception("Ne postoji stavka sa ovim brojem narudzbenice (id)!");
+            throw new EntityNotFoundException("Ne postoji stavka sa ovim Id brojem narudzbenice!");
 
         } catch (SQLException sqle) {
-            db.cancelTransaction();
             sqle.printStackTrace();
-            throw new Exception("Doslo je do greske prilikom pretrage stavke po id-ju!\n" + sqle.getMessage());
+            throw new RepositoryException("Doslo je do greske prilikom pretrage stavke po ID broju!");
         }
     }
 
     @Override
-    public List<PurchaseOrderItem> findItemByQuery(String query) throws Exception {
+    public List<PurchaseOrderItem> findItemByQuery(String query) throws RepositoryException {
         try {
 
             List<PurchaseOrderItem> purchaseOrderItems = new ArrayList<>();
@@ -138,28 +127,23 @@ public class PurchaseOrderItemRepositoryImpl implements PurchaseOrderItemReposit
             }
             rs.close();
             preparedStatement.close();
-            db.confirmTransaction();
             return purchaseOrderItems;
 
         } catch (SQLException sqle) {
-            db.cancelTransaction();
             sqle.printStackTrace();
-            throw new Exception("Doslo je do greske prilikom pretrazivanja stavki!\n" + sqle.getMessage());
+            throw new RepositoryException("Doslo je do greske prilikom pretrazivanja stavki  po upitu!");
         }
     }
 
     @Override
-    public List<PurchaseOrderItem> getAllItems() throws Exception {
+    public List<PurchaseOrderItem> getAllItems() throws RepositoryException {
 
         try {
 
             List<PurchaseOrderItem> purchaseOrderItems = new ArrayList<>();
 
-            String query = """
-                           SELECT PI.PONumber, PI.OrdinalNumber, PI.Quantity, PI.EquipmentId, E.Name, E.Price, E.Currency, E.BrandId, B.BrandName FROM purchase_order_item `PI` JOIN
-                           Equipment E ON PI.EquipmentId = E.Id JOIN Brand B ON E.BrandId = B.Id""";
             Statement statement = db.getConnection().createStatement();
-            ResultSet rs = statement.executeQuery(query);
+            ResultSet rs = statement.executeQuery(SqlQueries.PurchaseOrderItems.SELECT_ALL);
 
             while (rs.next()) {
                 PurchaseOrderItem purchaseOrderItem = new PurchaseOrderItem();
@@ -185,12 +169,11 @@ public class PurchaseOrderItemRepositoryImpl implements PurchaseOrderItemReposit
 
             rs.close();
             statement.close();
-            db.confirmTransaction();
             return purchaseOrderItems;
+
         } catch (SQLException sqle) {
-            db.cancelTransaction();
             sqle.printStackTrace();
-            throw new Exception("Doslo je do greske prilikom ucitavanja stavki!\n" + sqle.getMessage());
+            throw new RepositoryException("Doslo je do greske prilikom ucitavanja stavki!");
         }
     }
 

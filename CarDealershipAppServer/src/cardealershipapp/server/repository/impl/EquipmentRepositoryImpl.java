@@ -1,20 +1,21 @@
 package cardealershipapp.server.repository.impl;
 
 import java.sql.*;
+
 import cardealershipapp.server.database.DataBase;
 import cardealershipapp.common.domain.Brand;
 import cardealershipapp.common.domain.Currency;
 import cardealershipapp.common.domain.Equipment;
 import cardealershipapp.server.exception.DatabaseException;
+import cardealershipapp.server.exception.EntityNotFoundException;
+import cardealershipapp.server.exception.RepositoryException;
 import cardealershipapp.server.repository.Repository;
+import cardealershipapp.server.repository.query.SqlQueries;
+
 import java.math.BigDecimal;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Queue;
+import java.util.*;
 
 /**
- *
  * @author Miroslav Kološnjaji
  */
 public class EquipmentRepositoryImpl implements Repository<Equipment, Long> {
@@ -23,71 +24,74 @@ public class EquipmentRepositoryImpl implements Repository<Equipment, Long> {
     private final Queue<Object> paramsQueue = new ArrayDeque<>();
 
     @Override
-    public void add(Equipment equipment) throws Exception {
+    public void save(Equipment equipment) throws RepositoryException {
         try {
-            String query = "INSERT INTO equipment(BrandId, Name, Price, Currency) VALUES(?,?,?,?)";
+
             paramsQueue.addAll(List.of(equipment.getBrand().getId(),
                     equipment.getName(),
                     equipment.getPrice(),
                     equipment.getCurrency().toString()));
-            db.executeSqlUpdate(query, paramsQueue);
+            db.executeSqlUpdate(SqlQueries.Equipments.INSERT, paramsQueue);
 
         } catch (DatabaseException dbe) {
             dbe.printStackTrace();
-            throw new Exception("Doslo je do greske prilikom dodavanja nove opreme u bazu!\n" + dbe.getMessage());
+            throw new RepositoryException("Doslo je do greske prilikom dodavanja opreme u bazu!");
         }
     }
 
     @Override
-    public void update(Equipment equipment) throws Exception {
+    public void update(Equipment equipment) throws RepositoryException {
         try {
-            String query = "UPDATE equipment SET BrandId = ?, 'Name' = ?, Price = ?, Currency = ? WHERE Id = ?";
+
             paramsQueue.addAll(List.of(equipment.getBrand().getId(),
                     equipment.getName(),
                     equipment.getPrice(),
                     equipment.getCurrency().toString(),
                     equipment.getId()));
-            db.executeSqlUpdate(query, paramsQueue);
+            db.executeSqlUpdate(SqlQueries.Equipments.UPDATE, paramsQueue);
+
         } catch (DatabaseException dbe) {
             dbe.printStackTrace();
-            throw new Exception("Doslo je do greske prilikom azuriranja podataka opreme!\n" + dbe.getMessage());
+            throw new RepositoryException("Doslo je do greske prilikom azuriranja podataka opreme!");
         }
     }
 
     @Override
-    public void delete(Equipment equipment) throws Exception {
-        try {
-            String query = "DELETE FROM equipment WHERE Id = ?";
-            paramsQueue.add(equipment.getId());
-            db.executeSqlUpdate(query, paramsQueue);
-        } catch (DatabaseException dbe) {
-            dbe.printStackTrace();
-            throw new Exception("Doslo je do greske prilikom brisanja opreme iz baze!\n" + dbe.getMessage());
-        }
-    }
-    
-     @Override
-    public void deleteMultiple(List<Equipment> equipments) throws Exception {
+    public void delete(Equipment equipment) throws RepositoryException {
         try {
 
-            String query = db.generateDeleteMultiQuery(equipments, "equipment");
+            paramsQueue.add(equipment.getId());
+            db.executeSqlUpdate(SqlQueries.Equipments.DELETE_BY_ID, paramsQueue);
+
+        } catch (DatabaseException dbe) {
+            dbe.printStackTrace();
+            throw new RepositoryException("Doslo je do greske prilikom brisanja opreme iz baze!");
+        }
+    }
+
+    @Override
+    public void deleteMultiple(List<Equipment> equipments) throws RepositoryException {
+        try {
+
+            String query = db.generateDeleteMultiQuery(equipments, SqlQueries.Equipments.DELETE_MULTIPLE_ID);
             equipments.forEach(equipment -> paramsQueue.add(equipment.getId()));
             db.executeSqlUpdate(query, paramsQueue);
+
         } catch (DatabaseException dbe) {
             dbe.printStackTrace();
-            throw new Exception("Doslo je do greske prilikom brisanja brendova iz baze!");
+            throw new RepositoryException("Doslo je do greske prilikom brisanja vise oprema iz baze!");
         }
 
     }
 
     @Override
-    public List<Equipment> getAll() throws Exception {
+    public List<Equipment> getAll() throws RepositoryException {
         try {
+
             List<Equipment> equipments = new ArrayList<>();
 
-            String query = "SELECT E.Id, B.Id, B.BrandName, E.Name, E.Price, E.Currency FROM equipment E JOIN Brand B ON E.BrandId = B.Id";
             Statement statement = db.getConnection().createStatement();
-            ResultSet rs = statement.executeQuery(query);
+            ResultSet rs = statement.executeQuery(SqlQueries.Equipments.SELECT_ALL);
 
             while (rs.next()) {
                 Long equipmentId = rs.getLong("E.Id");
@@ -105,21 +109,19 @@ public class EquipmentRepositoryImpl implements Repository<Equipment, Long> {
 
             rs.close();
             statement.close();
-            db.confirmTransaction();
             return equipments;
-            
+
         } catch (SQLException sqle) {
-            db.cancelTransaction();
             sqle.printStackTrace();
-            throw new Exception("Doslo je do greske prilikom ucitavanja oprema iz baze!\n" + sqle.getMessage());
+            throw new RepositoryException("Doslo je do greske prilikom ucitavanja oprema iz baze!");
         }
     }
 
     @Override
-    public Equipment findById(Long id) throws Exception {
+    public Equipment findById(Long id) throws RepositoryException, EntityNotFoundException {
         try {
-            String query = "Select Id, BrandId, 'Name', Price, Currency FROM equipment WHERE Id = ?";
-            PreparedStatement preparedStatement = db.getConnection().prepareStatement(query);
+
+            PreparedStatement preparedStatement = db.getConnection().prepareStatement(SqlQueries.Equipments.SELECT_BY_ID);
             preparedStatement.setLong(1, id);
             ResultSet rs = preparedStatement.executeQuery();
 
@@ -133,26 +135,24 @@ public class EquipmentRepositoryImpl implements Repository<Equipment, Long> {
                 //BRAND
                 Brand brand = new Brand(rs.getLong("BrandId"));
                 equipment.setBrand(brand);
-                
+
                 rs.close();
                 preparedStatement.close();
-                db.confirmTransaction();
                 return equipment;
             }
 
-            throw new Exception("Oprema sa ovim Id brojem ne postoji!");
+            throw new EntityNotFoundException("Oprema sa ovim Id brojem ne postoji!");
 
         } catch (SQLException sqle) {
-            db.cancelTransaction();
             sqle.printStackTrace();
-            throw new Exception("Doslo je do greske prilikom pretrage opreme po id-u!\n" + sqle.getMessage());
+            throw new RepositoryException("Doslo je do greske prilikom pretrage opreme po ID broju!");
         }
     }
 
     @Override
-    public List<Equipment> findByQuery(String query) throws Exception {
-
+    public List<Equipment> findByQuery(String query) throws RepositoryException {
         try {
+
             List<Equipment> equipments = new ArrayList<>();
 
             Statement statement = db.getConnection().createStatement();
@@ -174,12 +174,11 @@ public class EquipmentRepositoryImpl implements Repository<Equipment, Long> {
 
             rs.close();
             statement.close();
-            db.confirmTransaction();
             return equipments;
+
         } catch (SQLException sqle) {
-            db.cancelTransaction();
             sqle.printStackTrace();
-            throw new Exception("Doslo je do greske prilikom pretrazivanja opreme!\n" + sqle.getMessage());
+            throw new RepositoryException("Doslo je do greske prilikom pretrazivanja opreme po upitu!");
         }
     }
 }

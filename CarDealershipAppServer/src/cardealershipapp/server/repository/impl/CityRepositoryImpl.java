@@ -1,18 +1,19 @@
 package cardealershipapp.server.repository.impl;
 
 import cardealershipapp.server.database.DataBase;
+
 import java.sql.*;
+
 import cardealershipapp.common.domain.City;
 import cardealershipapp.server.exception.DatabaseException;
+import cardealershipapp.server.exception.EntityNotFoundException;
+import cardealershipapp.server.exception.RepositoryException;
 import cardealershipapp.server.repository.Repository;
+import cardealershipapp.server.repository.query.SqlQueries;
 
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Queue;
+import java.util.*;
 
 /**
- *
  * @author Miroslav Kološnjaji
  */
 public class CityRepositoryImpl implements Repository<City, Long> {
@@ -21,66 +22,70 @@ public class CityRepositoryImpl implements Repository<City, Long> {
     private final Queue<Object> paramsQueue = new ArrayDeque<>();
 
     @Override
-    public void add(City city) throws Exception {
+    public void save(City city) throws RepositoryException {
         try {
-            String query = "INSERT INTO city(ZipCode, CityName) VALUES(?,?)";
+
             paramsQueue.addAll(List.of(city.getZipCode(), city.getName()));
-            db.executeSqlUpdate(query, paramsQueue);
+            db.executeSqlUpdate(SqlQueries.Cities.INSERT, paramsQueue);
+
         } catch (DatabaseException dbe) {
             dbe.printStackTrace();
-            throw new Exception("Doslo je do greske prilikom dodavanja novog Grada u bazu!");
+            throw new RepositoryException("Doslo je do greske prilikom dodavanja novog grada u bazu!");
         }
     }
 
     @Override
-    public void update(City city) throws Exception {
+    public void update(City city) throws RepositoryException {
         try {
-            String query = "UPDATE city SET ZipCode = ?, CityName = ? WHERE Id = ?";
+
             paramsQueue.addAll(List.of(city.getZipCode(),
                     city.getName(),
                     city.getId()));
-            db.executeSqlUpdate(query, paramsQueue);
+            db.executeSqlUpdate(SqlQueries.Cities.UPDATE, paramsQueue);
+
         } catch (DatabaseException dbe) {
             dbe.printStackTrace();
-            throw new Exception("Doslo je do greske prilikom azuriranja podataka Grada u bazi!");
+            throw new RepositoryException("Doslo je do greske prilikom azuriranja podataka grada u bazi!");
 
         }
     }
 
     @Override
-    public void delete(City city) throws Exception {
+    public void delete(City city) throws RepositoryException {
         try {
-            String query = "DELETE FROM city WHERE Id = ?";
+
             paramsQueue.add(city.getId());
-            db.executeSqlUpdate(query, paramsQueue);
+            db.executeSqlUpdate(SqlQueries.Cities.DELETE_BY_ID, paramsQueue);
+
         } catch (DatabaseException dbe) {
             dbe.printStackTrace();
-            throw new Exception("Doslo je do greske prilikom brisanja Grada iz baze!");
+            throw new RepositoryException("Doslo je do greske prilikom brisanja grada iz baze!");
         }
     }
-    
-     @Override
-    public void deleteMultiple(List<City> cities) throws Exception {
+
+    @Override
+    public void deleteMultiple(List<City> cities) throws RepositoryException {
         try {
-            String query = db.generateDeleteMultiQuery(cities, "city");
+
+            String query = db.generateDeleteMultiQuery(cities, SqlQueries.Cities.DELETE_MULTIPLE_ID);
             cities.forEach(city -> paramsQueue.add(city.getId()));
             db.executeSqlUpdate(query, paramsQueue);
+
         } catch (DatabaseException dbe) {
             dbe.printStackTrace();
-            throw new Exception("Doslo je do greske prilikom brisanja brendova iz baze!");
+            throw new RepositoryException("Doslo je do greske prilikom brisanja vise gradova iz baze!");
         }
 
     }
 
     @Override
-    public List<City> getAll() throws Exception {
+    public List<City> getAll() throws RepositoryException {
         try {
 
             List<City> cities = new ArrayList<>();
 
-            String query = "SELECT Id, ZipCode, CityName FROM city";
             Statement statement = db.getConnection().createStatement();
-            ResultSet rs = statement.executeQuery(query);
+            ResultSet rs = statement.executeQuery(SqlQueries.Cities.SELECT_ALL);
 
             while (rs.next()) {
                 Long id = rs.getLong("Id");
@@ -95,24 +100,20 @@ public class CityRepositoryImpl implements Repository<City, Long> {
 
             rs.close();
             statement.close();
-            db.confirmTransaction();
-
             return cities;
+
         } catch (SQLException sqle) {
-            db.cancelTransaction();
             sqle.printStackTrace();
-            throw new Exception("Doslo je do greske prilikom ucitavanja gradova iz baze!");
+            throw new RepositoryException("Doslo je do greske prilikom ucitavanja gradova iz baze!");
         }
 
     }
 
     @Override
-    public City findById(Long id) throws Exception {
+    public City findById(Long id) throws RepositoryException, EntityNotFoundException {
         try {
 
-            String query = "SELECT ZipCode, CityName FROM city where Id = ?";
-
-            PreparedStatement preparedStatement = db.getConnection().prepareStatement(query);
+            PreparedStatement preparedStatement = db.getConnection().prepareStatement(SqlQueries.Cities.SELECT_BY_ID);
             preparedStatement.setLong(1, id);
             ResultSet rs = preparedStatement.executeQuery();
 
@@ -123,28 +124,27 @@ public class CityRepositoryImpl implements Repository<City, Long> {
 
                 rs.close();
                 preparedStatement.close();
-                db.confirmTransaction();
                 return city;
-
-            } else {
-                throw new Exception("Grad sa ovim Id brojem ne postoji!");
             }
+
+            throw new EntityNotFoundException("Grad sa ovim Id brojem ne postoji!");
+
 
         } catch (SQLException sqle) {
             sqle.printStackTrace();
-            db.cancelTransaction();
-            throw new Exception("Doslo je do greske prilikom ucitavanja podataka grada!");
+            throw new RepositoryException("Doslo je do greske prilikom pretrage grada pod ID broju!");
         }
     }
 
     @Override
-    public List<City> findByQuery(String query) throws Exception {
-       try {
+    public List<City> findByQuery(String query) throws RepositoryException {
+        try {
+
             List<City> cities = new ArrayList<>();
-            
+
             Statement statement = db.getConnection().createStatement();
             ResultSet rs = statement.executeQuery(query);
-            
+
             while (rs.next()) {
                 Integer zipCode = rs.getInt("ZipCode");
                 String name = rs.getString("CityName");
@@ -152,15 +152,14 @@ public class CityRepositoryImpl implements Repository<City, Long> {
                 City city = new City(null, zipCode, name);
                 cities.add(city);
             }
+
             rs.close();
             statement.close();
-            db.confirmTransaction();
             return cities;
 
         } catch (SQLException sqle) {
             sqle.printStackTrace();
-            db.cancelTransaction();
-            throw new Exception("Doslo je do greske prilikom pretrazivanja grada!");
+            throw new RepositoryException("Doslo je do greske prilikom pretrazivanja grada po upitu!");
         }
     }
 

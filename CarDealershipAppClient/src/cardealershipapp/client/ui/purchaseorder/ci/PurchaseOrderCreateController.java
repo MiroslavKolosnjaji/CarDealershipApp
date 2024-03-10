@@ -63,7 +63,6 @@ public class PurchaseOrderCreateController implements Responsive {
             User salesPerson = ApplicationSession.getInstance().getLoggedUser().getUser();
 
             Customer customer = new Customer(null, customerName, customerCompany, customerAddress, customerPhone, customerEmail);
-            getResponse(Operation.CUSTOMER_ADD, customer);
 
             PurchaseOrder purchaseOrder = new PurchaseOrder();
             purchaseOrder.setDate(LocalDate.now());
@@ -73,7 +72,6 @@ public class PurchaseOrderCreateController implements Responsive {
             purchaseOrder.setPurchaseOrderItems(purchaseOrderCreateForm.getPurchaseOrderItems());
 
             getResponse(Operation.PURCHASE_ORDER_ADD, purchaseOrder);
-
 
             JOptionPane.showMessageDialog(purchaseOrderCreateForm, "Porudzbenica je uspesno kreirana");
             closeForm(purchaseOrderCreateForm);

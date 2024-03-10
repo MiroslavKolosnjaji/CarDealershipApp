@@ -1,25 +1,16 @@
 package cardealershipapp.server.service;
 
 import cardealershipapp.common.domain.PurchaseOrder;
+import cardealershipapp.server.exception.ServiceException;
+
 import java.util.List;
 
 /**
  *
  * @author Miroslav Kološnjaji
  */
-public interface PurchaseOrderService {
+public interface PurchaseOrderService extends ServiceCRUD<PurchaseOrder, Long> {
 
-    void add(PurchaseOrder purchaseOrder) throws Exception;
-
-    void update(PurchaseOrder purchaseOrder) throws Exception;
-
-    void delete(PurchaseOrder purchaseOrder) throws Exception;
-    
-    void deleteMultiple(List<PurchaseOrder> purchaseOrders) throws Exception;
-
-    List<PurchaseOrder> getAll() throws Exception;
-
-    PurchaseOrder findById(Long id) throws Exception;
-
-    Long getPurchaseOrderNumber(Long vehicleId) throws Exception;
+    void deleteMultiple(List<PurchaseOrder> purchaseOrders) throws ServiceException;
+    Long getPurchaseOrderNumber(Long vehicleId) throws ServiceException;
 }

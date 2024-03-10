@@ -1,6 +1,9 @@
 package cardealershipapp.server.repository;
 
 import cardealershipapp.common.domain.PurchaseOrderItem;
+import cardealershipapp.server.exception.EntityNotFoundException;
+import cardealershipapp.server.exception.RepositoryException;
+
 import java.util.List;
 
 /**
@@ -9,16 +12,16 @@ import java.util.List;
  */
 public interface PurchaseOrderItemRepository {
 
-    void addItems(List<PurchaseOrderItem> purchaseOrderItems) throws Exception;
+    void saveItems(List<PurchaseOrderItem> purchaseOrderItems) throws RepositoryException;
 
-    void updateItems(List<PurchaseOrderItem> purchaseOrderItems) throws Exception;
+    void updateItems(List<PurchaseOrderItem> purchaseOrderItems) throws RepositoryException;
 
-    void deleteItem(PurchaseOrderItem purchaseOrderItem) throws Exception;
+    void deleteItem(PurchaseOrderItem purchaseOrderItem) throws RepositoryException;
     
-    List<PurchaseOrderItem> getAllItems() throws Exception;
+    List<PurchaseOrderItem> getAllItems() throws RepositoryException;
 
-    PurchaseOrderItem findItemById(Long id) throws Exception;    
+    PurchaseOrderItem findItemById(Long id) throws RepositoryException, EntityNotFoundException;
     
-    List<PurchaseOrderItem> findItemByQuery(String query) throws Exception;
+    List<PurchaseOrderItem> findItemByQuery(String query) throws RepositoryException;
 
 }

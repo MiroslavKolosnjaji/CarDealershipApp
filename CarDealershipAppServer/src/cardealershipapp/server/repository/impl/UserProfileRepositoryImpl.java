@@ -1,21 +1,22 @@
 package cardealershipapp.server.repository.impl;
 
 import java.sql.*;
+
 import cardealershipapp.server.database.DataBase;
 import cardealershipapp.common.domain.City;
 import cardealershipapp.common.domain.Gender;
 import cardealershipapp.common.domain.User;
 import cardealershipapp.common.domain.UserProfile;
 import cardealershipapp.server.exception.DatabaseException;
+import cardealershipapp.server.exception.EntityNotFoundException;
+import cardealershipapp.server.exception.RepositoryException;
 import cardealershipapp.server.repository.Repository;
+import cardealershipapp.server.repository.query.SqlQueries;
+
 import java.time.LocalDate;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Queue;
+import java.util.*;
 
 /**
- *
  * @author Miroslav Kološnjaji
  */
 public class UserProfileRepositoryImpl implements Repository<UserProfile, String> {
@@ -24,75 +25,75 @@ public class UserProfileRepositoryImpl implements Repository<UserProfile, String
     private Queue<Object> paramsQueue = new ArrayDeque<>();
 
     @Override
-    public void add(UserProfile userProfile) throws Exception {
+    public void save(UserProfile userProfile) throws RepositoryException {
 
         try {
-            String query = "INSERT INTO user_profile(Email, Password, UserId) VALUES(?,?,?)";
+
             paramsQueue.addAll(List.of(userProfile.getEmail(),
                     userProfile.getPassword(),
                     userProfile.getUser()));
-            db.executeSqlUpdate(query, paramsQueue);
+            db.executeSqlUpdate(SqlQueries.UserProfiles.INSERT, paramsQueue);
+
         } catch (DatabaseException dbe) {
             dbe.printStackTrace();
-            throw new Exception("Doslo je do greske prilikom dodavanja novog profila u bazu!\n" + dbe.getMessage());
+            throw new RepositoryException("Doslo je do greske prilikom dodavanja novog profila u bazu!");
 
         }
 
     }
 
     @Override
-    public void update(UserProfile userProfile) throws Exception {
+    public void update(UserProfile userProfile) throws RepositoryException {
         try {
-            String query = "UPDATE user_profile SET Email = ?, Password = ?, UserId = ? WHERE Id = ?";
+
             paramsQueue.addAll(List.of(userProfile.getEmail(),
                     userProfile.getPassword(),
                     userProfile.getUser(),
                     userProfile.getEmail()));
-            db.executeSqlUpdate(query, paramsQueue);
+            db.executeSqlUpdate(SqlQueries.UserProfiles.UPDATE, paramsQueue);
+
         } catch (DatabaseException dbe) {
             dbe.printStackTrace();
-            throw new Exception("Doslo je do greske prilikom azuriranja podataka profila u bazi!\n" + dbe.getMessage());
+            throw new RepositoryException("Doslo je do greske prilikom azuriranja podataka profila u bazi!");
 
         }
     }
 
     @Override
-    public void delete(UserProfile userProfile) throws Exception {
-        try {
-            String query = "DELETE FROM user_profile WHERE id = ?";
-            paramsQueue.add(userProfile.getEmail());
-            db.executeSqlUpdate(query, paramsQueue);
-        } catch (DatabaseException dbe) {
-            dbe.printStackTrace();
-            throw new Exception("Doslo je do greske prilikom brisanja profila iz baze!\n" + dbe.getMessage());
-        }
-    }
-    
-     @Override
-    public void deleteMultiple(List<UserProfile> userProfiles) throws Exception {
+    public void delete(UserProfile userProfile) throws RepositoryException {
         try {
 
-            String query = db.generateDeleteMultiQuery(userProfiles,"user_profile");
+            paramsQueue.add(userProfile.getEmail());
+            db.executeSqlUpdate(SqlQueries.UserProfiles.DELETE_BY_ID, paramsQueue);
+
+        } catch (DatabaseException dbe) {
+            dbe.printStackTrace();
+            throw new RepositoryException("Doslo je do greske prilikom brisanja profila iz baze!");
+        }
+    }
+
+    @Override
+    public void deleteMultiple(List<UserProfile> userProfiles) throws RepositoryException {
+        try {
+
+            String query = db.generateDeleteMultiQuery(userProfiles, SqlQueries.UserProfiles.DELETE_MULTIPLE_ID);
             userProfiles.forEach(userProfile -> paramsQueue.add(userProfile.getEmail()));
             db.executeSqlUpdate(query, paramsQueue);
 
         } catch (DatabaseException dbe) {
             dbe.printStackTrace();
-            throw new Exception("Doslo je do greske prilikom brisanja brendova iz baze!");
+            throw new RepositoryException("Doslo je do greske prilikom brisanja brendova iz baze!");
         }
 
     }
 
 
     @Override
-    public List<UserProfile> getAll() throws Exception {
+    public List<UserProfile> getAll() throws RepositoryException {
         try {
 
             List<UserProfile> userProfiles = new ArrayList<>();
-
-            String query = "UP.Email, UP.Password, UP.UserId, U.FirstName, U.LastName, U.DateOfBirth, U.Gender, U.CityId, C.ZipCode, C.CityName FROM user_profile UP JOIN `user` U ON UP.UserId = U.Id JOIN city C ON U.CityId = C.id";
-
-            PreparedStatement prepStat = db.getConnection().prepareStatement(query);
+            PreparedStatement prepStat = db.getConnection().prepareStatement(SqlQueries.UserProfiles.SELECT_ALL);
             ResultSet rs = prepStat.executeQuery();
 
             while (rs.next()) {
@@ -119,21 +120,20 @@ public class UserProfileRepositoryImpl implements Repository<UserProfile, String
 
             rs.close();
             prepStat.close();
-            db.confirmTransaction();
             return userProfiles;
+
         } catch (SQLException sqle) {
             sqle.printStackTrace();
-            db.cancelTransaction();
-            throw new Exception("Dogodila se greska prilikom ucitavanja liste profila iz baze!\n" + sqle.getMessage());
+            throw new RepositoryException("Dogodila se greska prilikom ucitavanja liste profila iz baze!");
 
         }
     }
 
     @Override
-    public UserProfile findById(String id) throws Exception {
+    public UserProfile findById(String id) throws RepositoryException, EntityNotFoundException {
         try {
-            String query = "SELECT Email, Password, UserId FROM user_profile WHERE Id = ?";
-            PreparedStatement prepStat = db.getConnection().prepareStatement(query);
+
+            PreparedStatement prepStat = db.getConnection().prepareStatement(SqlQueries.UserProfiles.SELECT_BY_ID);
             prepStat.setString(1, id);
             ResultSet rs = prepStat.executeQuery();
 
@@ -144,21 +144,22 @@ public class UserProfileRepositoryImpl implements Repository<UserProfile, String
 
                 rs.close();
                 prepStat.close();
-                db.confirmTransaction();
                 return userProfile;
-            } else {
-                throw new Exception("Korisnik sa ovom email adresom ne postoji!");
             }
+
+            throw new EntityNotFoundException("Korisnik sa ovom email adresom ne postoji!");
+
+
         } catch (SQLException sqle) {
             sqle.printStackTrace();
-            db.cancelTransaction();
-            throw new Exception("Dogodila se greska prilikom pretrazivanja korisnika po email adresi!\n" + sqle.getMessage());
+            throw new RepositoryException("Dogodila se greska prilikom pretrazivanja korisnika po email adresi!");
         }
     }
 
     @Override
-    public List<UserProfile> findByQuery(String query) throws Exception {
+    public List<UserProfile> findByQuery(String query) throws RepositoryException {
         try {
+
             List<UserProfile> userProfiles = new ArrayList<>();
 
             Statement statement = db.getConnection().createStatement();
@@ -170,19 +171,17 @@ public class UserProfileRepositoryImpl implements Repository<UserProfile, String
                 UserProfile u = new UserProfile();
                 u.setEmail(email);
                 u.setUser(user);
-                
+
                 userProfiles.add(u);
             }
             rs.close();
             statement.close();
-            db.confirmTransaction();
 
             return userProfiles;
 
         } catch (SQLException sqle) {
             sqle.printStackTrace();
-            db.cancelTransaction();
-            throw new Exception("Dogodila se greska prilikom provere da li korisnik postoji u bazi!\n" + sqle.getMessage());
+            throw new RepositoryException("Dogodila se greska prilikom pretrage korisnika po upitu!");
         }
     }
 

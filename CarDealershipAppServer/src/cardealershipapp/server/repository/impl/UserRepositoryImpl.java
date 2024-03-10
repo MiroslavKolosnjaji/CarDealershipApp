@@ -1,20 +1,22 @@
 package cardealershipapp.server.repository.impl;
 
 import java.sql.*;
+
 import cardealershipapp.server.database.DataBase;
 import cardealershipapp.common.domain.City;
 import cardealershipapp.common.domain.Gender;
 import cardealershipapp.common.domain.User;
 import cardealershipapp.server.exception.DatabaseException;
+import cardealershipapp.server.exception.EntityNotFoundException;
+import cardealershipapp.server.exception.RepositoryException;
 import cardealershipapp.server.repository.Repository;
+import cardealershipapp.server.repository.query.SqlQueries;
+import cardealershipapp.server.util.ExceptionUtils;
+
 import java.time.LocalDate;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Queue;
+import java.util.*;
 
 /**
- *
  * @author Miroslav Kološnjaji
  */
 public class UserRepositoryImpl implements Repository<User, Long> {
@@ -23,79 +25,75 @@ public class UserRepositoryImpl implements Repository<User, Long> {
     private final Queue<Object> paramsQueue = new ArrayDeque<>();
 
     @Override
-    public void add(User user) throws Exception {
+    public void save(User user) throws RepositoryException {
         try {
-            String query = "INSERT INTO `user`(FirstName, LastName, DateOfBirth, Gender, CityId) VALUES(?,?,?,?,?)";
             paramsQueue.addAll(List.of(user.getFirstName(),
                     user.getLastName(),
                     user.getDateOfBirth(),
                     user.getGender().toString(),
                     user.getResidence().getId()));
-            db.executeSqlUpdate(query, paramsQueue);
+            db.executeSqlUpdate(SqlQueries.Users.INSERT, paramsQueue);
 
         } catch (DatabaseException dbe) {
             dbe.printStackTrace();
-            throw new Exception("Doslo je do greske prilikom dodavanja korisnika u bazu!\n" + dbe.getMessage());
+            throw new RepositoryException("Doslo je do greske prilikom dodavanja korisnika u bazu!");
         }
     }
 
     @Override
-    public void update(User user) throws Exception {
+    public void update(User user) throws RepositoryException {
 
         try {
-            String query = "UPDATE `user` SET FirstName = ?, LastName = ?, DateOfBirth = ?, Gender = ?, CityId = ? WHERE Id = ?";
+
             paramsQueue.addAll(List.of(user.getFirstName(),
                     user.getLastName(),
                     user.getDateOfBirth(),
                     user.getGender().toString(),
                     user.getResidence().getId(),
                     user.getId()));
-            db.executeSqlUpdate(query, paramsQueue);
+            db.executeSqlUpdate(SqlQueries.Users.UPDATE, paramsQueue);
 
         } catch (DatabaseException dbe) {
             dbe.printStackTrace();
-            throw new Exception("Doslo je do greske prilikom azuriranja podataka korisnika u bazi!\n" + dbe.getMessage());
+            throw new RepositoryException("Doslo je do greske prilikom azuriranja podataka korisnika u bazi!");
         }
 
     }
 
     @Override
-    public void delete(User user) throws Exception {
-        try {
-            String query = "DELETE FROM `user` WHERE id= ?";
-            paramsQueue.add(user.getId());
-            db.executeSqlUpdate(query, paramsQueue);
-        } catch (DatabaseException dbe) {
-            dbe.printStackTrace();
-            throw new Exception("Doslo je do greske prilikom brisanja korisnika iz baze!\n" + dbe.getMessage());
-        }
-    }
-    
-     @Override
-    public void deleteMultiple(List<User> users) throws Exception {
+    public void delete(User user) throws RepositoryException {
         try {
 
-            String query = db.generateDeleteMultiQuery(users,"user");
+            paramsQueue.add(user.getId());
+            db.executeSqlUpdate(SqlQueries.Users.DELETE_BY_ID, paramsQueue);
+        } catch (DatabaseException dbe) {
+            dbe.printStackTrace();
+            throw new RepositoryException("Doslo je do greske prilikom brisanja korisnika iz baze!");
+        }
+    }
+
+    @Override
+    public void deleteMultiple(List<User> users) throws RepositoryException {
+        try {
+
+            String query = db.generateDeleteMultiQuery(users, SqlQueries.Users.DELETE_MULTIPLE_ID);
             users.forEach(user -> paramsQueue.add(user.getId()));
             db.executeSqlUpdate(query, paramsQueue);
 
         } catch (DatabaseException dbe) {
             dbe.printStackTrace();
-            throw new Exception("Doslo je do greske prilikom brisanja brendova iz baze!");
+            throw new RepositoryException("Doslo je do greske prilikom brisanja vise korisnika iz baze!");
         }
 
     }
 
 
-
     @Override
-    public List<User> getAll() throws Exception {
+    public List<User> getAll() throws RepositoryException {
 
         try {
             List<User> users = new ArrayList<>();
-            String query = "SELECT U.Id, U.FirstName, U.LastName, U.DateOfBirth, U.Gender, U.CityId, C.ZipCode ,C.CityName FROM `user` U JOIN city C ON U.CityId = C.id";
-
-            PreparedStatement prepStat = db.getConnection().prepareStatement(query);
+            PreparedStatement prepStat = db.getConnection().prepareStatement(SqlQueries.Users.SELECT_ALL);
             ResultSet rs = prepStat.executeQuery();
 
             while (rs.next()) {
@@ -119,21 +117,18 @@ public class UserRepositoryImpl implements Repository<User, Long> {
 
             rs.close();
             prepStat.close();
-            db.confirmTransaction();
             return users;
         } catch (SQLException sqle) {
             sqle.printStackTrace();
-            db.cancelTransaction();
-            throw new Exception("Doslo je do greske prilikom brisanja korisnika iz baze!\n" + sqle.getMessage());
+            throw new RepositoryException("Doslo je do greske prilikom ucitavanja korisnika iz baze!");
         }
 
     }
 
     @Override
-    public User findById(Long id) throws Exception {
+    public User findById(Long id) throws RepositoryException, EntityNotFoundException {
         try {
-            String query = "SELECT FirstName, LastName, DateOfBirth, Gender, CityId FROM user WHERE Id = ?";
-            PreparedStatement prepStat = db.getConnection().prepareStatement(query);
+            PreparedStatement prepStat = db.getConnection().prepareStatement(SqlQueries.Users.SELECT_BY_ID);
             prepStat.setLong(1, id);
 
             ResultSet rs = prepStat.executeQuery();
@@ -149,22 +144,21 @@ public class UserRepositoryImpl implements Repository<User, Long> {
 
                 rs.close();
                 prepStat.close();
-                db.confirmTransaction();
                 return user;
             }
 
-            throw new Exception("Korisnik sa ovim Id brojem ne postoji!");
+            throw new EntityNotFoundException("Korisnik sa ovim Id brojem ne postoji!");
 
         } catch (SQLException sqle) {
             sqle.printStackTrace();
-            db.cancelTransaction();
-            throw new Exception("Doslo je do greske prilikom pretrazivanja korisnika po id-u!\n" + sqle.getMessage());
+            throw new RepositoryException("Doslo je do greske prilikom pretrazivanja korisnika po ID broju!");
         }
     }
 
     @Override
-    public List<User> findByQuery(String query) throws Exception {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    public List<User> findByQuery(String query) throws RepositoryException {
+        //TODO Implement this method if necessary
+        throw new UnsupportedOperationException(ExceptionUtils.UNSUPPORTED_OPERATION_MESSAGE); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 
 }

@@ -8,6 +8,7 @@ import java.util.Queue;
 
 public interface DatabaseOperations{
     void executeSqlUpdate(String query, Queue<Object> params) throws DatabaseException;
+    Long executeSqlUpdateAndGenerateKey(String query, Queue<Object> params) throws DatabaseException;
     void executeSqlQuery(String query, Queue<Object> params) throws DatabaseException;
 
     default void setParameters(PreparedStatement preparedStatement, Queue<Object> params) throws SQLException{

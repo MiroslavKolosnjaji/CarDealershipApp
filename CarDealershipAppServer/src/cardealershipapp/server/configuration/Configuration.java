@@ -1,18 +1,12 @@
 package cardealershipapp.server.configuration;
 
+import cardealershipapp.common.domain.*;
 import cardealershipapp.server.repository.PurchaseOrderItemRepository;
+import cardealershipapp.server.repository.ExtendedRepository;
 import cardealershipapp.server.repository.Repository;
-import cardealershipapp.server.service.BrandService;
-import cardealershipapp.server.service.BusinessUnitService;
-import cardealershipapp.server.service.CityService;
-import cardealershipapp.server.service.CustomerService;
-import cardealershipapp.server.service.EquipmentService;
-import cardealershipapp.server.service.ModelService;
-import cardealershipapp.server.service.PurchaseOrderItemService;
-import cardealershipapp.server.service.PurchaseOrderService;
-import cardealershipapp.server.service.UserProfileService;
-import cardealershipapp.server.service.UserService;
-import cardealershipapp.server.service.VehicleService;
+import cardealershipapp.server.repository.impl.CustomerRepositoryImpl;
+import cardealershipapp.server.service.*;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
@@ -54,6 +48,9 @@ public class Configuration {
         Constructor<?> constructor = c.getConstructor(Repository.class);
         return constructor.newInstance(repository);
     }
+
+
+
     
     private Object selectItemServiceProperty(String service, Object repository) throws Exception {
         String className = PROPERTIES.getProperty(service);
@@ -67,6 +64,13 @@ public class Configuration {
         Class<?> c = Class.forName(className);
         Constructor<?> constructor = c.getConstructor(Repository.class, PurchaseOrderItemRepository.class);
         return constructor.newInstance(repository, purchaseOrderItemRepository);
+    }
+
+    private PurchaseOrderService selectPurchaseOrderService (String service, ExtendedRepository purchaseOrderRepository, PurchaseOrderItemRepository purchaseOrderItemRepository, ExtendedRepository customerRepository) throws Exception {
+        String className = PROPERTIES.getProperty(service);
+        Class<?> c = Class.forName(className);
+        Constructor<?> constructor = c.getConstructor(ExtendedRepository.class, PurchaseOrderItemRepository.class, ExtendedRepository.class);
+        return (PurchaseOrderService) constructor.newInstance(purchaseOrderRepository, purchaseOrderItemRepository, customerRepository);
     }
 
     private UserProfileService selectUserProfileServiceProperty(String service, Repository userProfileRepository, Repository userRepository) throws Exception {
@@ -110,12 +114,12 @@ public class Configuration {
         return (Repository) selectRepositoryProperty("equipment_repository");
     }
     
-    public Repository getCustomerRepository() throws Exception {
-        return (Repository) selectRepositoryProperty("customer_repository");
+    public ExtendedRepository getCustomerRepository() throws Exception {
+        return (ExtendedRepository) selectRepositoryProperty("customer_repository");
     }
    
-    public Repository getPurchaseOrderRepository() throws Exception {
-        return (Repository) selectRepositoryProperty("purchase_order_repository");
+    public ExtendedRepository getPurchaseOrderRepository() throws Exception {
+        return (ExtendedRepository) selectRepositoryProperty("purchase_order_repository");
     }
     
     public PurchaseOrderItemRepository getPurchaseOrderItemRepository() throws Exception {
@@ -125,40 +129,40 @@ public class Configuration {
     
     
 
-    public UserService getUserService() throws Exception {
-        return (UserService) selectServiceProperty("user_service", getUserRepository());
+    public ServiceCRUD<User, Long> getUserService() throws Exception {
+        return (ServiceCRUD<User, Long>) selectServiceProperty("user_service", getUserRepository());
     }
 
-    public BrandService getBrandService() throws Exception {
-        return (BrandService) selectServiceProperty("brand_service", getBrandRepository());
+    public ServiceCRUD<Brand, Long> getBrandService() throws Exception {
+        return (ServiceCRUD<Brand, Long>) selectServiceProperty("brand_service", getBrandRepository());
     }
 
-    public BusinessUnitService getBusinessUnitService() throws Exception {
-        return (BusinessUnitService) selectServiceProperty("business_unit_service", getBusinessUnitRepository());
+    public ServiceCRUD<BusinessUnit, Long> getBusinessUnitService() throws Exception {
+        return (ServiceCRUD<BusinessUnit, Long>) selectServiceProperty("business_unit_service", getBusinessUnitRepository());
     }
 
-    public CityService getCityService() throws Exception {
-        return (CityService) selectServiceProperty("city_service", getCityRepository());
+    public ServiceCRUD<City, Long> getCityService() throws Exception {
+        return (ServiceCRUD<City, Long>) selectServiceProperty("city_service", getCityRepository());
     }
 
-    public ModelService getModelService() throws Exception {
-        return (ModelService) selectServiceProperty("model_service", getModelRepository());
+    public ServiceCRUD<Model, Long> getModelService() throws Exception {
+        return (ServiceCRUD<Model, Long>) selectServiceProperty("model_service", getModelRepository());
     }
 
     public VehicleService getVehicleService() throws Exception {
         return (VehicleService) selectServiceProperty("vehicle_service", getVehicleRepository());
     }
     
-    public EquipmentService getEquipmentService() throws Exception {
-        return (EquipmentService) selectServiceProperty("equipment_service", getEquipmentRepository());
+    public ServiceCRUD<Equipment, Long> getEquipmentService() throws Exception {
+        return (ServiceCRUD<Equipment, Long>) selectServiceProperty("equipment_service", getEquipmentRepository());
     }
     
-    public CustomerService getCustomerService() throws Exception {
-        return (CustomerService) selectServiceProperty("customer_service", getCustomerRepository());
+    public ServiceCRUD<Customer, Long> getCustomerService() throws Exception {
+        return (ServiceCRUD<Customer, Long>) selectServiceProperty("customer_service", getCustomerRepository());
     }
     
     public PurchaseOrderService getPurchaseOrderService() throws Exception {
-        return (PurchaseOrderService) selectServiceProperty("purchase_order_service", getPurchaseOrderRepository());
+        return selectPurchaseOrderService("purchase_order_service", getPurchaseOrderRepository(), getPurchaseOrderItemRepository(), getCustomerRepository());
     }
     
     public PurchaseOrderItemService getPurchaseOrderItemService() throws Exception {
@@ -166,7 +170,7 @@ public class Configuration {
     }
     
     public UserProfileService getUserProfileService() throws Exception {
-        return (UserProfileService) selectUserProfileServiceProperty("user_profile_service", getUserProfileRepository(), getUserRepository());
+        return  selectUserProfileServiceProperty("user_profile_service", getUserProfileRepository(), getUserRepository());
     }
 
 }

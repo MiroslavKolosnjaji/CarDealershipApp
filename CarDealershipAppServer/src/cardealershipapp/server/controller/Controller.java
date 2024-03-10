@@ -11,16 +11,8 @@ import cardealershipapp.common.domain.PurchaseOrderItem;
 import cardealershipapp.common.domain.UserProfile;
 import cardealershipapp.common.domain.Vehicle;
 import cardealershipapp.server.configuration.Configuration;
-import cardealershipapp.server.service.BrandService;
-import cardealershipapp.server.service.BusinessUnitService;
-import cardealershipapp.server.service.CityService;
-import cardealershipapp.server.service.CustomerService;
-import cardealershipapp.server.service.EquipmentService;
-import cardealershipapp.server.service.ModelService;
-import cardealershipapp.server.service.PurchaseOrderItemService;
-import cardealershipapp.server.service.PurchaseOrderService;
-import cardealershipapp.server.service.UserProfileService;
-import cardealershipapp.server.service.VehicleService;
+import cardealershipapp.server.service.*;
+
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -34,13 +26,13 @@ public class Controller {
     private static final Controller instance = new Controller();
 
     private UserProfileService userProfileService;
-    private CityService cityService;
-    private BrandService brandService;
-    private ModelService modelService;
-    private BusinessUnitService businessUnitService;
+    private ServiceCRUD<City, Long> cityService;
+    private ServiceCRUD<Brand, Long> brandService;
+    private ServiceCRUD<Model, Long> modelService;
+    private ServiceCRUD<BusinessUnit, Long> businessUnitService;
     private VehicleService vehicleService;
-    private EquipmentService equipmentService;
-    private CustomerService customerService;
+    private ServiceCRUD<Equipment, Long> equipmentService;
+    private ServiceCRUD<Customer, Long> customerService;
     private PurchaseOrderService purchaseOrderService;
     private PurchaseOrderItemService purchaseOrderItemService;
 
@@ -72,7 +64,7 @@ public class Controller {
 
     //CITY
     public void addCity(City city) throws Exception {
-        cityService.add(city);
+        cityService.save(city);
     }
 
     public void updateCity(City city) throws Exception {
@@ -93,7 +85,7 @@ public class Controller {
 
     //BRAND
     public void addBrand(Brand brand) throws Exception {
-        brandService.add(brand);
+        brandService.save(brand);
     }
 
     public void updateBrand(Brand brand) throws Exception {
@@ -114,7 +106,7 @@ public class Controller {
 
     //MODEL
     public void addModel(Model model) throws Exception {
-        modelService.add(model);
+        modelService.save(model);
     }
 
     public void updateModel(Model model) throws Exception {
@@ -139,7 +131,7 @@ public class Controller {
 
     //BUSSINESS UNIT
     public void addBusinessUnit(BusinessUnit businessUnit) throws Exception {
-        businessUnitService.add(businessUnit);
+        businessUnitService.save(businessUnit);
     }
 
     public void updateBusinessUnit(BusinessUnit businessUnit) throws Exception {
@@ -160,7 +152,7 @@ public class Controller {
     
     //VEHICLE
     public void addVehicle(Vehicle vehicle) throws Exception{
-        vehicleService.add(vehicle);
+        vehicleService.save(vehicle);
     }
     
     public void updateVehicle(Vehicle vehicle) throws Exception {
@@ -185,7 +177,7 @@ public class Controller {
     
     //EQUIPMENT
     public void addEquipment(Equipment equipment) throws Exception {
-        equipmentService.add(equipment);
+        equipmentService.save(equipment);
     }
     
     public void updateEquipment(Equipment equipment) throws Exception {
@@ -202,7 +194,7 @@ public class Controller {
     
     //CUSTOMER
     public void addCustomer(Customer customer) throws Exception{
-        customerService.add(customer);
+        customerService.save(customer);
     }
     
     public void updateCustomer(Customer customer) throws Exception{
@@ -223,7 +215,7 @@ public class Controller {
     
    //PURCHASE ORDER
    public void addPurchaseOrder(PurchaseOrder purchaseOrder) throws Exception {
-       purchaseOrderService.add(purchaseOrder);
+       purchaseOrderService.save(purchaseOrder);
    }
    
    public void updatePurchaseOrder(PurchaseOrder purchaseOrder) throws Exception {

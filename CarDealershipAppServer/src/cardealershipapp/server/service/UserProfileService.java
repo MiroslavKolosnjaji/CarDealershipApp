@@ -1,6 +1,7 @@
 package cardealershipapp.server.service;
 
 import cardealershipapp.common.domain.UserProfile;
+import cardealershipapp.server.exception.ServiceException;
 
 /**
  *
@@ -8,5 +9,5 @@ import cardealershipapp.common.domain.UserProfile;
  */
 public interface UserProfileService {
     
-    UserProfile logIn(String email, String password) throws Exception;
+    UserProfile logIn(String email, String password) throws ServiceException;
 }

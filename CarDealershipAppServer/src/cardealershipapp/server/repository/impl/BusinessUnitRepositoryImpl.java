@@ -1,19 +1,19 @@
 package cardealershipapp.server.repository.impl;
 
 import java.sql.*;
+
 import cardealershipapp.server.database.DataBase;
 import cardealershipapp.common.domain.BusinessUnit;
 import cardealershipapp.common.domain.City;
 import cardealershipapp.server.exception.DatabaseException;
+import cardealershipapp.server.exception.EntityNotFoundException;
+import cardealershipapp.server.exception.RepositoryException;
 import cardealershipapp.server.repository.Repository;
+import cardealershipapp.server.repository.query.SqlQueries;
 
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Queue;
+import java.util.*;
 
 /**
- *
  * @author Miroslav Kološnjaji
  */
 public class BusinessUnitRepositoryImpl implements Repository<BusinessUnit, Long> {
@@ -22,9 +22,9 @@ public class BusinessUnitRepositoryImpl implements Repository<BusinessUnit, Long
     private final Queue<Object> paramsQueue = new ArrayDeque<>();
 
     @Override
-    public void add(BusinessUnit businessUnit) throws Exception {
+    public void save(BusinessUnit businessUnit) throws RepositoryException {
         try {
-            String query = "INSERT INTO business_unit(`Name`, CompanyRegNum, TaxId, Address, CityId, Phone, Email) VALUES(?,?,?,?,?,?,?)";
+
             paramsQueue.addAll(List.of(businessUnit.getName(),
                     businessUnit.getCompanyRegId(),
                     businessUnit.getTaxId(),
@@ -32,17 +32,18 @@ public class BusinessUnitRepositoryImpl implements Repository<BusinessUnit, Long
                     businessUnit.getCity().getId(),
                     businessUnit.getPhone(),
                     businessUnit.getEmail()));
-            db.executeSqlUpdate(query, paramsQueue);
+            db.executeSqlUpdate(SqlQueries.BusinessUnits.INSERT, paramsQueue);
+
         } catch (DatabaseException dbe) {
             dbe.printStackTrace();
-            throw new Exception("Doslo je do greske prilikom dodavanja nove poslovne jedinice u bazu!\n" + dbe.getMessage());
+            throw new RepositoryException("Doslo je do greske prilikom unosa poslovne jedinice u bazu!\n" + dbe.getMessage());
         }
     }
 
     @Override
-    public void update(BusinessUnit businessUnit) throws Exception {
+    public void update(BusinessUnit businessUnit) throws RepositoryException {
         try {
-            String query = "UPDATE business_unit SET `Name` = ?, CompanyRegNum = ?, TaxId = ?, Address = ?,  CityId = ?, Phone = ?, Email = ? WHERE Id = ?";
+
             paramsQueue.addAll(List.of(businessUnit.getName(),
                     businessUnit.getCompanyRegId(),
                     businessUnit.getTaxId(),
@@ -51,47 +52,52 @@ public class BusinessUnitRepositoryImpl implements Repository<BusinessUnit, Long
                     businessUnit.getPhone(),
                     businessUnit.getEmail(),
                     businessUnit.getId()));
-            db.executeSqlUpdate(query, paramsQueue);
+            db.executeSqlUpdate(SqlQueries.BusinessUnits.UPDATE, paramsQueue);
+
         } catch (DatabaseException dbe) {
             dbe.printStackTrace();
-            throw new Exception("Doslo je do greske prilikom azuriranja podataka poslovne jedinice u bazi!\n" + dbe.getMessage());
+            throw new RepositoryException("Doslo je do greske prilikom azuriranja podataka poslovne jedinice u bazi!");
         }
     }
 
     @Override
-    public void delete(BusinessUnit businessUnit) throws Exception {
+    public void delete(BusinessUnit businessUnit) throws RepositoryException {
         try {
-            String query = "DELETE FROM business_unit WHERE Id = ?";
+
             paramsQueue.add(businessUnit.getId());
-            db.executeSqlUpdate(query, paramsQueue);
+            db.executeSqlUpdate(SqlQueries.BusinessUnits.DELETE_BY_ID, paramsQueue);
+
         } catch (DatabaseException dbe) {
             dbe.printStackTrace();
-            throw new Exception("Doslo je do greske prilikom brisanja poslovne jedinice iz baze!\n" + dbe.getMessage());
+            throw new RepositoryException("Doslo je do greske prilikom brisanja poslovne jedinice iz baze!");
         }
     }
-    
-     @Override
-    public void deleteMultiple(List<BusinessUnit> businessUnits) throws Exception {
+
+    @Override
+    public void deleteMultiple(List<BusinessUnit> businessUnits) throws RepositoryException {
         try {
-            String query = db.generateDeleteMultiQuery(businessUnits, "business_unit");
+
+            String query = db.generateDeleteMultiQuery(businessUnits, SqlQueries.BusinessUnits.DELETE_MULTIPLE_ID);
             businessUnits.forEach(businessUnit -> paramsQueue.add(businessUnit.getId()));
             db.executeSqlUpdate(query, paramsQueue);
+
         } catch (DatabaseException dbe) {
             dbe.printStackTrace();
-            throw new Exception("Doslo je do greske prilikom brisanja brendova iz baze!");
+            throw new RepositoryException("Doslo je do greske prilikom brisanja vise poslovnih jedinica iz baze!");
         }
 
     }
 
 
     @Override
-    public List<BusinessUnit> getAll() throws Exception {
+    public List<BusinessUnit> getAll() throws RepositoryException {
 
         try {
+
             List<BusinessUnit> businessUnits = new ArrayList<>();
-            String query = "SELECT BU.Id, BU.Name, BU.CompanyRegNum, BU.TaxId, BU.Address, BU.CityId, BU.Phone, BU.Email, C.ZipCode, C.CityName FROM business_unit BU JOIN city C ON BU.CityId = C.Id";
+
             Statement statement = db.getConnection().createStatement();
-            ResultSet rs = statement.executeQuery(query);
+            ResultSet rs = statement.executeQuery(SqlQueries.BusinessUnits.SELECT_ALL);
             while (rs.next()) {
                 Long id = rs.getLong("BU.Id");
                 String companyName = rs.getString("BU.Name");
@@ -108,22 +114,22 @@ public class BusinessUnitRepositoryImpl implements Repository<BusinessUnit, Long
                 BusinessUnit businessUnit = new BusinessUnit(id, companyName, companyRegId, TaxId, city, Address, Phone, email);
                 businessUnits.add(businessUnit);
             }
+
             rs.close();
             statement.close();
-            db.confirmTransaction();
             return businessUnits;
+
         } catch (SQLException sqle) {
-            db.cancelTransaction();
             sqle.printStackTrace();
-            throw new Exception("Doslo je do greske prilikom brisanja poslovne jedinice iz baze!\n" + sqle.getMessage());
+            throw new RepositoryException("Doslo je do greske prilikom ucitavanja poslovnih jedinica iz baze!");
         }
     }
 
     @Override
-    public BusinessUnit findById(Long id) throws Exception {
+    public BusinessUnit findById(Long id) throws RepositoryException, EntityNotFoundException {
         try {
-            String query = "SELECT Name, CompanyRegNum, TaxId, Address, CityId, Phone, Email FROM business_unit WHERE Id = ?";
-            PreparedStatement prepStat = db.getConnection().prepareStatement(query);
+
+            PreparedStatement prepStat = db.getConnection().prepareStatement(SqlQueries.BusinessUnits.SELECT_BY_ID);
             prepStat.setLong(1, id);
 
             ResultSet rs = prepStat.executeQuery();
@@ -141,22 +147,21 @@ public class BusinessUnitRepositoryImpl implements Repository<BusinessUnit, Long
 
                 rs.close();
                 prepStat.close();
-                db.confirmTransaction();
                 return businessUnit;
             }
 
-            throw new Exception("Poslovna jedinica sa ovim Id brojem ne postoji!");
+            throw new EntityNotFoundException("Poslovna jedinica sa ovim Id brojem ne postoji!");
 
         } catch (SQLException sqle) {
             sqle.printStackTrace();
-            db.cancelTransaction();
-            throw new Exception("Doslo je do greske prilikom pretrazivanja poslovne jedinice po id-u!\n" + sqle.getMessage());
+            throw new RepositoryException("Doslo je do greske prilikom pretrazivanja poslovne jedinice po ID broju!");
         }
     }
 
     @Override
-    public List<BusinessUnit> findByQuery(String query) throws Exception {
+    public List<BusinessUnit> findByQuery(String query) throws RepositoryException {
         try {
+
             List<BusinessUnit> businessUnits = new ArrayList<>();
             PreparedStatement prepStat = db.getConnection().prepareStatement(query);
 
@@ -175,13 +180,11 @@ public class BusinessUnitRepositoryImpl implements Repository<BusinessUnit, Long
 
             rs.close();
             prepStat.close();
-            db.confirmTransaction();
             return businessUnits;
 
         } catch (SQLException sqle) {
             sqle.printStackTrace();
-            db.cancelTransaction();
-            throw new Exception("Doslo je do greske prilikom pretrazivanja poslovne jedinice po id-u!\n" + sqle.getMessage());
+            throw new RepositoryException("Doslo je do greske prilikom pretrazivanja poslovne jedinice po upitu!");
         }
     }
 

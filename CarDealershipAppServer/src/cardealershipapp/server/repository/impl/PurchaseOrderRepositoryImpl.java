@@ -1,6 +1,7 @@
 package cardealershipapp.server.repository.impl;
 
 import java.sql.*;
+
 import cardealershipapp.server.database.DataBase;
 import cardealershipapp.common.domain.Brand;
 import cardealershipapp.common.domain.BusinessUnit;
@@ -13,143 +14,117 @@ import cardealershipapp.common.domain.Model;
 import cardealershipapp.common.domain.PurchaseOrder;
 import cardealershipapp.common.domain.User;
 import cardealershipapp.common.domain.Vehicle;
-import cardealershipapp.server.repository.Repository;
+import cardealershipapp.server.exception.DatabaseException;
+import cardealershipapp.server.exception.EntityNotFoundException;
+import cardealershipapp.server.exception.RepositoryException;
+import cardealershipapp.server.repository.ExtendedRepository;
+import cardealershipapp.server.repository.query.SqlQueries;
+import cardealershipapp.server.util.ExceptionUtils;
+
 import java.math.BigDecimal;
+import java.sql.Date;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
- *
  * @author Miroslav Kološnjaji
  */
-public class PurchaseOrderRepositoryImpl extends PurchaseOrderItemRepositoryImpl implements Repository<PurchaseOrder, Long> {
+public class PurchaseOrderRepositoryImpl implements ExtendedRepository<PurchaseOrder, Long> {
 
     private final DataBase db = DataBase.getInstance();
+    private final Queue<Object> paramsQueue = new ArrayDeque<>();
 
     @Override
-    public void add(PurchaseOrder purchaseOrder) throws Exception {
+    public void save(PurchaseOrder purchaseOrder) throws RepositoryException {
+        //TODO Implement this method if necessary
+        throw new UnsupportedOperationException(ExceptionUtils.UNSUPPORTED_OPERATION_MESSAGE);
+    }
+
+    @Override
+    public PurchaseOrder saveAndReturn(PurchaseOrder purchaseOrder) throws RepositoryException {
         try {
-            String query = "INSERT INTO purchase_order(PurchaseDate, CustomerId, VehicleId, SalesPersonId) VALUES(?,?,?,?)";
-            PreparedStatement preparedStatement = db.getConnection().prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-            preparedStatement.setDate(1, new java.sql.Date(Date.valueOf(purchaseOrder.getDate()).getTime()));
-            preparedStatement.setLong(2, purchaseOrder.getCustomer().getId());
-            preparedStatement.setLong(3, purchaseOrder.getVehicle().getId());
-            preparedStatement.setLong(4, purchaseOrder.getSalesPerson().getId());
-            preparedStatement.executeUpdate();
-
-            ResultSet rsId = preparedStatement.getGeneratedKeys();
-
-            if (rsId.next()) {
-                purchaseOrder.setPurchaseOrderNum(rsId.getLong(1));
+            if(purchaseOrder != null){
+            System.out.println("PARAMETERS:");
+            System.out.println("DATE: " + new java.sql.Date(Date.valueOf(purchaseOrder.getDate()).getTime()));
+            System.out.println("CUSTOMER ID: " + purchaseOrder.getCustomer().getId());
+            System.out.println("VEHICLE ID: " + purchaseOrder.getVehicle().getId());
+            System.out.println("SALES PERSON ID: " + purchaseOrder.getSalesPerson().getId());
+            } else {
+                System.out.println("PURCHASEORDER IS NULL: " + purchaseOrder);
             }
-            
-            rsId.close();
-            preparedStatement.close();
-            
+
+
+
+            paramsQueue.addAll(List.of(new java.sql.Date(Date.valueOf(purchaseOrder.getDate()).getTime()),
+                    purchaseOrder.getCustomer().getId(),
+                    purchaseOrder.getVehicle().getId(),
+                    purchaseOrder.getSalesPerson().getId()));
+
+            Long id = db.executeSqlUpdateAndGenerateKey(SqlQueries.PurchaseOrders.INSERT, paramsQueue);
+
+            purchaseOrder.setPurchaseOrderNum(id);
             purchaseOrder.getPurchaseOrderItems().forEach(purchaseOrderItem -> purchaseOrderItem.setPurchaseOrder(purchaseOrder));
-            addItems(purchaseOrder.getPurchaseOrderItems());
+            return purchaseOrder;
 
-            db.confirmTransaction();
-
-        } catch (SQLException sqle) {
-            db.cancelTransaction();
-            sqle.printStackTrace();
-            throw new Exception("Doslo je do greske prilikom dodavanja porudzbenice u bazu!\n" + sqle.getMessage());
+        } catch (DatabaseException dbe) {
+            dbe.printStackTrace();
+            throw new RepositoryException("Doslo je do greske prilikom dodavanja porudzbenice u bazu!");
         }
     }
 
     @Override
-    public void update(PurchaseOrder purchaseOrder) throws Exception {
+    public void update(PurchaseOrder purchaseOrder) throws RepositoryException {
         try {
-            String query = "UPDATE purchase_order SET PurchaseDate = ?, CustomerId = ?, VehicleId = ?, SalesPersonId = ? WHERE PONumber = ?";
-            PreparedStatement preparedStatement = db.getConnection().prepareStatement(query);
-            preparedStatement.setDate(1, new java.sql.Date(Date.valueOf(purchaseOrder.getDate()).getTime()));
-            preparedStatement.setLong(2, purchaseOrder.getCustomer().getId());
-            preparedStatement.setLong(3, purchaseOrder.getVehicle().getId());
-            preparedStatement.setLong(4, purchaseOrder.getSalesPerson().getId());
-            preparedStatement.setLong(5, purchaseOrder.getPurchaseOrderNum());
-            preparedStatement.executeUpdate();
-            
-            preparedStatement.close();
-            db.confirmTransaction();
 
-        } catch (SQLException sqle) {
-            db.cancelTransaction();
-            sqle.printStackTrace();
-            throw new Exception("Doslo je do greske prilikom azuriranja podataka porudzbenice!\n" + sqle.getMessage());
+            paramsQueue.addAll(List.of(new java.sql.Date(Date.valueOf(purchaseOrder.getDate()).getTime()),
+                    purchaseOrder.getCustomer().getId(),
+                    purchaseOrder.getVehicle().getId(),
+                    purchaseOrder.getSalesPerson().getId(),
+                    purchaseOrder.getPurchaseOrderNum()));
+            db.executeSqlUpdate(SqlQueries.PurchaseOrders.UPDATE, paramsQueue);
+
+        } catch (DatabaseException dbe) {
+            dbe.printStackTrace();
+            throw new RepositoryException("Doslo je do greske prilikom azuriranja podataka porudzbenice!");
         }
     }
 
     @Override
-    public void delete(PurchaseOrder purchaseOrder) throws Exception {
-        try {
-            String query = "DELETE FROM purchase_order WHERE PONumber = ?";
-            PreparedStatement preparedStatement = db.getConnection().prepareStatement(query);
-            preparedStatement.setLong(1, purchaseOrder.getPurchaseOrderNum());
-            preparedStatement.executeUpdate();
-
-            preparedStatement.close();
-            db.confirmTransaction();
-        } catch (SQLException sqle) {
-            db.cancelTransaction();
-            sqle.printStackTrace();
-            throw new Exception("Dogodila se greska prilikom brisanja porudzbenice!\n" + sqle.getMessage());
-        }
-    }
-    
-     @Override
-    public void deleteMultiple(List<PurchaseOrder> purchaseOrders) throws Exception {
+    public void delete(PurchaseOrder purchaseOrder) throws RepositoryException {
         try {
 
-            String query = generateDeleteMultiQuery(purchaseOrders);
-            PreparedStatement preparedStatement = db.getConnection().prepareStatement(query);
-            
-            int counter = 1;
-            for (PurchaseOrder purchaseOrder : purchaseOrders) {
-                preparedStatement.setLong(counter++, purchaseOrder.getPurchaseOrderNum());
-            }
-            preparedStatement.executeUpdate();
-            
-            preparedStatement.close();
-            db.confirmTransaction();
+            paramsQueue.add(purchaseOrder.getPurchaseOrderNum());
+            db.executeSqlUpdate(SqlQueries.PurchaseOrders.DELETE_BY_ID, paramsQueue);
 
-        } catch (SQLException sqle) {
-            sqle.printStackTrace();
-            db.cancelTransaction();
-            throw new Exception("Doslo je do greske prilikom brisanja porudzbenica iz baze!");
+        } catch (DatabaseException dbe) {
+            dbe.printStackTrace();
+            throw new RepositoryException("Dogodila se greska prilikom brisanja porudzbenice!");
         }
-
-    }
-
-    private String generateDeleteMultiQuery(List<PurchaseOrder> purchaseOrders) {
-        StringBuffer bufferedQuery = new StringBuffer("DELETE FROM purchase_order WHERE PoNumber IN(");
-
-        for (int i = 0; i < purchaseOrders.size(); i++) {
-            if (i != 0) {
-                bufferedQuery.append(",");
-            }
-            bufferedQuery.append("?");
-        }
-        bufferedQuery.append(")");
-
-        return bufferedQuery.toString();
     }
 
     @Override
-    public List<PurchaseOrder> getAll() throws Exception {
+    public void deleteMultiple(List<PurchaseOrder> purchaseOrders) throws RepositoryException {
         try {
+
+            String query = db.generateDeleteMultiQuery(purchaseOrders, SqlQueries.PurchaseOrders.DELETE_MULTIPLE_ID);
+            purchaseOrders.forEach(purchaseOrder -> paramsQueue.add(purchaseOrder.getPurchaseOrderNum()));
+            db.executeSqlUpdate(query, paramsQueue);
+
+        } catch (DatabaseException dbe) {
+            dbe.printStackTrace();
+            throw new RepositoryException("Doslo je do greske prilikom brisanja vise porudzbenica iz baze!");
+        }
+
+    }
+
+    @Override
+    public List<PurchaseOrder> getAll() throws RepositoryException {
+        try {
+
             List<PurchaseOrder> purchaseOrders = new ArrayList<>();
 
-            String query = """
-                           SELECT PO.PONumber, PO.PurchaseDate, PO.CustomerId, PO.VehicleId, PO.SalesPersonId, CU.Name, CU.CompanyName, CU.Address, CU.Phone, CU.Email,
-                           V.ViNumber, V.BodyType, V.EngDispl, V.EngPowerKW, V.YearOfProd, V.FuelType, V.Price, V.Currency, V.ModelId, V.BusinessUId, M.ModelName, M.BrandId, BR.BrandName, BU.Name, BU.CompanyRegNum,
-                           BU.TaxId, BU.Address, BU.CityId, BU.Phone, BU.Email, C.ZipCode, C.CityName, U.FirstName, U.LastName FROM PURCHASE_ORDER PO JOIN Customer CU ON PO.CustomerId = CU.Id 
-                           JOIN Vehicle V ON PO.VehicleId = V.Id JOIN `User` U ON PO.SalesPersonId = U.Id JOIN model M ON V.ModelId = M.Id JOIN brand BR ON M.BrandId = BR.Id JOIN business_unit BU ON V.BusinessUId = BU.Id
-                            JOIN city C ON BU.CityId = C.Id;""";
-
             Statement statement = db.getConnection().createStatement();
-            ResultSet rs = statement.executeQuery(query);
+            ResultSet rs = statement.executeQuery(SqlQueries.PurchaseOrders.SELECT_ALL);
 
             while (rs.next()) {
 
@@ -216,20 +191,18 @@ public class PurchaseOrderRepositoryImpl extends PurchaseOrderItemRepositoryImpl
 
             rs.close();
             statement.close();
-            db.confirmTransaction();
             return purchaseOrders;
         } catch (SQLException sqle) {
-            db.cancelTransaction();
             sqle.printStackTrace();
-            throw new Exception("Dogodila se greska prilikom ucitavanja porudzbenica iz baze!\n" + sqle.getMessage());
+            throw new RepositoryException("Dogodila se greska prilikom ucitavanja porudzbenica iz baze!");
         }
     }
 
     @Override
-    public PurchaseOrder findById(Long id) throws Exception {
+    public PurchaseOrder findById(Long id) throws RepositoryException, EntityNotFoundException {
         try {
-            String query = "SELECT PurchaseDate, CustomerId, VehicleId, SalesPersonId FROM purchase_order WHERE PONumber = ?";
-            PreparedStatement preparedStatement = db.getConnection().prepareStatement(query);
+
+            PreparedStatement preparedStatement = db.getConnection().prepareStatement(SqlQueries.PurchaseOrders.SELECT_BY_ID);
             preparedStatement.setLong(1, id);
             ResultSet rs = preparedStatement.executeQuery();
 
@@ -243,23 +216,22 @@ public class PurchaseOrderRepositoryImpl extends PurchaseOrderItemRepositoryImpl
 
                 rs.close();
                 preparedStatement.close();
-                db.confirmTransaction();
                 return purchaseOrder;
             }
 
-            throw new Exception("Ne postoji porudzbenica sa ovim id brojem!");
+            throw new EntityNotFoundException("Ne postoji porudzbenica sa ovim id brojem!");
 
         } catch (SQLException sqle) {
-            db.cancelTransaction();
             sqle.printStackTrace();
-            throw new Exception("Doslo je do greske prilikom pretrage porudzbenice po id-ju!\n" + sqle.getMessage());
+            throw new RepositoryException("Doslo je do greske prilikom pretrage porudzbenice po ID broju!");
         }
     }
 
     @Override
-    public List<PurchaseOrder> findByQuery(String query) throws Exception {
+    public List<PurchaseOrder> findByQuery(String query) throws RepositoryException {
 
         try {
+
             List<PurchaseOrder> purchaseOrders = new ArrayList<>();
 
             Statement statement = db.getConnection().createStatement();
@@ -278,13 +250,11 @@ public class PurchaseOrderRepositoryImpl extends PurchaseOrderItemRepositoryImpl
 
             rs.close();
             statement.close();
-            db.confirmTransaction();
             return purchaseOrders;
 
         } catch (SQLException sqle) {
-            db.cancelTransaction();
             sqle.printStackTrace();
-            throw new Exception("Dogodila se greska prilikom pretrage porudzbenica!\n" + sqle.getMessage());
+            throw new RepositoryException("Dogodila se greska prilikom pretrage porudzbenica po upitu!");
         }
 
     }

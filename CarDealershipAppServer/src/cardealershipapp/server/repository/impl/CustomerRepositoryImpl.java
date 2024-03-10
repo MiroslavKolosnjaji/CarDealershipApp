@@ -5,92 +5,113 @@ import java.sql.*;
 import cardealershipapp.server.database.DataBase;
 import cardealershipapp.common.domain.Customer;
 import cardealershipapp.server.exception.DatabaseException;
+import cardealershipapp.server.exception.EntityNotFoundException;
+import cardealershipapp.server.exception.RepositoryException;
+import cardealershipapp.server.repository.ExtendedRepository;
 import cardealershipapp.server.repository.Repository;
+import cardealershipapp.server.repository.query.SqlQueries;
 
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Queue;
+import java.util.*;
 
 /**
  * @author Miroslav Kološnjaji
  */
-public class CustomerRepositoryImpl implements Repository<Customer, Long> {
+public class CustomerRepositoryImpl implements ExtendedRepository<Customer, Long> {
 
     private final DataBase db = DataBase.getInstance();
     private final Queue<Object> paramsQueue = new ArrayDeque<>();
 
     @Override
-    public void add(Customer customer) throws Exception {
+    public void save(Customer customer) throws RepositoryException {
         try {
-            String query = "INSERT INTO customer(Name, CompanyName, Address, Phone, Email) VALUES(?,?,?,?,?)";
+
             paramsQueue.addAll(List.of(customer.getName(),
                     customer.getCompanyName(),
                     customer.getAddress(),
                     customer.getPhone(),
                     customer.getEmail()));
-            db.executeSqlUpdate(query, paramsQueue);
+            db.executeSqlUpdate(SqlQueries.Customers.INSERT, paramsQueue);
+
         } catch (DatabaseException dbe) {
             dbe.printStackTrace();
-            throw new Exception("Doslo je do greske prilikom dodavanja novog kupca u bazu!\n" + dbe.getMessage());
+            throw new RepositoryException("Doslo je do greske prilikom dodavanja kupca u bazu!");
         }
     }
 
     @Override
-    public void update(Customer customer) throws Exception {
+    public Customer saveAndReturn(Customer customer) throws RepositoryException {
         try {
-            String query = "UPDATE customer SET Name = ?, CompanyName = ?, Address = ?, Phone = ?, Email = ? WHERE Id = ?";
+            paramsQueue.addAll(List.of(customer.getName(),
+                    customer.getCompanyName(),
+                    customer.getAddress(),
+                    customer.getPhone(),
+                    customer.getEmail()));
+
+            Long id = db.executeSqlUpdateAndGenerateKey(SqlQueries.Customers.INSERT, paramsQueue);
+            customer.setId(id);
+            return customer;
+
+        } catch (DatabaseException dbe) {
+            dbe.printStackTrace();
+            throw new RepositoryException("Doslo je do greske prilikom dodavanja kupca u bazu!");
+        }
+    }
+
+    @Override
+    public void update(Customer customer) throws RepositoryException {
+        try {
+
             paramsQueue.addAll(List.of(customer.getName(),
                     customer.getCompanyName(),
                     customer.getAddress(),
                     customer.getPhone(),
                     customer.getEmail(),
                     customer.getId()));
-            db.executeSqlUpdate(query, paramsQueue);
+            db.executeSqlUpdate(SqlQueries.Customers.UPDATE, paramsQueue);
+
         } catch (DatabaseException dbe) {
             dbe.printStackTrace();
-            throw new Exception("Doslo je do greske prilikom azuriranja podataka kupca!\n" + dbe.getMessage());
+            throw new RepositoryException("Doslo je do greske prilikom azuriranja podataka kupca!");
         }
     }
 
     @Override
-    public void delete(Customer customer) throws Exception {
+    public void delete(Customer customer) throws RepositoryException {
         try {
-            String query = "DELETE FROM customer WHERE Id = ?";
+
             paramsQueue.add(customer.getId());
-            db.executeSqlUpdate(query, paramsQueue);
+            db.executeSqlUpdate(SqlQueries.Customers.DELETE_BY_ID, paramsQueue);
+
         } catch (DatabaseException dbe) {
             dbe.printStackTrace();
-            throw new Exception("Doslo je do greske prilikom brisanja kupca iz baze!\n" + dbe.getMessage());
+            throw new RepositoryException("Doslo je do greske prilikom brisanja kupca iz baze!");
         }
     }
 
     @Override
-    public void deleteMultiple(List<Customer> customers) throws Exception {
+    public void deleteMultiple(List<Customer> customers) throws RepositoryException {
         try {
 
-            String query = db.generateDeleteMultiQuery(customers, "customer");
+            String query = db.generateDeleteMultiQuery(customers, SqlQueries.Customers.DELETE_MULTIPLE_ID);
             customers.forEach(customer -> paramsQueue.add(customer.getId()));
             db.executeSqlUpdate(query, paramsQueue);
 
         } catch (DatabaseException dbe) {
             dbe.printStackTrace();
-            db.cancelTransaction();
-            throw new Exception("Doslo je do greske prilikom brisanja brendova iz baze!");
+            throw new RepositoryException("Doslo je do greske prilikom brisanja vise kupaca iz baze!");
         }
 
     }
 
 
     @Override
-    public List<Customer> getAll() throws Exception {
+    public List<Customer> getAll() throws RepositoryException {
         try {
 
             List<Customer> customers = new ArrayList<>();
 
-            String query = "SELECT Id, 'Name', CompanyName, Address, Phone, Email FROM customer";
             Statement statement = db.getConnection().createStatement();
-            ResultSet rs = statement.executeQuery(query);
+            ResultSet rs = statement.executeQuery(SqlQueries.Customers.SELECT_ALL);
 
             while (rs.next()) {
                 Long customerId = rs.getLong("Id");
@@ -106,22 +127,19 @@ public class CustomerRepositoryImpl implements Repository<Customer, Long> {
 
             rs.close();
             statement.close();
-            db.confirmTransaction();
             return customers;
 
         } catch (SQLException sqle) {
-            db.cancelTransaction();
             sqle.printStackTrace();
-            throw new Exception("Doslo je do greske prilikom ucitavanja kupaca iz baze!\n" + sqle.getMessage());
+            throw new RepositoryException("Doslo je do greske prilikom ucitavanja kupaca iz baze!");
         }
     }
 
     @Override
-    public Customer findById(Long id) throws Exception {
+    public Customer findById(Long id) throws RepositoryException, EntityNotFoundException {
         try {
 
-            String query = "Select Id, Name, CompanyName, Address, Phone, Email FROM customer WHERE Id = ?";
-            PreparedStatement preparedStatement = db.getConnection().prepareStatement(query);
+            PreparedStatement preparedStatement = db.getConnection().prepareStatement(SqlQueries.Customers.SELECT_BY_ID);
             preparedStatement.setLong(1, id);
             ResultSet rs = preparedStatement.executeQuery();
 
@@ -136,21 +154,19 @@ public class CustomerRepositoryImpl implements Repository<Customer, Long> {
 
                 rs.close();
                 preparedStatement.close();
-                db.confirmTransaction();
                 return customer;
             }
 
-            throw new Exception("Kupac sa ovim Id brojem ne postoji!");
+            throw new EntityNotFoundException("Kupac sa ovim Id brojem ne postoji!");
 
         } catch (SQLException sqle) {
-            db.cancelTransaction();
             sqle.printStackTrace();
-            throw new Exception("Doslo je do greske prilikom pretrage kupca po id-u!n\n" + sqle.getMessage());
+            throw new RepositoryException("Doslo je do greske prilikom pretrage kupca po ID broju!");
         }
     }
 
     @Override
-    public List<Customer> findByQuery(String query) throws Exception {
+    public List<Customer> findByQuery(String query) throws RepositoryException {
         try {
 
             List<Customer> customers = new ArrayList<>();
@@ -171,13 +187,11 @@ public class CustomerRepositoryImpl implements Repository<Customer, Long> {
 
             rs.close();
             statement.close();
-            db.confirmTransaction();
             return customers;
 
         } catch (SQLException sqle) {
-            db.cancelTransaction();
             sqle.printStackTrace();
-            throw new Exception("Doslo je do greske prilikom pretrazivanja kupca!\n" + sqle.getMessage());
+            throw new RepositoryException("Doslo je do greske prilikom pretrazivanja kupca po upitu!");
         }
     }
 
