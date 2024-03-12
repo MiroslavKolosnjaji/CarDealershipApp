@@ -5,7 +5,7 @@ import cardealershipapp.client.ui.response.Responsive;
 import cardealershipapp.common.domain.Brand;
 import cardealershipapp.common.domain.Model;
 import cardealershipapp.common.transfer.Operation;
-import cardealershipapp.common.validation.InputValidationException;
+import cardealershipapp.common.exception.InputValidationException;
 
 import java.util.List;
 import javax.swing.JOptionPane;

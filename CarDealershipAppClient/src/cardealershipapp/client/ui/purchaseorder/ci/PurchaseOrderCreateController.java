@@ -12,7 +12,7 @@ import cardealershipapp.common.domain.Vehicle;
 import cardealershipapp.client.session.ApplicationSession;
 import cardealershipapp.client.ui.component.table.model.PurchaseOrderItemTableModel;
 import cardealershipapp.client.ui.purchaseorder.PurchaseOrderCreateForm;
-import cardealershipapp.common.validation.InputValidationException;
+import cardealershipapp.common.exception.InputValidationException;
 import cardealershipapp.common.domain.Currency;
 import cardealershipapp.common.transfer.Operation;
 import cardealershipapp.common.transfer.Response;

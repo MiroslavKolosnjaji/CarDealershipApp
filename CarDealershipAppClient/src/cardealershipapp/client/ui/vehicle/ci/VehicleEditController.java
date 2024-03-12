@@ -11,7 +11,8 @@ import cardealershipapp.common.domain.Model;
 import cardealershipapp.common.domain.Vehicle;
 
 import cardealershipapp.client.session.ApplicationSession;
-import cardealershipapp.common.validation.InputValidationException;
+import cardealershipapp.common.exception.InputValidationException;
+import cardealershipapp.common.exception.ServiceException;
 import cardealershipapp.common.transfer.Operation;
 
 import java.math.BigDecimal;
@@ -54,9 +55,9 @@ public class VehicleEditController implements Responsive {
 
             JOptionPane.showMessageDialog(vehicleEditForm, "Podaci o vozilu su uspesno izmenjeni!");
             vehicleEditForm.dispose();
-        } catch (InputValidationException ive) {
-            ive.printStackTrace();
-            JOptionPane.showMessageDialog(vehicleEditForm, ive.getMessage(), "Paznja!", JOptionPane.WARNING_MESSAGE);
+        } catch (InputValidationException | ServiceException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(vehicleEditForm, e.getMessage(), "Paznja!", JOptionPane.WARNING_MESSAGE);
         } catch (Exception ex) {
             ex.printStackTrace();
             JOptionPane.showMessageDialog(vehicleEditForm, ex.getMessage(), "Paznja!", JOptionPane.WARNING_MESSAGE);

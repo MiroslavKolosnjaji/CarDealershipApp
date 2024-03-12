@@ -2,7 +2,7 @@ package cardealershipapp.client.ui.vehicle.ci;
 
 import cardealershipapp.client.ui.response.Responsive;
 import cardealershipapp.client.ui.vehicle.VehicleAddForm;
-import cardealershipapp.common.validation.InputValidationException;
+import cardealershipapp.common.exception.InputValidationException;
 import cardealershipapp.common.domain.Brand;
 import cardealershipapp.common.domain.BusinessUnit;
 import cardealershipapp.common.domain.CarBodyType;

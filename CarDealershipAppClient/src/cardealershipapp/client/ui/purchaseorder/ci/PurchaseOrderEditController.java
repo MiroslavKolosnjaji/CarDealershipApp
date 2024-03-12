@@ -14,7 +14,7 @@ import cardealershipapp.client.session.ApplicationSession;
 import cardealershipapp.client.ui.component.table.model.PurchaseOrderItemTableModel;
 import cardealershipapp.client.ui.purchaseorder.PurchaseOrderDetailsForm;
 import cardealershipapp.client.ui.purchaseorder.PurchaseOrderEditForm;
-import cardealershipapp.common.validation.InputValidationException;
+import cardealershipapp.common.exception.InputValidationException;
 import cardealershipapp.common.domain.Currency;
 
 import java.math.BigDecimal;

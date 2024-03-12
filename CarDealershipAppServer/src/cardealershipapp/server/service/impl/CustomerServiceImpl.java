@@ -6,7 +6,7 @@ import cardealershipapp.server.exception.DatabaseException;
 import cardealershipapp.server.exception.EntityNotFoundException;
 import cardealershipapp.server.util.ExceptionUtils;
 import cardealershipapp.server.exception.RepositoryException;
-import cardealershipapp.server.exception.ServiceException;
+import cardealershipapp.common.exception.ServiceException;
 import cardealershipapp.server.repository.Repository;
 import cardealershipapp.server.service.ServiceCRUD;
 import org.slf4j.Logger;

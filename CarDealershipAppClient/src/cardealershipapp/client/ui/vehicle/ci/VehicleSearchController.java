@@ -21,7 +21,7 @@ import cardealershipapp.common.transfer.Response;
 import cardealershipapp.client.ui.vehicle.VehicleAddForm;
 import cardealershipapp.client.ui.vehicle.VehicleEditForm;
 import cardealershipapp.common.domain.PurchaseOrder;
-import cardealershipapp.common.validation.InputValidationException;
+import cardealershipapp.common.exception.InputValidationException;
 
 import java.awt.Component;
 import java.net.SocketException;

@@ -2,13 +2,13 @@ package cardealershipapp.server.service.impl;
 
 import cardealershipapp.common.domain.User;
 import cardealershipapp.common.domain.UserProfile;
-import cardealershipapp.common.validation.InputValidationException;
+import cardealershipapp.common.exception.InputValidationException;
 import cardealershipapp.server.database.DataBase;
 import cardealershipapp.server.exception.DatabaseException;
 import cardealershipapp.server.exception.EntityNotFoundException;
 import cardealershipapp.server.util.ExceptionUtils;
 import cardealershipapp.server.exception.RepositoryException;
-import cardealershipapp.server.exception.ServiceException;
+import cardealershipapp.common.exception.ServiceException;
 import cardealershipapp.server.repository.Repository;
 import cardealershipapp.server.service.UserProfileService;
 import org.slf4j.Logger;

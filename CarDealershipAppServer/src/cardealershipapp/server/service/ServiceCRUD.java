@@ -1,6 +1,6 @@
 package cardealershipapp.server.service;
 
-import cardealershipapp.server.exception.ServiceException;
+import cardealershipapp.common.exception.ServiceException;
 
 import java.util.List;
 

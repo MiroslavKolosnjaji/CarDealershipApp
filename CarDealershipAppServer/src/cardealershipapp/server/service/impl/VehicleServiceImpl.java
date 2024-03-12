@@ -1,6 +1,7 @@
 package cardealershipapp.server.service.impl;
 
 import cardealershipapp.common.domain.Vehicle;
+import cardealershipapp.common.exception.ServiceException;
 import cardealershipapp.server.database.DataBase;
 import cardealershipapp.server.exception.*;
 import cardealershipapp.server.repository.Repository;

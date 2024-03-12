@@ -1,4 +1,4 @@
-package cardealershipapp.common.validation;
+package cardealershipapp.common.exception;
 
 /**
  *

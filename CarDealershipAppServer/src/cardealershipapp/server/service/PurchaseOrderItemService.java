@@ -1,7 +1,7 @@
 package cardealershipapp.server.service;
 
 import cardealershipapp.common.domain.PurchaseOrderItem;
-import cardealershipapp.server.exception.ServiceException;
+import cardealershipapp.common.exception.ServiceException;
 
 import java.util.List;
 

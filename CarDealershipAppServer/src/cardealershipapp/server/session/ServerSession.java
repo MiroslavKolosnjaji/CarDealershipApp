@@ -1,6 +1,6 @@
 package cardealershipapp.server.session;
 
-import cardealershipapp.common.validation.InputValidationException;
+import cardealershipapp.common.exception.InputValidationException;
 import cardealershipapp.server.thread.ProcessClientRequests;
 import java.util.ArrayList;
 import java.util.List;
