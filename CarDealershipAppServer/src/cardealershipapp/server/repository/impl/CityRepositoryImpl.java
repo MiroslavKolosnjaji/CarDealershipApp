@@ -10,6 +10,9 @@ import cardealershipapp.server.exception.EntityNotFoundException;
 import cardealershipapp.server.exception.RepositoryException;
 import cardealershipapp.server.repository.Repository;
 import cardealershipapp.server.repository.query.SqlQueries;
+import cardealershipapp.server.util.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
@@ -18,6 +21,7 @@ import java.util.*;
  */
 public class CityRepositoryImpl implements Repository<City, Long> {
 
+    private static final Logger log = LoggerFactory.getLogger(CityRepositoryImpl.class);
     private final DataBase db = DataBase.getInstance();
     private final Queue<Object> paramsQueue = new ArrayDeque<>();
 
@@ -29,7 +33,7 @@ public class CityRepositoryImpl implements Repository<City, Long> {
             db.executeSqlUpdate(SqlQueries.Cities.INSERT, paramsQueue);
 
         } catch (DatabaseException dbe) {
-            dbe.printStackTrace();
+            log.error("Greška prilikom unosa grada '" + city.getName() + "' u bazu podataka: " + dbe.getClass().getSimpleName() + ": " + dbe.getMessage());
             throw new RepositoryException("Doslo je do greske prilikom dodavanja novog grada u bazu!");
         }
     }
@@ -44,7 +48,7 @@ public class CityRepositoryImpl implements Repository<City, Long> {
             db.executeSqlUpdate(SqlQueries.Cities.UPDATE, paramsQueue);
 
         } catch (DatabaseException dbe) {
-            dbe.printStackTrace();
+            log.error("Greška prilikom ažuriramja grada '" + city.getName() + "' u bazi podataka: " + dbe.getClass().getSimpleName() + ": " + dbe.getMessage());
             throw new RepositoryException("Doslo je do greske prilikom azuriranja podataka grada u bazi!");
 
         }
@@ -58,7 +62,7 @@ public class CityRepositoryImpl implements Repository<City, Long> {
             db.executeSqlUpdate(SqlQueries.Cities.DELETE_BY_ID, paramsQueue);
 
         } catch (DatabaseException dbe) {
-            dbe.printStackTrace();
+            log.error("Greška prilikom brisanja grada '" + city.getName() + "' iz baze podataka: " + dbe.getClass().getSimpleName() + ": " + dbe.getMessage());
             throw new RepositoryException("Doslo je do greske prilikom brisanja grada iz baze!");
         }
     }
@@ -72,7 +76,7 @@ public class CityRepositoryImpl implements Repository<City, Long> {
             db.executeSqlUpdate(query, paramsQueue);
 
         } catch (DatabaseException dbe) {
-            dbe.printStackTrace();
+            log.error("Greška prilikom brisanja '" + cities.size() + "' gradova iz baze podataka: " + dbe.getClass().getSimpleName() + ": " + dbe.getMessage());
             throw new RepositoryException("Doslo je do greske prilikom brisanja vise gradova iz baze!");
         }
 
@@ -103,7 +107,7 @@ public class CityRepositoryImpl implements Repository<City, Long> {
             return cities;
 
         } catch (SQLException sqle) {
-            sqle.printStackTrace();
+            log.error("Greška prilikom učitavanja gradova iz baze podataka: " + sqle.getClass().getSimpleName() + ": " + sqle.getMessage());
             throw new RepositoryException("Doslo je do greske prilikom ucitavanja gradova iz baze!");
         }
 
@@ -131,7 +135,7 @@ public class CityRepositoryImpl implements Repository<City, Long> {
 
 
         } catch (SQLException sqle) {
-            sqle.printStackTrace();
+            log.error("Greška prilikom pretraživanja grada po ID '" + id + "' u bazi podataka: " + sqle.getClass().getSimpleName() + ": " + sqle.getMessage());
             throw new RepositoryException("Doslo je do greske prilikom pretrage grada pod ID broju!");
         }
     }
@@ -158,7 +162,7 @@ public class CityRepositoryImpl implements Repository<City, Long> {
             return cities;
 
         } catch (SQLException sqle) {
-            sqle.printStackTrace();
+            log.error(ExceptionUtils.DATABASE_SQL_QUERY_EXECUTION_ERROR_MESSAGE + query + " u metodi findByQeury klase: " + this.getClass().getSimpleName() + " : " + sqle.getClass().getSimpleName() + ": " + sqle.getMessage());
             throw new RepositoryException("Doslo je do greske prilikom pretrazivanja grada po upitu!");
         }
     }
