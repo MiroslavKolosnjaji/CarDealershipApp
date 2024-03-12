@@ -4,8 +4,10 @@ import cardealershipapp.client.session.ApplicationSession;
 import cardealershipapp.client.ui.login.LoginForm;
 import cardealershipapp.client.ui.response.Responsive;
 import cardealershipapp.common.domain.UserProfile;
+import cardealershipapp.common.exception.ServiceException;
 import cardealershipapp.common.transfer.Operation;
 import cardealershipapp.common.exception.InputValidationException;
+
 
 import java.net.SocketException;
 import javax.swing.JOptionPane;
@@ -37,8 +39,8 @@ public class LoginController implements Responsive {
             ApplicationSession.getInstance().setLoggedUser(up);
             loginForm.dispose();
 
-        } catch (InputValidationException ive) {
-            JOptionPane.showMessageDialog(loginForm, ive.getMessage(), "Paznja!", JOptionPane.WARNING_MESSAGE);
+        } catch (InputValidationException | ServiceException e) {
+            JOptionPane.showMessageDialog(loginForm, e.getMessage(), "Paznja!", JOptionPane.WARNING_MESSAGE);
         } catch (SocketException se) {
             JOptionPane.showMessageDialog(loginForm, se.getMessage(), "Upozorenje!", JOptionPane.ERROR_MESSAGE);
             System.exit(0);
