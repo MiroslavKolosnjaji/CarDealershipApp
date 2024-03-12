@@ -7,7 +7,8 @@ import cardealershipapp.common.domain.UserProfile;
 import cardealershipapp.common.exception.ServiceException;
 import cardealershipapp.common.transfer.Operation;
 import cardealershipapp.common.exception.InputValidationException;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.SocketException;
 import javax.swing.JOptionPane;
@@ -17,7 +18,8 @@ import javax.swing.JOptionPane;
  */
 public class LoginController implements Responsive {
 
-    private LoginForm loginForm;
+    private static final Logger log = LoggerFactory.getLogger(LoginController.class);
+    private final LoginForm loginForm;
 
     public LoginController(LoginForm loginForm) {
         this.loginForm = loginForm;
@@ -40,13 +42,16 @@ public class LoginController implements Responsive {
             loginForm.dispose();
 
         } catch (InputValidationException | ServiceException e) {
+            log.info("Login method: " + e.getMessage());
             JOptionPane.showMessageDialog(loginForm, e.getMessage(), "Paznja!", JOptionPane.WARNING_MESSAGE);
         } catch (SocketException se) {
+            log.error("Došlo je do greske prilikom komunikacije socketa: " + se.getMessage());
             JOptionPane.showMessageDialog(loginForm, se.getMessage(), "Upozorenje!", JOptionPane.ERROR_MESSAGE);
-            System.exit(0);
+//            System.exit(0);
         } catch (Exception ex) {
+            log.error("Desila se greska u logIn metodi: " + ex.getMessage());
             ex.printStackTrace();
-            JOptionPane.showMessageDialog(loginForm, ex.getMessage(), "Paznja!", JOptionPane.WARNING_MESSAGE);
+//            JOptionPane.showMessageDialog(loginForm, ex.getMessage(), "Paznja!", JOptionPane.WARNING_MESSAGE);
         }
     }
 

@@ -176,7 +176,6 @@ public class UserProfileRepositoryImpl implements Repository<UserProfile, String
             }
             rs.close();
             statement.close();
-
             return userProfiles;
 
         } catch (SQLException sqle) {
