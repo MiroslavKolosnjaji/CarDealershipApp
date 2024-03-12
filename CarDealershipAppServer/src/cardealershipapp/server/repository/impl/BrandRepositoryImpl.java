@@ -103,7 +103,7 @@ public class BrandRepositoryImpl implements Repository<Brand, Long> {
             return brands;
 
         } catch (SQLException sqle) {
-            log.error("Greška prilikom ucitavanja brendova iz baze podataka: " + sqle.getClass().getSimpleName() + ": " + sqle.getMessage());
+            log.error("Greška prilikom učitavanja brendova iz baze podataka: " + sqle.getClass().getSimpleName() + ": " + sqle.getMessage());
             throw new RepositoryException("Doslo je do greske prilikom ucitavanja brendova iz baze!");
         }
 
@@ -130,7 +130,7 @@ public class BrandRepositoryImpl implements Repository<Brand, Long> {
             }
 
         } catch (SQLException sqle) {
-            log.error("Greška prilikom pretraživanja brenda za ID '" + id + "' u bazi podataka: " + sqle.getClass().getSimpleName() + ": " + sqle.getMessage());
+            log.error("Greška prilikom pretraživanja brenda po ID '" + id + "' u bazi podataka: " + sqle.getClass().getSimpleName() + ": " + sqle.getMessage());
             throw new RepositoryException("Doslo je do greske prilikom pretrage marke po ID broju!");
         }
     }
