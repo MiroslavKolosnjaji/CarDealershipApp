@@ -12,6 +12,8 @@ import cardealershipapp.server.exception.RepositoryException;
 import cardealershipapp.server.repository.Repository;
 import cardealershipapp.server.repository.query.SqlQueries;
 import cardealershipapp.server.util.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -21,6 +23,7 @@ import java.util.*;
  */
 public class UserRepositoryImpl implements Repository<User, Long> {
 
+    public static final Logger log = LoggerFactory.getLogger(UserRepositoryImpl.class);
     private final DataBase db = DataBase.getInstance();
     private final Queue<Object> paramsQueue = new ArrayDeque<>();
 
@@ -35,7 +38,7 @@ public class UserRepositoryImpl implements Repository<User, Long> {
             db.executeSqlUpdate(SqlQueries.Users.INSERT, paramsQueue);
 
         } catch (DatabaseException dbe) {
-            dbe.printStackTrace();
+            log.error("Greška prilikom unosa korisnika '" + user.getFirstName().concat(" ").concat(user.getLastName()) + "' u bazu podataka: " + dbe.getClass().getSimpleName() + ": " + dbe.getMessage());
             throw new RepositoryException("Doslo je do greske prilikom dodavanja korisnika u bazu!");
         }
     }
@@ -54,7 +57,7 @@ public class UserRepositoryImpl implements Repository<User, Long> {
             db.executeSqlUpdate(SqlQueries.Users.UPDATE, paramsQueue);
 
         } catch (DatabaseException dbe) {
-            dbe.printStackTrace();
+            log.error("Greška prilikom ažuriranja korisnika '" + user.getFirstName().concat(" ").concat(user.getLastName()) + "' u bazi podataka: " + dbe.getClass().getSimpleName() + ": " + dbe.getMessage());
             throw new RepositoryException("Doslo je do greske prilikom azuriranja podataka korisnika u bazi!");
         }
 
@@ -67,7 +70,7 @@ public class UserRepositoryImpl implements Repository<User, Long> {
             paramsQueue.add(user.getId());
             db.executeSqlUpdate(SqlQueries.Users.DELETE_BY_ID, paramsQueue);
         } catch (DatabaseException dbe) {
-            dbe.printStackTrace();
+            log.error("Greška prilikom brisanja korisnika '" + user.getFirstName().concat(" ").concat(user.getLastName()) + "' u bazi podataka: " + dbe.getClass().getSimpleName() + ": " + dbe.getMessage());
             throw new RepositoryException("Doslo je do greske prilikom brisanja korisnika iz baze!");
         }
     }
@@ -81,7 +84,7 @@ public class UserRepositoryImpl implements Repository<User, Long> {
             db.executeSqlUpdate(query, paramsQueue);
 
         } catch (DatabaseException dbe) {
-            dbe.printStackTrace();
+            log.error("Greška prilikom brisanja '" + users.size() + "' korisnika u bazi podataka: " + dbe.getClass().getSimpleName() + ": " + dbe.getMessage());
             throw new RepositoryException("Doslo je do greske prilikom brisanja vise korisnika iz baze!");
         }
 
@@ -119,7 +122,7 @@ public class UserRepositoryImpl implements Repository<User, Long> {
             prepStat.close();
             return users;
         } catch (SQLException sqle) {
-            sqle.printStackTrace();
+            log.error("Greška prilikom učitavanja korisnika iz baze podataka: " + sqle.getClass().getSimpleName() + ": " + sqle.getMessage());
             throw new RepositoryException("Doslo je do greske prilikom ucitavanja korisnika iz baze!");
         }
 
@@ -147,10 +150,10 @@ public class UserRepositoryImpl implements Repository<User, Long> {
                 return user;
             }
 
-            throw new EntityNotFoundException("Korisnik sa ovim Id brojem ne postoji!");
+            throw new EntityNotFoundException("Korisnik ne postoji!");
 
         } catch (SQLException sqle) {
-            sqle.printStackTrace();
+            log.error("Greška prilikom pretraživanja korisnika po ID '" + id + "' u bazi podataka: " + sqle.getClass().getSimpleName() + ": " + sqle.getMessage());
             throw new RepositoryException("Doslo je do greske prilikom pretrazivanja korisnika po ID broju!");
         }
     }
