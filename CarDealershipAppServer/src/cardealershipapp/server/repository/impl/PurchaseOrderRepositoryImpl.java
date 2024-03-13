@@ -20,6 +20,8 @@ import cardealershipapp.server.exception.RepositoryException;
 import cardealershipapp.server.repository.ExtendedRepository;
 import cardealershipapp.server.repository.query.SqlQueries;
 import cardealershipapp.server.util.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.sql.Date;
@@ -31,6 +33,7 @@ import java.util.*;
  */
 public class PurchaseOrderRepositoryImpl implements ExtendedRepository<PurchaseOrder, Long> {
 
+    public static final Logger log = LoggerFactory.getLogger(PurchaseOrderRepositoryImpl.class);
     private final DataBase db = DataBase.getInstance();
     private final Queue<Object> paramsQueue = new ArrayDeque<>();
 
@@ -43,17 +46,6 @@ public class PurchaseOrderRepositoryImpl implements ExtendedRepository<PurchaseO
     @Override
     public PurchaseOrder saveAndReturn(PurchaseOrder purchaseOrder) throws RepositoryException {
         try {
-            if(purchaseOrder != null){
-            System.out.println("PARAMETERS:");
-            System.out.println("DATE: " + new java.sql.Date(Date.valueOf(purchaseOrder.getDate()).getTime()));
-            System.out.println("CUSTOMER ID: " + purchaseOrder.getCustomer().getId());
-            System.out.println("VEHICLE ID: " + purchaseOrder.getVehicle().getId());
-            System.out.println("SALES PERSON ID: " + purchaseOrder.getSalesPerson().getId());
-            } else {
-                System.out.println("PURCHASEORDER IS NULL: " + purchaseOrder);
-            }
-
-
 
             paramsQueue.addAll(List.of(new java.sql.Date(Date.valueOf(purchaseOrder.getDate()).getTime()),
                     purchaseOrder.getCustomer().getId(),
@@ -67,7 +59,7 @@ public class PurchaseOrderRepositoryImpl implements ExtendedRepository<PurchaseO
             return purchaseOrder;
 
         } catch (DatabaseException dbe) {
-            dbe.printStackTrace();
+            log.error("Greška prilikom unosa porudžbenice u bazu podataka za vozilo sa VIN brojem '" + purchaseOrder.getVehicle().getViNumber() + "' : " + dbe.getClass().getSimpleName() + ": " + dbe.getMessage());
             throw new RepositoryException("Doslo je do greske prilikom dodavanja porudzbenice u bazu!");
         }
     }
@@ -84,7 +76,7 @@ public class PurchaseOrderRepositoryImpl implements ExtendedRepository<PurchaseO
             db.executeSqlUpdate(SqlQueries.PurchaseOrders.UPDATE, paramsQueue);
 
         } catch (DatabaseException dbe) {
-            dbe.printStackTrace();
+            log.error("Greška prilikom ažuriranje porudžbenice u bazi podataka za vozilo sa VIN brojem '" + purchaseOrder.getVehicle().getViNumber() + "' : " + dbe.getClass().getSimpleName() + ": " + dbe.getMessage());
             throw new RepositoryException("Doslo je do greske prilikom azuriranja podataka porudzbenice!");
         }
     }
@@ -97,7 +89,7 @@ public class PurchaseOrderRepositoryImpl implements ExtendedRepository<PurchaseO
             db.executeSqlUpdate(SqlQueries.PurchaseOrders.DELETE_BY_ID, paramsQueue);
 
         } catch (DatabaseException dbe) {
-            dbe.printStackTrace();
+            log.error("Greška prilikom brisanja porudžbenice u bazi podataka za vozilo sa VIN brojem '" + purchaseOrder.getVehicle().getViNumber() + "' : " + dbe.getClass().getSimpleName() + ": " + dbe.getMessage());
             throw new RepositoryException("Dogodila se greska prilikom brisanja porudzbenice!");
         }
     }
@@ -111,7 +103,7 @@ public class PurchaseOrderRepositoryImpl implements ExtendedRepository<PurchaseO
             db.executeSqlUpdate(query, paramsQueue);
 
         } catch (DatabaseException dbe) {
-            dbe.printStackTrace();
+            log.error("Greška prilikom brisanja '" + purchaseOrders.size() + "' porudžbenica iz baze podataka: " + dbe.getClass().getSimpleName() + ": " + dbe.getMessage());
             throw new RepositoryException("Doslo je do greske prilikom brisanja vise porudzbenica iz baze!");
         }
 
@@ -193,7 +185,7 @@ public class PurchaseOrderRepositoryImpl implements ExtendedRepository<PurchaseO
             statement.close();
             return purchaseOrders;
         } catch (SQLException sqle) {
-            sqle.printStackTrace();
+            log.error("Greška prilikom učitavanja porudžbenica iz baze podataka: " + sqle.getClass().getSimpleName() + ": " + sqle.getMessage());
             throw new RepositoryException("Dogodila se greska prilikom ucitavanja porudzbenica iz baze!");
         }
     }
@@ -219,10 +211,10 @@ public class PurchaseOrderRepositoryImpl implements ExtendedRepository<PurchaseO
                 return purchaseOrder;
             }
 
-            throw new EntityNotFoundException("Ne postoji porudzbenica sa ovim id brojem!");
+            throw new EntityNotFoundException("Porudzbenica ne postoji!");
 
         } catch (SQLException sqle) {
-            sqle.printStackTrace();
+            log.error("Greška prilikom pretraživanja porudžbenice po ID '" + id + "' u bazi podataka: " + sqle.getClass().getSimpleName() + ": " + sqle.getMessage());
             throw new RepositoryException("Doslo je do greske prilikom pretrage porudzbenice po ID broju!");
         }
     }
@@ -253,7 +245,7 @@ public class PurchaseOrderRepositoryImpl implements ExtendedRepository<PurchaseO
             return purchaseOrders;
 
         } catch (SQLException sqle) {
-            sqle.printStackTrace();
+            log.error(ExceptionUtils.DATABASE_SQL_QUERY_EXECUTION_ERROR_MESSAGE + query + " u metodi findByQeury klase: " +this.getClass().getSimpleName()+ " : " + sqle.getClass().getSimpleName() + ": " + sqle.getMessage());
             throw new RepositoryException("Dogodila se greska prilikom pretrage porudzbenica po upitu!");
         }
 
