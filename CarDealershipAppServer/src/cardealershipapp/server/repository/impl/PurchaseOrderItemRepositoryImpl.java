@@ -14,6 +14,9 @@ import cardealershipapp.server.exception.EntityNotFoundException;
 import cardealershipapp.server.exception.RepositoryException;
 import cardealershipapp.server.repository.PurchaseOrderItemRepository;
 import cardealershipapp.server.repository.query.SqlQueries;
+import cardealershipapp.server.util.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -25,8 +28,9 @@ import java.util.Queue;
  */
 public class PurchaseOrderItemRepositoryImpl implements PurchaseOrderItemRepository {
 
+    public static final Logger log = LoggerFactory.getLogger(PurchaseOrderItemRepositoryImpl.class);
     private final DataBase db = DataBase.getInstance();
-    private Queue<Object> paramsQueue = new ArrayDeque<>();
+    private final Queue<Object> paramsQueue = new ArrayDeque<>();
 
     @Override
     public void saveItems(List<PurchaseOrderItem> purchaseOrderItems) throws RepositoryException {
@@ -41,7 +45,7 @@ public class PurchaseOrderItemRepositoryImpl implements PurchaseOrderItemReposit
             }
 
         } catch (DatabaseException dbe) {
-            dbe.printStackTrace();
+            log.error("Greška prilikom unosa '" + purchaseOrderItems.size() + "' stavki u bazu podataka: " + dbe.getClass().getSimpleName() + ": " + dbe.getMessage());
             throw new RepositoryException("Dogodila se greska prilikom unosa stavki u bazu!");
         }
 
@@ -61,7 +65,7 @@ public class PurchaseOrderItemRepositoryImpl implements PurchaseOrderItemReposit
 
 
         } catch (DatabaseException dbe) {
-            dbe.printStackTrace();
+            log.error("Greška prilikom ažuriranja '" + purchaseOrderItems.size() + "' stavki u bazi podataka: " + dbe.getClass().getSimpleName() + ": " + dbe.getMessage());
             throw new RepositoryException("Doslo je do greske prilikom azuriranja podataka stavke!");
         }
     }
@@ -70,11 +74,11 @@ public class PurchaseOrderItemRepositoryImpl implements PurchaseOrderItemReposit
     public void deleteItem(PurchaseOrderItem purchaseOrderItem) throws RepositoryException {
         try {
 
-             paramsQueue.add(purchaseOrderItem.getPurchaseOrder().getPurchaseOrderNum());
-             db.executeSqlUpdate(SqlQueries.PurchaseOrderItems.DELETE_BY_ID, paramsQueue);
+            paramsQueue.add(purchaseOrderItem.getPurchaseOrder().getPurchaseOrderNum());
+            db.executeSqlUpdate(SqlQueries.PurchaseOrderItems.DELETE_BY_ID, paramsQueue);
 
         } catch (DatabaseException dbe) {
-            dbe.printStackTrace();
+            log.error("Greška prilikom brisanja stavke '" + purchaseOrderItem.getEquipment().getName() + "' iz baze podataka: " + dbe.getClass().getSimpleName() + ": " + dbe.getMessage());
             throw new RepositoryException("Doslo je do greske prilikom brisanja stavke iz baze!");
         }
     }
@@ -99,10 +103,10 @@ public class PurchaseOrderItemRepositoryImpl implements PurchaseOrderItemReposit
                 return purchaseOrderItem;
             }
 
-            throw new EntityNotFoundException("Ne postoji stavka sa ovim Id brojem narudzbenice!");
+            throw new EntityNotFoundException("Ova stavka ne postoji u narudzbenici!");
 
         } catch (SQLException sqle) {
-            sqle.printStackTrace();
+            log.error("Greška prilikom pretraživanja stavke po ID '" + id + "' u bazi podataka: " + sqle.getClass().getSimpleName() + ": " + sqle.getMessage());
             throw new RepositoryException("Doslo je do greske prilikom pretrage stavke po ID broju!");
         }
     }
@@ -130,7 +134,7 @@ public class PurchaseOrderItemRepositoryImpl implements PurchaseOrderItemReposit
             return purchaseOrderItems;
 
         } catch (SQLException sqle) {
-            sqle.printStackTrace();
+            log.error(ExceptionUtils.DATABASE_SQL_QUERY_EXECUTION_ERROR_MESSAGE + query + " u metodi findByQeury klase: " + this.getClass().getSimpleName() + " : " + sqle.getClass().getSimpleName() + ": " + sqle.getMessage());
             throw new RepositoryException("Doslo je do greske prilikom pretrazivanja stavki  po upitu!");
         }
     }
@@ -172,7 +176,7 @@ public class PurchaseOrderItemRepositoryImpl implements PurchaseOrderItemReposit
             return purchaseOrderItems;
 
         } catch (SQLException sqle) {
-            sqle.printStackTrace();
+            log.error("Greška prilikom učitavanja stavki iz baze podataka: " + sqle.getClass().getSimpleName() + ": " + sqle.getMessage());
             throw new RepositoryException("Doslo je do greske prilikom ucitavanja stavki!");
         }
     }
