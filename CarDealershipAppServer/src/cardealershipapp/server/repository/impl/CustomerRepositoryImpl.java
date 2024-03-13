@@ -8,8 +8,10 @@ import cardealershipapp.server.exception.DatabaseException;
 import cardealershipapp.server.exception.EntityNotFoundException;
 import cardealershipapp.server.exception.RepositoryException;
 import cardealershipapp.server.repository.ExtendedRepository;
-import cardealershipapp.server.repository.Repository;
 import cardealershipapp.server.repository.query.SqlQueries;
+import cardealershipapp.server.util.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
@@ -18,6 +20,7 @@ import java.util.*;
  */
 public class CustomerRepositoryImpl implements ExtendedRepository<Customer, Long> {
 
+    public static final Logger log = LoggerFactory.getLogger(CityRepositoryImpl.class);
     private final DataBase db = DataBase.getInstance();
     private final Queue<Object> paramsQueue = new ArrayDeque<>();
 
@@ -33,7 +36,7 @@ public class CustomerRepositoryImpl implements ExtendedRepository<Customer, Long
             db.executeSqlUpdate(SqlQueries.Customers.INSERT, paramsQueue);
 
         } catch (DatabaseException dbe) {
-            dbe.printStackTrace();
+            log.error("Greška prilikom unosa kupca '" + customer.getName() + "' u bazu podataka: " + dbe.getClass().getSimpleName() + ": " + dbe.getMessage());
             throw new RepositoryException("Doslo je do greske prilikom dodavanja kupca u bazu!");
         }
     }
@@ -52,7 +55,7 @@ public class CustomerRepositoryImpl implements ExtendedRepository<Customer, Long
             return customer;
 
         } catch (DatabaseException dbe) {
-            dbe.printStackTrace();
+            log.error("Greška prilikom unosa kupca '" + customer.getName() + "' u bazu podataka: " + dbe.getClass().getSimpleName() + ": " + dbe.getMessage());
             throw new RepositoryException("Doslo je do greske prilikom dodavanja kupca u bazu!");
         }
     }
@@ -70,7 +73,7 @@ public class CustomerRepositoryImpl implements ExtendedRepository<Customer, Long
             db.executeSqlUpdate(SqlQueries.Customers.UPDATE, paramsQueue);
 
         } catch (DatabaseException dbe) {
-            dbe.printStackTrace();
+            log.error("Greška prilikom ažuriranja kupca '" + customer.getName() + "' u bazi podataka: " + dbe.getClass().getSimpleName() + ": " + dbe.getMessage());
             throw new RepositoryException("Doslo je do greske prilikom azuriranja podataka kupca!");
         }
     }
@@ -83,7 +86,7 @@ public class CustomerRepositoryImpl implements ExtendedRepository<Customer, Long
             db.executeSqlUpdate(SqlQueries.Customers.DELETE_BY_ID, paramsQueue);
 
         } catch (DatabaseException dbe) {
-            dbe.printStackTrace();
+            log.error("Greška prilikom brisanja kupca '" + customer.getName() + "' iz baze podataka: " + dbe.getClass().getSimpleName() + ": " + dbe.getMessage());
             throw new RepositoryException("Doslo je do greske prilikom brisanja kupca iz baze!");
         }
     }
@@ -97,7 +100,7 @@ public class CustomerRepositoryImpl implements ExtendedRepository<Customer, Long
             db.executeSqlUpdate(query, paramsQueue);
 
         } catch (DatabaseException dbe) {
-            dbe.printStackTrace();
+            log.error("Greška prilikom brisanja  '" + customers.size() + "' kupaca iz baze podataka: " + dbe.getClass().getSimpleName() + ": " + dbe.getMessage());
             throw new RepositoryException("Doslo je do greske prilikom brisanja vise kupaca iz baze!");
         }
 
@@ -130,7 +133,7 @@ public class CustomerRepositoryImpl implements ExtendedRepository<Customer, Long
             return customers;
 
         } catch (SQLException sqle) {
-            sqle.printStackTrace();
+            log.error("Greška prilikom učitavanja kupaca iz baze podataka: " + sqle.getClass().getSimpleName() + ": " + sqle.getMessage());
             throw new RepositoryException("Doslo je do greske prilikom ucitavanja kupaca iz baze!");
         }
     }
@@ -160,7 +163,7 @@ public class CustomerRepositoryImpl implements ExtendedRepository<Customer, Long
             throw new EntityNotFoundException("Kupac sa ovim Id brojem ne postoji!");
 
         } catch (SQLException sqle) {
-            sqle.printStackTrace();
+            log.error("Greška prilikom pretraživanja kupca po ID '" + id + "'  u bazi podataka: " + sqle.getClass().getSimpleName() + ": " + sqle.getMessage());
             throw new RepositoryException("Doslo je do greske prilikom pretrage kupca po ID broju!");
         }
     }
@@ -190,7 +193,7 @@ public class CustomerRepositoryImpl implements ExtendedRepository<Customer, Long
             return customers;
 
         } catch (SQLException sqle) {
-            sqle.printStackTrace();
+            log.error(ExceptionUtils.DATABASE_SQL_QUERY_EXECUTION_ERROR_MESSAGE + query + " u metodi findByQeury klase: " +this.getClass().getSimpleName()+ " : " + sqle.getClass().getSimpleName() + ": " + sqle.getMessage());
             throw new RepositoryException("Doslo je do greske prilikom pretrazivanja kupca po upitu!");
         }
     }

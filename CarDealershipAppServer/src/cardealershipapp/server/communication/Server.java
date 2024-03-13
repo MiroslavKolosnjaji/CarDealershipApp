@@ -49,7 +49,7 @@ public class Server extends Thread {
         }
     }
 
-    public void stopServer() {      
+    public void stopServer() {
         try {
             closeAllConnections();
             interrupt();
