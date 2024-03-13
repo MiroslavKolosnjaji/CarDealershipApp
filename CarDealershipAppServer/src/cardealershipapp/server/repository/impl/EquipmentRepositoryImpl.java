@@ -145,7 +145,7 @@ public class EquipmentRepositoryImpl implements Repository<Equipment, Long> {
                 return equipment;
             }
 
-            throw new EntityNotFoundException("Oprema sa ovim Id brojem ne postoji!");
+            throw new EntityNotFoundException("Oprema ne postoji!");
 
         } catch (SQLException sqle) {
             log.error("Greška prilikom pretraživanja opreme po ID '" + id + "' iz baze podataka: " + sqle.getClass().getSimpleName() + ": " + sqle.getMessage());

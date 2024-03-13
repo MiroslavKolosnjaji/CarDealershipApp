@@ -131,7 +131,7 @@ public class CityRepositoryImpl implements Repository<City, Long> {
                 return city;
             }
 
-            throw new EntityNotFoundException("Grad sa ovim Id brojem ne postoji!");
+            throw new EntityNotFoundException("Grad ne postoji!");
 
 
         } catch (SQLException sqle) {

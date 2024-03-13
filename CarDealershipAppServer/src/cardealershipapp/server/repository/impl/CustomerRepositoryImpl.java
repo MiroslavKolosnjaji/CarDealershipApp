@@ -160,7 +160,7 @@ public class CustomerRepositoryImpl implements ExtendedRepository<Customer, Long
                 return customer;
             }
 
-            throw new EntityNotFoundException("Kupac sa ovim Id brojem ne postoji!");
+            throw new EntityNotFoundException("Kupac ne postoji!");
 
         } catch (SQLException sqle) {
             log.error("Greška prilikom pretraživanja kupca po ID '" + id + "'  u bazi podataka: " + sqle.getClass().getSimpleName() + ": " + sqle.getMessage());

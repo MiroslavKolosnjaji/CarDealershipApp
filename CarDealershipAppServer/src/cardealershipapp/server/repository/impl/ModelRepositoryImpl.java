@@ -133,7 +133,7 @@ public class ModelRepositoryImpl implements Repository<Model, Long> {
                 return model;
             }
 
-            throw new EntityNotFoundException("Model sa ovim Id brojem ne postoji!");
+            throw new EntityNotFoundException("Model ne postoji!");
 
         } catch (SQLException sqle) {
             log.error("Greška prilikom pretraživanja modela po ID '" + id + "' u bazi podataka: " + sqle.getClass().getSimpleName() + ": " + sqle.getMessage());

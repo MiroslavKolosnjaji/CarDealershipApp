@@ -154,7 +154,7 @@ public class BusinessUnitRepositoryImpl implements Repository<BusinessUnit, Long
                 return businessUnit;
             }
 
-            throw new EntityNotFoundException("Poslovna jedinica sa ovim Id brojem ne postoji!");
+            throw new EntityNotFoundException("Poslovna jedinica ne postoji!");
 
         } catch (SQLException sqle) {
             log.error("Greška prilikom pretraživanja poslovne jedinice po ID '" + id + "' iz baze podataka: " + sqle.getClass().getSimpleName() + ": " + sqle.getMessage());
