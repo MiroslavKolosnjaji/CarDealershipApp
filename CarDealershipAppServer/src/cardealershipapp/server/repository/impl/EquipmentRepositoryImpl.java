@@ -11,6 +11,9 @@ import cardealershipapp.server.exception.EntityNotFoundException;
 import cardealershipapp.server.exception.RepositoryException;
 import cardealershipapp.server.repository.Repository;
 import cardealershipapp.server.repository.query.SqlQueries;
+import cardealershipapp.server.util.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -20,6 +23,7 @@ import java.util.*;
  */
 public class EquipmentRepositoryImpl implements Repository<Equipment, Long> {
 
+    public static final Logger log = LoggerFactory.getLogger(EquipmentRepositoryImpl.class);
     private final DataBase db = DataBase.getInstance();
     private final Queue<Object> paramsQueue = new ArrayDeque<>();
 
@@ -34,7 +38,7 @@ public class EquipmentRepositoryImpl implements Repository<Equipment, Long> {
             db.executeSqlUpdate(SqlQueries.Equipments.INSERT, paramsQueue);
 
         } catch (DatabaseException dbe) {
-            dbe.printStackTrace();
+            log.error("Greška prilikom unosa opreme '" + equipment.getName() + "' u bazu podataka: " + dbe.getClass().getSimpleName() + ": " + dbe.getMessage());
             throw new RepositoryException("Doslo je do greske prilikom dodavanja opreme u bazu!");
         }
     }
@@ -51,7 +55,7 @@ public class EquipmentRepositoryImpl implements Repository<Equipment, Long> {
             db.executeSqlUpdate(SqlQueries.Equipments.UPDATE, paramsQueue);
 
         } catch (DatabaseException dbe) {
-            dbe.printStackTrace();
+            log.error("Greška prilikom ažuriranja opreme '" + equipment.getName() + "' u bazi podataka: " + dbe.getClass().getSimpleName() + ": " + dbe.getMessage());
             throw new RepositoryException("Doslo je do greske prilikom azuriranja podataka opreme!");
         }
     }
@@ -64,7 +68,7 @@ public class EquipmentRepositoryImpl implements Repository<Equipment, Long> {
             db.executeSqlUpdate(SqlQueries.Equipments.DELETE_BY_ID, paramsQueue);
 
         } catch (DatabaseException dbe) {
-            dbe.printStackTrace();
+            log.error("Greška prilikom brisanja opreme '" + equipment.getName() + "' iz baze podataka: " + dbe.getClass().getSimpleName() + ": " + dbe.getMessage());
             throw new RepositoryException("Doslo je do greske prilikom brisanja opreme iz baze!");
         }
     }
@@ -78,7 +82,7 @@ public class EquipmentRepositoryImpl implements Repository<Equipment, Long> {
             db.executeSqlUpdate(query, paramsQueue);
 
         } catch (DatabaseException dbe) {
-            dbe.printStackTrace();
+            log.error("Greška prilikom brisanja '" + equipments.size() + "' oprema iz baze podataka: " + dbe.getClass().getSimpleName() + ": " + dbe.getMessage());
             throw new RepositoryException("Doslo je do greske prilikom brisanja vise oprema iz baze!");
         }
 
@@ -112,7 +116,7 @@ public class EquipmentRepositoryImpl implements Repository<Equipment, Long> {
             return equipments;
 
         } catch (SQLException sqle) {
-            sqle.printStackTrace();
+            log.error("Greška prilikom učitavanja oprema iz baze podataka: " + sqle.getClass().getSimpleName() + ": " + sqle.getMessage());
             throw new RepositoryException("Doslo je do greske prilikom ucitavanja oprema iz baze!");
         }
     }
@@ -144,7 +148,7 @@ public class EquipmentRepositoryImpl implements Repository<Equipment, Long> {
             throw new EntityNotFoundException("Oprema sa ovim Id brojem ne postoji!");
 
         } catch (SQLException sqle) {
-            sqle.printStackTrace();
+            log.error("Greška prilikom pretraživanja opreme po ID '" + id + "' iz baze podataka: " + sqle.getClass().getSimpleName() + ": " + sqle.getMessage());
             throw new RepositoryException("Doslo je do greske prilikom pretrage opreme po ID broju!");
         }
     }
@@ -177,7 +181,7 @@ public class EquipmentRepositoryImpl implements Repository<Equipment, Long> {
             return equipments;
 
         } catch (SQLException sqle) {
-            sqle.printStackTrace();
+            log.error(ExceptionUtils.DATABASE_SQL_QUERY_EXECUTION_ERROR_MESSAGE + query + " u metodi findByQeury klase: " + this.getClass().getSimpleName() + " : " + sqle.getClass().getSimpleName() + ": " + sqle.getMessage());
             throw new RepositoryException("Doslo je do greske prilikom pretrazivanja opreme po upitu!");
         }
     }
