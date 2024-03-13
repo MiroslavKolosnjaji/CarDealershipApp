@@ -10,6 +10,9 @@ import cardealershipapp.server.exception.EntityNotFoundException;
 import cardealershipapp.server.exception.RepositoryException;
 import cardealershipapp.server.repository.Repository;
 import cardealershipapp.server.repository.query.SqlQueries;
+import cardealershipapp.server.util.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
@@ -18,6 +21,7 @@ import java.util.*;
  */
 public class ModelRepositoryImpl implements Repository<Model, Long> {
 
+    public static final Logger log = LoggerFactory.getLogger(ModelRepositoryImpl.class);
     private final DataBase db = DataBase.getInstance();
     private final Queue<Object> paramsQueue = new ArrayDeque<>();
 
@@ -29,7 +33,7 @@ public class ModelRepositoryImpl implements Repository<Model, Long> {
             db.executeSqlUpdate(SqlQueries.Models.INSERT, paramsQueue);
 
         } catch (DatabaseException dbe) {
-            dbe.printStackTrace();
+            log.error("Greška prilikom unosa modela '" + model.getName() + "' u bazu podataka: " + dbe.getClass().getSimpleName() + ": " + dbe.getMessage());
             throw new RepositoryException("Doslo je do greske prilikom dodavanja novog modela u bazu!");
         }
     }
@@ -44,7 +48,7 @@ public class ModelRepositoryImpl implements Repository<Model, Long> {
             db.executeSqlUpdate(SqlQueries.Models.UPDATE, paramsQueue);
 
         } catch (DatabaseException dbe) {
-            dbe.printStackTrace();
+            log.error("Greška prilikom ažuriranja modela '" + model.getName() + "' u bazi podataka: " + dbe.getClass().getSimpleName() + ": " + dbe.getMessage());
             throw new RepositoryException("Doslo je do greske prilikom azuriranja podataka modela u bazi!");
         }
     }
@@ -57,7 +61,7 @@ public class ModelRepositoryImpl implements Repository<Model, Long> {
             db.executeSqlUpdate(SqlQueries.Models.DELETE_BY_ID, paramsQueue);
 
         } catch (DatabaseException dbe) {
-            dbe.printStackTrace();
+            log.error("Greška prilikom brisanja modela '" + model.getName() + "' iz baze podataka: " + dbe.getClass().getSimpleName() + ": " + dbe.getMessage());
             throw new RepositoryException("Doslo je do greske prilikom brisanja modela iz baze!");
         }
     }
@@ -71,7 +75,7 @@ public class ModelRepositoryImpl implements Repository<Model, Long> {
             db.executeSqlUpdate(query, paramsQueue);
 
         } catch (DatabaseException dbe) {
-            dbe.printStackTrace();
+            log.error("Greška prilikom brisanja '" + models.size() + "' modela iz baze podataka: " + dbe.getClass().getSimpleName() + ": " + dbe.getMessage());
             throw new RepositoryException("Doslo je do greske prilikom brisanja brendova iz baze!");
         }
 
@@ -104,7 +108,7 @@ public class ModelRepositoryImpl implements Repository<Model, Long> {
             return models;
 
         } catch (SQLException sqle) {
-            sqle.printStackTrace();
+            log.error("Greška prilikom učitavanja modela iz baze podataka: " + sqle.getClass().getSimpleName() + ": " + sqle.getMessage());
             throw new RepositoryException("Doslo je do greske prilikom ucitavanja modela iz baze!");
         }
     }
@@ -132,7 +136,7 @@ public class ModelRepositoryImpl implements Repository<Model, Long> {
             throw new EntityNotFoundException("Model sa ovim Id brojem ne postoji!");
 
         } catch (SQLException sqle) {
-            sqle.printStackTrace();
+            log.error("Greška prilikom pretraživanja modela po ID '" + id + "' u bazi podataka: " + sqle.getClass().getSimpleName() + ": " + sqle.getMessage());
             throw new RepositoryException("Doslo je do greske prilikom pretrazivanja modela po id-u!");
         }
     }
@@ -160,7 +164,7 @@ public class ModelRepositoryImpl implements Repository<Model, Long> {
             return models;
 
         } catch (SQLException sqle) {
-            sqle.printStackTrace();
+            log.error(ExceptionUtils.DATABASE_SQL_QUERY_EXECUTION_ERROR_MESSAGE + query + " u metodi findByQeury klase: " +this.getClass().getSimpleName()+ " : " + sqle.getClass().getSimpleName() + ": " + sqle.getMessage());
             throw new RepositoryException("Doslo je do greske prilikom pretrazivanja modela!");
         }
 

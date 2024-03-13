@@ -126,7 +126,7 @@ public class BrandRepositoryImpl implements Repository<Brand, Long> {
                 return brand;
 
             } else {
-                throw new EntityNotFoundException("Marka sa ovim Id brojem ne postoji!");
+                throw new EntityNotFoundException("Marka ne postoji!");
             }
 
         } catch (SQLException sqle) {
@@ -153,6 +153,7 @@ public class BrandRepositoryImpl implements Repository<Brand, Long> {
             rs.close();
             statement.close();
             return brands;
+
         } catch (SQLException sqle) {
             log.error(ExceptionUtils.DATABASE_SQL_QUERY_EXECUTION_ERROR_MESSAGE + query + " u metodi findByQeury klase: " +this.getClass().getSimpleName()+ " : " + sqle.getClass().getSimpleName() + ": " + sqle.getMessage());
             throw new RepositoryException("Doslo je do greske prilikom pretrazivanja marke po upitu!");
