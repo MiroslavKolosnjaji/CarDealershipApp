@@ -16,6 +16,9 @@ import cardealershipapp.server.exception.EntityNotFoundException;
 import cardealershipapp.server.exception.RepositoryException;
 import cardealershipapp.server.repository.Repository;
 import cardealershipapp.server.repository.query.SqlQueries;
+import cardealershipapp.server.util.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -25,6 +28,7 @@ import java.util.*;
  */
 public class VehicleRepositoryImpl implements Repository<Vehicle, Long> {
 
+    public static final Logger log = LoggerFactory.getLogger(VehicleRepositoryImpl.class);
     private final DataBase db = DataBase.getInstance();
     private final Queue<Object> paramsQueue = new ArrayDeque<>();
 
@@ -45,7 +49,7 @@ public class VehicleRepositoryImpl implements Repository<Vehicle, Long> {
             db.executeSqlUpdate(SqlQueries.Vehicles.INSERT, paramsQueue);
 
         } catch (DatabaseException dbe) {
-            dbe.printStackTrace();
+            log.error("Greška prilikom unosa vozila sa VIN brojem '" + vehicle.getViNumber() + "' u bazu podataka: " + dbe.getClass().getSimpleName() + ": " + dbe.getMessage());
             throw new RepositoryException("Doslo je do greske prilikom unosa vozila u bazu!");
         }
     }
@@ -69,7 +73,7 @@ public class VehicleRepositoryImpl implements Repository<Vehicle, Long> {
             db.executeSqlUpdate(SqlQueries.Vehicles.UPDATE, paramsQueue);
 
         } catch (DatabaseException dbe) {
-            dbe.printStackTrace();
+            log.error("Greška prilikom ažuriranja vozila sa VIN brojem '" + vehicle.getViNumber() + "' u bazi podataka: " + dbe.getClass().getSimpleName() + ": " + dbe.getMessage());
             throw new RepositoryException("Doslo je do greske prilikom azuriranja podataka vozila u bazi!");
         }
     }
@@ -82,7 +86,7 @@ public class VehicleRepositoryImpl implements Repository<Vehicle, Long> {
             db.executeSqlUpdate(SqlQueries.Vehicles.DELETE_BY_ID, paramsQueue);
 
         } catch (DatabaseException dbe) {
-            dbe.printStackTrace();
+            log.error("Greška prilikom brisanja vozila sa VIN brojem '" + vehicle.getViNumber() + "' iz baze podataka: " + dbe.getClass().getSimpleName() + ": " + dbe.getMessage());
             throw new RepositoryException("Doslo je do greske prilikom brisanja vozila iz baze!");
         }
     }
@@ -96,7 +100,7 @@ public class VehicleRepositoryImpl implements Repository<Vehicle, Long> {
             db.executeSqlUpdate(query, paramsQueue);
 
         } catch (DatabaseException dbe) {
-            dbe.printStackTrace();
+            log.error("Greška prilikom brisanja '" + vehicles.size() + "' vozila iz baze podataka: " + dbe.getClass().getSimpleName() + ": " + dbe.getMessage());
             throw new RepositoryException("Doslo je do greske prilikom brisanja vise vozila iz baze!");
         }
 
@@ -156,7 +160,7 @@ public class VehicleRepositoryImpl implements Repository<Vehicle, Long> {
             return vehicles;
 
         } catch (SQLException sqle) {
-            sqle.printStackTrace();
+            log.error("Greška prilikom učitavanja vozila iz baze podataka: " + sqle.getClass().getSimpleName() + ": " + sqle.getMessage());
             throw new RepositoryException("Doslo je do greske prilikom ucitavanja vozila iz baze!");
         }
 
@@ -194,7 +198,7 @@ public class VehicleRepositoryImpl implements Repository<Vehicle, Long> {
             throw new EntityNotFoundException("Vozilo sa ovim Id brojem ne postoji");
 
         } catch (SQLException sqle) {
-            sqle.printStackTrace();
+            log.error("Greška prilikom pretraživanja vozila po ID '" + id + "' u bazi podataka: " + sqle.getClass().getSimpleName() + ": " + sqle.getMessage());
             throw new RepositoryException("Doslo je do greske prilikom pretrage vozila po ID broju!");
         }
     }
@@ -229,7 +233,7 @@ public class VehicleRepositoryImpl implements Repository<Vehicle, Long> {
             return vehicles;
 
         } catch (SQLException sqle) {
-            sqle.printStackTrace();
+            log.error(ExceptionUtils.DATABASE_SQL_QUERY_EXECUTION_ERROR_MESSAGE + query + " u metodi findByQeury klase: " +this.getClass().getSimpleName()+ " : " + sqle.getClass().getSimpleName() + ": " + sqle.getMessage());
             throw new RepositoryException("Doslo je do greske prilikom pretrazivanja vozila po upitu!");
         }
     }
