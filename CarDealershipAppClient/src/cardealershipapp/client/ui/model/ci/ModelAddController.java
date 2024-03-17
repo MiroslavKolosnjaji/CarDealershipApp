@@ -4,8 +4,11 @@ import cardealershipapp.client.ui.model.ModelAddForm;
 import cardealershipapp.client.ui.response.Responsive;
 import cardealershipapp.common.domain.Brand;
 import cardealershipapp.common.domain.Model;
+import cardealershipapp.common.exception.ServiceException;
 import cardealershipapp.common.transfer.Operation;
 import cardealershipapp.common.exception.InputValidationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import javax.swing.JOptionPane;
@@ -15,6 +18,7 @@ import javax.swing.JOptionPane;
  */
 public class ModelAddController implements Responsive {
 
+    private static final Logger log = LoggerFactory.getLogger(ModelAddController.class);
     private final ModelAddForm modelAddForm;
 
     public ModelAddController(ModelAddForm modelAddForm) {
@@ -32,14 +36,15 @@ public class ModelAddController implements Responsive {
             Model model = new Model(null, name, brand);
             getResponse(Operation.MODEL_ADD, model);
 
-            JOptionPane.showMessageDialog(modelAddForm, "Model je uspesno unet!");
+            JOptionPane.showMessageDialog(modelAddForm, "Model je uspesno sačuvan!", "Obaveštenje", JOptionPane.INFORMATION_MESSAGE);
             modelAddForm.getTxtModelName().setText("");
 
-        } catch (InputValidationException ive) {
-            JOptionPane.showMessageDialog(modelAddForm, ive.getMessage(), "Paznja!", JOptionPane.WARNING_MESSAGE);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            JOptionPane.showMessageDialog(modelAddForm, ex.getMessage());
+        } catch (InputValidationException | ServiceException e) {
+            log.warn("ModelAddController (save) metoda: " + e.getClass().getSimpleName() + " : " + e.getMessage());
+            JOptionPane.showMessageDialog(modelAddForm, e.getMessage(), "Pažnja!", JOptionPane.WARNING_MESSAGE);
+        } catch (Exception e) {
+            log.error("Neočekivana greška prilikom čuvanja modela: " + e.getClass().getSimpleName() + " : " + e.getMessage());
+            JOptionPane.showMessageDialog(modelAddForm,"Došlo je do neočekivane greške prilikom čuvanja modela: " + e.getMessage(),"Greška!", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -51,11 +56,12 @@ public class ModelAddController implements Responsive {
             brands.forEach(modelAddForm.getComboBrands()::addItem);
 
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(modelAddForm, ex.getMessage(), "Paznja!", JOptionPane.WARNING_MESSAGE);
+            log.error("Neočekivana greška prilikom učitavanja modela u combobox: " + ex.getClass().getSimpleName() + " : " + ex.getMessage());
+            JOptionPane.showMessageDialog(modelAddForm, "Došlo je do neočekivane greške prilikom učitavanja modela u combobox: " + ex.getMessage(), "Greška!", JOptionPane.ERROR_MESSAGE);
         }
     }
 
-    private void validateInput() throws Exception {
+    private void validateInput() throws InputValidationException {
         if (modelAddForm.getTxtModelName().getText().trim().isEmpty() || modelAddForm.getTxtModelName().getText().trim().isBlank()) {
             throw new InputValidationException("Niste uneli naziv modela!");
         }

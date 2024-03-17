@@ -5,15 +5,13 @@ import cardealershipapp.common.domain.PurchaseOrder;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.Buffer;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import javax.imageio.ImageIO;
-import javax.sound.midi.Soundbank;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Miroslav Kološnjaji
@@ -21,6 +19,8 @@ import javax.swing.JLabel;
 public class VehicleTableImageLoader {
 
     private static final VehicleTableImageLoader instance = new VehicleTableImageLoader();
+
+    private static final Logger log = LoggerFactory.getLogger(VehicleTableImageLoader.class);
     private final List<ImageIcon> images;
     private final JLabel labelImage;
 
@@ -53,7 +53,7 @@ public class VehicleTableImageLoader {
                 images.add(new ImageIcon(i));
             }
         } catch (IOException ex) {
-            ex.printStackTrace();
+            log.error("Greska prilikom ucitavanja ikonica (available / sold) za vehicles tabelu: " + getClass().getSimpleName() + " : " + ex.getMessage());
         }
 
     }

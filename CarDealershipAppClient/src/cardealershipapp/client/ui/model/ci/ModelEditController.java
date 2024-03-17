@@ -6,7 +6,10 @@ import cardealershipapp.common.domain.Brand;
 import cardealershipapp.common.domain.Model;
 import cardealershipapp.client.session.ApplicationSession;
 import cardealershipapp.common.exception.InputValidationException;
+import cardealershipapp.common.exception.ServiceException;
 import cardealershipapp.common.transfer.Operation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import javax.swing.JOptionPane;
@@ -16,6 +19,7 @@ import javax.swing.JOptionPane;
  */
 public class ModelEditController implements Responsive {
 
+    private static final Logger log = LoggerFactory.getLogger(ModelEditController.class);
     private final ModelEditForm modelEditForm;
 
     public ModelEditController(ModelEditForm modelEditForm) {
@@ -34,13 +38,14 @@ public class ModelEditController implements Responsive {
             Model model = new Model(modelId, name, brand);
             getResponse(Operation.MODEL_UPDATE, model);
 
-            JOptionPane.showMessageDialog(modelEditForm, "Podaci su uspesno promenjeni!");
+            JOptionPane.showMessageDialog(modelEditForm, "Podaci su uspešno promenjeni!","Obaveštenje", JOptionPane.INFORMATION_MESSAGE);
 
-        } catch (InputValidationException ive) {
-            JOptionPane.showMessageDialog(modelEditForm, ive.getMessage(), "Paznja!", JOptionPane.WARNING_MESSAGE);
+        } catch (InputValidationException | ServiceException e) {
+            log.warn("ModelEditController (update) metoda: "  + e.getClass().getSimpleName() + " : " + e.getMessage());
+            JOptionPane.showMessageDialog(modelEditForm, e.getMessage(), "Pažnja!", JOptionPane.WARNING_MESSAGE);
         } catch (Exception ex) {
-            ex.printStackTrace();
-            JOptionPane.showMessageDialog(modelEditForm, "Desila se greska, promena podataka modela nije uspela!");
+            log.error("Neočekivana greška prilikom ažuriranja podataka modela: " + ex.getClass().getSimpleName() + " : " + ex.getMessage());
+            JOptionPane.showMessageDialog(modelEditForm, "Desila se neočekivana greška prilikom ažuriranja podataka modela!","Greška!", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -57,7 +62,8 @@ public class ModelEditController implements Responsive {
             brands.forEach(modelEditForm.getComboBrands()::addItem);
 
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(modelEditForm, "Doslo je do greske prilikom popunjavanja comboBox-a!", "Paznja!", JOptionPane.WARNING_MESSAGE);
+            log.error("Neočekivana greška prilikom učitavanja modela u combobox: " + ex.getClass().getSimpleName() + " : " + ex.getMessage());
+            JOptionPane.showMessageDialog(modelEditForm, "Došlo je do neočekivane greške prilikom učitavanja modela u combobox: " + ex.getMessage(), "Greška!", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -71,9 +77,11 @@ public class ModelEditController implements Responsive {
             Brand brand = (Brand) getResponse(Operation.BRAND_FIND_BY_ID, model.getBrand()).getResult();
             modelEditForm.getComboBrands().setSelectedItem(brand);
 
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            JOptionPane.showMessageDialog(modelEditForm, ex.getMessage(), "Paznja!", JOptionPane.WARNING_MESSAGE);
+        }catch (ServiceException se){
+            log.warn("ModelEditController (prepareForm) metoda: " + se.getClass().getSimpleName() + " : " + se.getMessage());
+        }catch (Exception ex) {
+            log.error("Neočekivana greška prilikom pripreme forme sa neophodnim podacima modela: " + ex.getClass().getSimpleName() + " : " + ex.getMessage());
+            JOptionPane.showMessageDialog(modelEditForm, "Došlo je do greške prilikom popunjavanja forme sa neophodnim podacima izabranog modela: " + ex.getMessage(), "Greška!", JOptionPane.ERROR_MESSAGE);
         }
 
     }

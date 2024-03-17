@@ -1,12 +1,12 @@
 package cardealershipapp.client.ui.component.table.model;
 
 import cardealershipapp.common.domain.User;
+
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import javax.swing.table.AbstractTableModel;
 
 /**
- *
  * @author Miroslav Kološnjaji
  */
 public class UserTableModel extends AbstractTableModel {

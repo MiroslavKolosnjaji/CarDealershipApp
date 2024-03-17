@@ -9,7 +9,7 @@ import cardealershipapp.client.ui.component.table.MyTableCustomComponents;
 import cardealershipapp.client.ui.component.table.model.PurchaseOrderTableModel;
 import cardealershipapp.client.ui.purchaseorder.PurchaseOrderEditForm;
 import cardealershipapp.client.ui.purchaseorder.PurchaseOrderSearchForm;
-import cardealershipapp.client.ui.validation.SelectRowException;
+import cardealershipapp.client.ui.exception.SelectRowException;
 import cardealershipapp.common.domain.Customer;
 import cardealershipapp.common.transfer.Operation;
 

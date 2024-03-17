@@ -8,8 +8,11 @@ import cardealershipapp.client.session.ApplicationSession;
 import cardealershipapp.client.ui.component.table.MyTableCustomComponents;
 import cardealershipapp.client.ui.component.table.model.ModelTableModel;
 import cardealershipapp.client.ui.model.ModelEditForm;
-import cardealershipapp.client.ui.validation.SelectRowException;
+import cardealershipapp.client.ui.exception.SelectRowException;
+import cardealershipapp.common.exception.ServiceException;
 import cardealershipapp.common.transfer.Operation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.SocketException;
 import java.util.ArrayList;
@@ -27,6 +30,7 @@ import static javax.swing.WindowConstants.EXIT_ON_CLOSE;
  */
 public class ModelSearchController implements Responsive {
 
+    private static final Logger log = LoggerFactory.getLogger(ModelSearchController.class);
     private final ModelSearchForm modelSearchForm;
 
     public ModelSearchController(ModelSearchForm modelSearchForm) {
@@ -38,9 +42,9 @@ public class ModelSearchController implements Responsive {
 
             int[] selectedRows = validateSelection(modelSearchForm.getTblModels());
 
-            if (selectedRows.length > 1) {
-                throw new Exception("Funkcija nije omogucena! Selektovano je vise od jednog reda!");
-            }
+            if (selectedRows.length > 1)
+                throw new SelectRowException("Funkcija nije omogucena! Selektovano je vise od jednog reda!");
+
 
             Long modelId = (Long) modelSearchForm.getTblModels().getValueAt(selectedRows[0], 0);
             Model model = (Model) getResponse(Operation.MODEL_FIND_BY_ID, new Model(modelId)).getResult();
@@ -50,11 +54,12 @@ public class ModelSearchController implements Responsive {
             modelEditDialog.setLocationRelativeTo(modelSearchForm);
             modelEditDialog.setVisible(true);
 
-        } catch (SelectRowException sre) {
-            JOptionPane.showMessageDialog(modelSearchForm, sre.getMessage(), "Paznja!", JOptionPane.INFORMATION_MESSAGE);
+        } catch (SelectRowException | ServiceException e) {
+            log.warn("ModelSearchController (edit) metoda: " + e.getClass().getSimpleName() + " : " + e.getMessage());
+            JOptionPane.showMessageDialog(modelSearchForm, e.getMessage(), "Paznja!", JOptionPane.WARNING_MESSAGE);
         } catch (Exception ex) {
-            ex.printStackTrace();
-            JOptionPane.showMessageDialog(modelSearchForm, ex.getMessage(), "Paznja!", JOptionPane.WARNING_MESSAGE);
+            log.error("Neočekivana greška prilikom otvaranja edit dialoga: " + ex.getClass().getSimpleName() + " : " + ex.getMessage());
+            JOptionPane.showMessageDialog(modelSearchForm, "Desila se neočekivana greška prilikom otvaranja edit dialoga: " + ex.getMessage(), "Greška!", JOptionPane.WARNING_MESSAGE);
         }
     }
 
@@ -63,7 +68,7 @@ public class ModelSearchController implements Responsive {
         try {
             int[] selectedRows = validateSelection(modelSearchForm.getTblModels());
             int answer;
-            String confirmMessage = "";
+            String confirmMessage;
 
             if (selectedRows.length == 1) {
                 String modelName = (String) modelSearchForm.getTblModels().getValueAt(selectedRows[0], 1);

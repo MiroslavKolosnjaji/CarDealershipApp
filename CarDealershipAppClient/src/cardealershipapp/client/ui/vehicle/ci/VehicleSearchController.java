@@ -13,7 +13,7 @@ import cardealershipapp.client.session.ApplicationSession;
 import cardealershipapp.client.ui.component.table.MyTableCustomComponents;
 import cardealershipapp.client.ui.component.table.model.VehicleTableModel;
 import cardealershipapp.client.ui.purchaseorder.PurchaseOrderCreateForm;
-import cardealershipapp.client.ui.validation.SelectRowException;
+import cardealershipapp.client.ui.exception.SelectRowException;
 import cardealershipapp.client.ui.vehicle.filter.Criterium;
 import cardealershipapp.client.ui.vehicle.sort.SortList;
 import cardealershipapp.common.transfer.Operation;

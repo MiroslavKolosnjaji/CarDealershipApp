@@ -1,4 +1,4 @@
-package cardealershipapp.client.ui.validation;
+package cardealershipapp.client.ui.exception;
 
 /**
  *

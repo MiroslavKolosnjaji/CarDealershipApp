@@ -42,16 +42,15 @@ public class LoginController implements Responsive {
             loginForm.dispose();
 
         } catch (InputValidationException | ServiceException e) {
-            log.info("Login method: " + e.getMessage());
+            log.warn("LoginController (logIn) metoda: " + e.getClass().getSimpleName() + " : " + e.getMessage());
             JOptionPane.showMessageDialog(loginForm, e.getMessage(), "Paznja!", JOptionPane.WARNING_MESSAGE);
         } catch (SocketException se) {
-            log.error("Došlo je do greske prilikom komunikacije socketa: " + se.getMessage());
+            log.error("Došlo je do greške prilikom komunikacije socketa: " + se.getClass().getSimpleName() + " : " + se.getMessage());
             JOptionPane.showMessageDialog(loginForm, se.getMessage(), "Upozorenje!", JOptionPane.ERROR_MESSAGE);
-//            System.exit(0);
+            System.exit(0);
         } catch (Exception ex) {
-            log.error("Desila se greska u logIn metodi: " + ex.getMessage());
-            ex.printStackTrace();
-//            JOptionPane.showMessageDialog(loginForm, ex.getMessage(), "Paznja!", JOptionPane.WARNING_MESSAGE);
+            log.error("Desila se greska u logIn metodi: " + ex.getClass().getSimpleName() + " : " + ex.getMessage());
+            JOptionPane.showMessageDialog(loginForm, "Desila se neočekivana greška prilikom logovanja!", " ", JOptionPane.ERROR_MESSAGE);
         }
     }
 
