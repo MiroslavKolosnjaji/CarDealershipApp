@@ -8,11 +8,12 @@ import cardealershipapp.client.ui.purchaseorder.PurchaseOrderCreateForm;
 import cardealershipapp.client.ui.purchaseorder.PurchaseOrderSearchForm;
 import cardealershipapp.client.ui.response.Responsive;
 import cardealershipapp.client.ui.vehicle.VehicleSearchForm;
+import cardealershipapp.common.exception.ServiceException;
 import cardealershipapp.common.transfer.Operation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.SocketException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -24,6 +25,7 @@ import static javax.swing.WindowConstants.EXIT_ON_CLOSE;
  */
 public class MainController implements Responsive {
 
+    private static final Logger log = LoggerFactory.getLogger(MainController.class);
     private MainForm mainForm;
 
     public MainController(MainForm mainForm) {
@@ -78,11 +80,17 @@ public class MainController implements Responsive {
                 mainForm.getMenuLogin().setEnabled(true);
                 mainForm.getLblLoggedUser().setText("");
 
+            } catch (ServiceException se) {
+                log.warn("MainController (logOff) metoda: " + se.getClass().getSimpleName() + " : " + se.getMessage());
+                JOptionPane.showMessageDialog(mainForm, se.getMessage(), "Pažnja!", JOptionPane.INFORMATION_MESSAGE);
+
             } catch (SocketException soe) {
-                JOptionPane.showMessageDialog(mainForm, soe.getMessage(), "Error!", JOptionPane.ERROR_MESSAGE);
+                log.error("Došlo je do greške prilikom komunikacije socketa: " + soe.getClass().getSimpleName() + " : " + soe.getMessage());
+                JOptionPane.showMessageDialog(mainForm, "Dogodila se greška prilikom logout-a: " + soe.getMessage(), "Pažnja!", JOptionPane.ERROR_MESSAGE);
                 System.exit(0);
             } catch (Exception ex) {
-                Logger.getLogger(MainForm.class.getName()).log(Level.SEVERE, null, ex);
+                log.error("Desila se greška u logOff metodi: " + ex.getClass().getSimpleName() + " : " + ex.getMessage());
+                JOptionPane.showMessageDialog(mainForm, "Desila se neočekivana greška prilikom logout-a: " + ex.getMessage(), "Greška!", JOptionPane.ERROR_MESSAGE);
             }
         }
     }
@@ -105,11 +113,16 @@ public class MainController implements Responsive {
             try {
                 getResponse(Operation.EXIT, null);
                 System.exit(0);
-            } catch (SocketException se) {
-                System.out.println("Server is not connected. EXIT");
+            } catch (ServiceException se) {
+                log.warn("MainController (closingApplication) metoda: " + se.getClass().getSimpleName() + " : " + se.getMessage());
+                JOptionPane.showMessageDialog(mainForm, se.getMessage(), "Pažnja!", JOptionPane.INFORMATION_MESSAGE);
+            } catch (SocketException soe) {
+                log.error("Došlo je do greške prilikom komunikacije socketa: " + soe.getClass().getSimpleName() + " : " + soe.getMessage());
+                JOptionPane.showMessageDialog(mainForm, "Dogodila se greška prilikom zatvaranja aplikacije: " + soe.getMessage(), "Pažnja!", JOptionPane.ERROR_MESSAGE);
                 System.exit(0);
             } catch (Exception ex) {
-                Logger.getLogger(MainForm.class.getName()).log(Level.SEVERE, null, ex);
+                log.error("Desila se greška u logOff metodi: " + ex.getClass().getSimpleName() + " : " + ex.getMessage());
+                JOptionPane.showMessageDialog(mainForm, "Desila se neočekivana greška prilikom zatvaranja aplikacije: " + ex.getMessage(), "Greška!", JOptionPane.ERROR_MESSAGE);
             }
         }
     }
