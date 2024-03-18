@@ -94,11 +94,12 @@ public class ModelSearchController implements Responsive {
                 JOptionPane.showMessageDialog(modelSearchForm, confirmMessage);
             }
 
-        } catch (SelectRowException sre) {
-            JOptionPane.showMessageDialog(modelSearchForm, sre.getMessage(), "Paznja!", JOptionPane.INFORMATION_MESSAGE);
+        } catch (SelectRowException | ServiceException ex) {
+            log.warn("ModelSearchController (delete) metoda: " + ex.getClass().getSimpleName() + " : " + ex.getMessage());
+            JOptionPane.showMessageDialog(modelSearchForm, ex.getMessage(), "Pažnja!", JOptionPane.INFORMATION_MESSAGE);
         } catch (Exception ex) {
-            ex.printStackTrace();
-            JOptionPane.showMessageDialog(modelSearchForm, ex.getMessage(), "Paznja!", JOptionPane.WARNING_MESSAGE);
+            log.error("Greška prilikom brisanja modela: " + ex.getClass().getSimpleName() + " : " + ex.getMessage());
+            JOptionPane.showMessageDialog(modelSearchForm, ex.getMessage(), "Greška!", JOptionPane.WARNING_MESSAGE);
         }
 
     }
@@ -109,7 +110,7 @@ public class ModelSearchController implements Responsive {
                 JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE, null, options, EXIT_ON_CLOSE);
     }
 
-    private int[] validateSelection(JTable tblCities) throws Exception {
+    private int[] validateSelection(JTable tblCities) throws SelectRowException {
         int[] selectedRows = tblCities.getSelectedRows();
 
         if (selectedRows.length == 0) {
@@ -138,11 +139,15 @@ public class ModelSearchController implements Responsive {
             MyTableCustomComponents.centerCellText(modelSearchForm.getTblModels());
 
         } catch (SocketException soe) {
-            JOptionPane.showMessageDialog(modelSearchForm, soe.getMessage(), "Paznja!", JOptionPane.ERROR_MESSAGE);
+            log.error("Došlo je do greške prilikom komunikacije socketa: " + soe.getClass().getSimpleName() + " : " + soe.getMessage());
+            JOptionPane.showMessageDialog(modelSearchForm, soe.getMessage(), "Pažnja!", JOptionPane.WARNING_MESSAGE);
             System.exit(0);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            JOptionPane.showMessageDialog(modelSearchForm, ex.getMessage(), "Paznja!", JOptionPane.WARNING_MESSAGE);
+        } catch (ServiceException se) {
+            log.warn("ModelSearchController (fillTable) metoda: " + se.getClass().getSimpleName() + " : " + se.getMessage());
+            JOptionPane.showMessageDialog(modelSearchForm, se.getMessage(), "Pažnja!", JOptionPane.WARNING_MESSAGE);
+        } catch (Exception e) {
+            log.error("Greška prilikom popunjavanja tabele: " + e.getClass().getSimpleName() + " : " + e.getMessage());
+            JOptionPane.showMessageDialog(modelSearchForm, "Desila se neočekivana greška prilikom popunjavanja tabele: " + e.getMessage(), "Greška!", JOptionPane.WARNING_MESSAGE);
         }
     }
 
@@ -153,8 +158,8 @@ public class ModelSearchController implements Responsive {
             brands.forEach(modelSearchForm.getComboBrand()::addItem);
 
         } catch (Exception ex) {
-            ex.printStackTrace();
-            JOptionPane.showMessageDialog(modelSearchForm, "Doslo je do greske prilikom ucitavanja podataka za comboBox!", "Paznja!", JOptionPane.ERROR_MESSAGE);
+            log.error("Neočekivana greška prilikom učitavanja brendova u combobox: " + ex.getClass().getSimpleName() + " : " + ex.getMessage());
+            JOptionPane.showMessageDialog(modelSearchForm, "Došlo je do neočekivane greške prilikom učitavanja brendova u combobox: " + ex.getMessage(), "Greška!", JOptionPane.ERROR_MESSAGE);
         }
     }
 }

@@ -79,6 +79,7 @@ public class ModelEditController implements Responsive {
 
         }catch (ServiceException se){
             log.warn("ModelEditController (prepareForm) metoda: " + se.getClass().getSimpleName() + " : " + se.getMessage());
+            JOptionPane.showMessageDialog(modelEditForm, se.getMessage(), "Pažnja!", JOptionPane.WARNING_MESSAGE);
         }catch (Exception ex) {
             log.error("Neočekivana greška prilikom pripreme forme sa neophodnim podacima modela: " + ex.getClass().getSimpleName() + " : " + ex.getMessage());
             JOptionPane.showMessageDialog(modelEditForm, "Došlo je do greške prilikom popunjavanja forme sa neophodnim podacima izabranog modela: " + ex.getMessage(), "Greška!", JOptionPane.ERROR_MESSAGE);
