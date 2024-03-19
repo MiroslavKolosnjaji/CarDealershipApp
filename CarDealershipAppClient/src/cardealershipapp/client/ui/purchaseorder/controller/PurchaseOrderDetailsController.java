@@ -1,4 +1,4 @@
-package cardealershipapp.client.ui.purchaseorder.ci;
+package cardealershipapp.client.ui.purchaseorder.controller;
 
 import cardealershipapp.client.session.ApplicationSession;
 import cardealershipapp.client.ui.component.table.model.PurchaseOrderItemTableModel;

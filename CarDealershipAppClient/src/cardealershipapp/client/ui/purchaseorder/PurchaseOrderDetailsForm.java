@@ -1,7 +1,7 @@
 package cardealershipapp.client.ui.purchaseorder;
 
 import cardealershipapp.client.session.ApplicationSession;
-import cardealershipapp.client.ui.purchaseorder.ci.PurchaseOrderDetailsController;
+import cardealershipapp.client.ui.purchaseorder.controller.PurchaseOrderDetailsController;
 
 import javax.swing.*;
 

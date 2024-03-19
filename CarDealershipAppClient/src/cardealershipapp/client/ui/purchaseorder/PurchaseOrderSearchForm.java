@@ -1,6 +1,6 @@
 package cardealershipapp.client.ui.purchaseorder;
 
-import cardealershipapp.client.ui.purchaseorder.ci.PurchaseOrderSearchController;
+import cardealershipapp.client.ui.purchaseorder.controller.PurchaseOrderSearchController;
 import com.toedter.calendar.JDateChooser;
 
 import javax.swing.*;

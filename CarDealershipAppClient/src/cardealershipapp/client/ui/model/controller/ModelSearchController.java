@@ -1,4 +1,4 @@
-package cardealershipapp.client.ui.model.ci;
+package cardealershipapp.client.ui.model.controller;
 
 import cardealershipapp.client.ui.model.ModelSearchForm;
 import cardealershipapp.client.ui.response.Responsive;

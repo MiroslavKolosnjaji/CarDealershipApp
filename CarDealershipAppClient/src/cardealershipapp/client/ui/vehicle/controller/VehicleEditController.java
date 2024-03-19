@@ -1,4 +1,4 @@
-package cardealershipapp.client.ui.vehicle.ci;
+package cardealershipapp.client.ui.vehicle.controller;
 
 import cardealershipapp.client.ui.response.Responsive;
 import cardealershipapp.client.ui.vehicle.VehicleEditForm;

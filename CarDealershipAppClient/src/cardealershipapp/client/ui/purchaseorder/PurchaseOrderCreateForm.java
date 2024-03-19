@@ -2,7 +2,7 @@ package cardealershipapp.client.ui.purchaseorder;
 
 import cardealershipapp.common.domain.PurchaseOrderItem;
 import cardealershipapp.client.session.ApplicationSession;
-import cardealershipapp.client.ui.purchaseorder.ci.PurchaseOrderCreateController;
+import cardealershipapp.client.ui.purchaseorder.controller.PurchaseOrderCreateController;
 import cardealershipapp.client.ui.vehicle.VehicleSearchForm;
 
 import java.time.LocalDate;

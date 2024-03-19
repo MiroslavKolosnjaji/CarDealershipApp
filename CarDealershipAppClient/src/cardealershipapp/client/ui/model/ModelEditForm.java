@@ -1,6 +1,6 @@
 package cardealershipapp.client.ui.model;
 
-import cardealershipapp.client.ui.model.ci.ModelEditController;
+import cardealershipapp.client.ui.model.controller.ModelEditController;
 
 import javax.swing.*;
 

@@ -1,7 +1,6 @@
 package cardealershipapp.client.ui.vehicle;
 
-import cardealershipapp.common.domain.FuelType;
-import cardealershipapp.client.ui.vehicle.ci.VehicleAddController;
+import cardealershipapp.client.ui.vehicle.controller.VehicleAddController;
 
 import javax.swing.*;
 

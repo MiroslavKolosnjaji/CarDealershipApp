@@ -1,6 +1,6 @@
 package cardealershipapp.client.ui.vehicle;
 
-import cardealershipapp.client.ui.vehicle.ci.VehicleEditController;
+import cardealershipapp.client.ui.vehicle.controller.VehicleEditController;
 
 import javax.swing.*;
 

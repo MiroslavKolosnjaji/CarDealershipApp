@@ -1,4 +1,4 @@
-package cardealershipapp.client.ui.purchaseorder.ci;
+package cardealershipapp.client.ui.purchaseorder.controller;
 
 import cardealershipapp.client.ui.purchaseorder.PurchaseOrderDetailsForm;
 import cardealershipapp.client.ui.response.Responsive;

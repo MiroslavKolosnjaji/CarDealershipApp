@@ -1,7 +1,7 @@
 package cardealershipapp.client.ui.vehicle;
 
 import cardealershipapp.client.session.ApplicationSession;
-import cardealershipapp.client.ui.vehicle.ci.VehicleSearchController;
+import cardealershipapp.client.ui.vehicle.controller.VehicleSearchController;
 
 import javax.swing.*;
 
