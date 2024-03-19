@@ -14,15 +14,16 @@ import cardealershipapp.client.ui.component.table.model.PurchaseOrderItemTableMo
 import cardealershipapp.client.ui.purchaseorder.PurchaseOrderCreateForm;
 import cardealershipapp.common.exception.InputValidationException;
 import cardealershipapp.common.domain.Currency;
+import cardealershipapp.common.exception.ServiceException;
 import cardealershipapp.common.transfer.Operation;
 import cardealershipapp.common.transfer.Response;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
@@ -35,6 +36,7 @@ import javax.swing.JTextField;
  */
 public class PurchaseOrderCreateController implements Responsive {
 
+    private static final Logger log = LoggerFactory.getLogger(PurchaseOrderCreateController.class);
     private final PurchaseOrderCreateForm purchaseOrderCreateForm;
     private Vehicle vehicleSession;
     private BigDecimal totalPrice = BigDecimal.ZERO;
@@ -49,7 +51,7 @@ public class PurchaseOrderCreateController implements Responsive {
         tblItems.setModel(new PurchaseOrderItemTableModel(purchaseOrderItems));
     }
 
-    public void add() {
+    public void save() {
         try {
             String customerName = purchaseOrderCreateForm.getTxtCustomerName().getText().trim();
             String customerCompany = purchaseOrderCreateForm.getTxtCustomerCompany().getText().trim();
@@ -73,14 +75,15 @@ public class PurchaseOrderCreateController implements Responsive {
 
             getResponse(Operation.PURCHASE_ORDER_ADD, purchaseOrder);
 
-            JOptionPane.showMessageDialog(purchaseOrderCreateForm, "Porudzbenica je uspesno kreirana");
+            JOptionPane.showMessageDialog(purchaseOrderCreateForm, "Porudžbenica je uspešno kreirana","", JOptionPane.INFORMATION_MESSAGE);
             closeForm(purchaseOrderCreateForm);
 
-        } catch (InputValidationException ive) {
-            JOptionPane.showMessageDialog(purchaseOrderCreateForm, ive.getMessage());
+        } catch (InputValidationException | ServiceException e) {
+            log.warn("PurchaseOrderCreateController (save) metoda: " + e.getClass().getSimpleName() + " : " + e.getMessage());
+            JOptionPane.showMessageDialog(purchaseOrderCreateForm, e.getMessage(), "Pažnja!", JOptionPane.WARNING_MESSAGE);
         } catch (Exception ex) {
-            ex.printStackTrace();
-            JOptionPane.showMessageDialog(purchaseOrderCreateForm, ex.getMessage(), "Upozorenje!", JOptionPane.WARNING_MESSAGE);
+            log.error("Neočekivana greška prilikom čuvanja porudžbine: " + ex.getClass().getSimpleName() + " : " + ex.getMessage());
+            JOptionPane.showMessageDialog(purchaseOrderCreateForm,"Došlo je do neočekivane greške prilikom čuvanja porudžbine: " + ex.getMessage(),"Greška!", JOptionPane.ERROR_MESSAGE);
         }
 
     }
@@ -133,8 +136,12 @@ public class PurchaseOrderCreateController implements Responsive {
             List<Equipment> equipments = (List<Equipment>) equipmentResponse.getResult();
             populateCombo(vehicle, purchaseOrderCreateForm.getComboItem(), equipments);
             totalAmount(purchaseOrderCreateForm.getTxtTotalPrice());
+        } catch (ServiceException e) {
+            log.warn("PurchaseOrderCreateController (populateVehicleInfoFields) metoda: " + e.getClass().getSimpleName() + " : " + e.getMessage());
+            JOptionPane.showMessageDialog(purchaseOrderCreateForm, e.getMessage(), "Pažnja!", JOptionPane.WARNING_MESSAGE);
         } catch (Exception ex) {
-            Logger.getLogger(PurchaseOrderCreateController.class.getName()).log(Level.SEVERE, null, ex);
+            log.error("Neočekivana greška prilikom popunjavanja polja porudžbine: " + ex.getClass().getSimpleName() + " : " + ex.getMessage());
+            JOptionPane.showMessageDialog(purchaseOrderCreateForm,"Došlo je do neočekivane greške prilikom popunjavanja polja porudžbine: " + ex.getMessage(),"Greška!", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -222,7 +229,8 @@ public class PurchaseOrderCreateController implements Responsive {
             equipmentsByBrand.forEach(comboItem::addItem);
 
         } catch (Exception ex) {
-            Logger.getLogger(PurchaseOrderCreateForm.class.getName()).log(Level.SEVERE, null, ex);
+            log.error("Neočekivana greška prilikom učitavanja opreme u combobox: " + ex.getClass().getSimpleName() + " : " + ex.getMessage());
+            JOptionPane.showMessageDialog(purchaseOrderCreateForm, "Došlo je do neočekivane greške prilikom učitavanja opreme u combobox: " + ex.getMessage(), "Greška!", JOptionPane.ERROR_MESSAGE);
         }
     }
 

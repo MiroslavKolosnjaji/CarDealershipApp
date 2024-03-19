@@ -1,6 +1,7 @@
 package cardealershipapp.client.ui.purchaseorder.ci;
 
 import cardealershipapp.client.ui.response.Responsive;
+import cardealershipapp.common.exception.ServiceException;
 import cardealershipapp.common.transfer.Operation;
 import cardealershipapp.common.domain.Customer;
 import cardealershipapp.common.domain.Equipment;
@@ -16,13 +17,13 @@ import cardealershipapp.client.ui.purchaseorder.PurchaseOrderDetailsForm;
 import cardealershipapp.client.ui.purchaseorder.PurchaseOrderEditForm;
 import cardealershipapp.common.exception.InputValidationException;
 import cardealershipapp.common.domain.Currency;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -37,6 +38,7 @@ import javax.swing.JTextField;
  */
 public class PurchaseOrderEditController implements Responsive {
 
+    private static final Logger log = LoggerFactory.getLogger(PurchaseOrderCreateController.class);
     private final PurchaseOrderEditForm purchaseOrderEditForm;
     private Vehicle vehicleSession;
     private BigDecimal totalPrice;
@@ -48,7 +50,7 @@ public class PurchaseOrderEditController implements Responsive {
         this.purchaseOrderEditForm = purchaseOrderEditForm;
     }
 
-    public static void populateCombo(JComboBox comboItem, List<Equipment> equipments, Vehicle vehicle) {
+    public void populateCombo(JComboBox comboItem, List<Equipment> equipments, Vehicle vehicle) {
         try {
 
             comboItem.removeAll();
@@ -56,10 +58,12 @@ public class PurchaseOrderEditController implements Responsive {
             List<Equipment> equipmentsByBrand = equipments.stream()
                     .filter(equipment -> equipment.getBrand().getBrandName().equals(vehicle.getModel().getBrandName()))
                     .collect(Collectors.toList());
+
             equipmentsByBrand.forEach(comboItem::addItem);
 
-        } catch (Exception ex) {
-            Logger.getLogger(PurchaseOrderEditForm.class.getName()).log(Level.SEVERE, null, ex);
+        }  catch (Exception ex) {
+            log.error("Neočekivana greška prilikom učitavanja modela u combobox: " + ex.getClass().getSimpleName() + " : " + ex.getMessage());
+            JOptionPane.showMessageDialog(purchaseOrderEditForm, "Došlo je do neočekivane greške prilikom učitavanja modela u combobox: " + ex.getMessage(), "Greška!", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -119,8 +123,12 @@ public class PurchaseOrderEditController implements Responsive {
 
             populateCombo(purchaseOrderEditForm.getComboItem(), equipments, vehicle);
             fillTable(purchaseOrderEditForm.getTblItems(), purchaseOrderEditForm.getPurchaseOrderItems());
+        } catch (ServiceException e) {
+            log.warn("PurchaseOrderEditController (prepareVehicleInfoFields) metoda: " + e.getClass().getSimpleName() + " : " + e.getMessage());
+            JOptionPane.showMessageDialog(purchaseOrderEditForm, e.getMessage(), "Pažnja!", JOptionPane.WARNING_MESSAGE);
         } catch (Exception ex) {
-            Logger.getLogger(PurchaseOrderEditController.class.getName()).log(Level.SEVERE, null, ex);
+            log.error("Neočekivana greška prilikom popunjavanja polja porudžbine: " + ex.getClass().getSimpleName() + " : " + ex.getMessage());
+            JOptionPane.showMessageDialog(purchaseOrderEditForm,"Došlo je do neočekivane greške prilikom popunjavanja polja porudžbine: " + ex.getMessage(),"Greška!", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -249,11 +257,12 @@ public class PurchaseOrderEditController implements Responsive {
             purchaseOrderEditForm.dispose();
             ApplicationSession.getInstance().setPurchaseOrder(purchaseOrder);
             showDetails();
-        } catch (InputValidationException ive) {
-            JOptionPane.showMessageDialog(purchaseOrderEditForm, ive.getMessage());
+        } catch (InputValidationException | ServiceException e) {
+            log.warn("PurchaseOrderEditController (update) metoda: " + e.getClass().getSimpleName() + " : " + e.getMessage());
+            JOptionPane.showMessageDialog(purchaseOrderEditForm, e.getMessage(), "Pažnja!", JOptionPane.WARNING_MESSAGE);
         } catch (Exception ex) {
-            ex.printStackTrace();
-            JOptionPane.showMessageDialog(purchaseOrderEditForm, ex.getMessage(), "Upozorenje!", JOptionPane.WARNING_MESSAGE);
+            log.error("Neočekivana greška prilikom ažuriranja porudžbine: " + ex.getClass().getSimpleName() + " : " + ex.getMessage());
+            JOptionPane.showMessageDialog(purchaseOrderEditForm,"Došlo je do neočekivane greške prilikom ažuriranja porudžbine: " + ex.getMessage(),"Greška!", JOptionPane.ERROR_MESSAGE);
         }
 
     }
@@ -303,7 +312,8 @@ public class PurchaseOrderEditController implements Responsive {
             totalAmount(purchaseOrderEditForm.getTxtTotalPrice());
 
         } catch (Exception ex) {
-            Logger.getLogger(PurchaseOrderEditController.class.getName()).log(Level.SEVERE, null, ex);
+            log.error("Neočekivana greška prilikom ažuriranja polja porudžbine: " + ex.getClass().getSimpleName() + " : " + ex.getMessage());
+            JOptionPane.showMessageDialog(purchaseOrderEditForm,"Došlo je do neočekivane greške prilikom ažuriranja polja porudžbine: " + ex.getMessage(),"Greška!", JOptionPane.ERROR_MESSAGE);
         }
 
     }
@@ -351,8 +361,9 @@ public class PurchaseOrderEditController implements Responsive {
     private void fillTable(JTable tblItems, List<PurchaseOrderItem> purchaseOrderItems) {
         try {
             tblItems.setModel(new PurchaseOrderItemTableModel(purchaseOrderItems));
-        } catch (Exception ex) {
-            Logger.getLogger(PurchaseOrderEditForm.class.getName()).log(Level.SEVERE, null, ex);
+        }  catch (Exception ex) {
+            log.error("Neočekivana greška prilikom popunjavanja tabele stavki: " + ex.getClass().getSimpleName() + " : " + ex.getMessage());
+            JOptionPane.showMessageDialog(purchaseOrderEditForm,"Došlo je do neočekivane greške prilikom popunjavanja tabele stavki: " + ex.getMessage(),"Greška!", JOptionPane.ERROR_MESSAGE);
         }
     }
 

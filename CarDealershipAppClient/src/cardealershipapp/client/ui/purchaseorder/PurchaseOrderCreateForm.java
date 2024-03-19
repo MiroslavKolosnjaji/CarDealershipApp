@@ -680,7 +680,7 @@ public class PurchaseOrderCreateForm extends javax.swing.JDialog {
     }//GEN-LAST:event_btnDeleteItemActionPerformed
 
     private void btnCreatePurchaseOrderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCreatePurchaseOrderActionPerformed
-        purchaseOrderCreateController.add();
+        purchaseOrderCreateController.save();
     }//GEN-LAST:event_btnCreatePurchaseOrderActionPerformed
 
 
