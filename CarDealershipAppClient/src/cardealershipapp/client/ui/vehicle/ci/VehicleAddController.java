@@ -10,7 +10,10 @@ import cardealershipapp.common.domain.Currency;
 import cardealershipapp.common.domain.FuelType;
 import cardealershipapp.common.domain.Model;
 import cardealershipapp.common.domain.Vehicle;
+import cardealershipapp.common.exception.ServiceException;
 import cardealershipapp.common.transfer.Operation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
@@ -24,6 +27,7 @@ import javax.swing.JOptionPane;
  */
 public class VehicleAddController implements Responsive {
 
+    private static final Logger log = LoggerFactory.getLogger(VehicleAddController.class);
     private VehicleAddForm vehicleAddForm;
 
     public VehicleAddController(VehicleAddForm vehicleAddForm) {
@@ -52,11 +56,12 @@ public class VehicleAddController implements Responsive {
 
             JOptionPane.showMessageDialog(vehicleAddForm, "Vozilo je uspesno sacuvano!");
             vehicleAddForm.dispose();
-        } catch (InputValidationException ive) {
-            JOptionPane.showMessageDialog(vehicleAddForm, ive.getMessage(), "Paznja!", JOptionPane.WARNING_MESSAGE);
+        } catch (InputValidationException | ServiceException e) {
+            log.warn("VehicleAddController (save) metoda: " + e.getClass().getSimpleName() + " : " + e.getMessage());
+            JOptionPane.showMessageDialog(vehicleAddForm, e.getMessage(), "Pažnja!", JOptionPane.WARNING_MESSAGE);
         } catch (Exception ex) {
-            ex.printStackTrace();
-            JOptionPane.showMessageDialog(vehicleAddForm, ex.getMessage(), "Paznja!", JOptionPane.WARNING_MESSAGE);
+            log.error("Neočekivana greška prilikom čuvanja vozila: " + ex.getClass().getSimpleName() + " : " + ex.getMessage());
+            JOptionPane.showMessageDialog(vehicleAddForm, "Došlo je do neočekivane greške prilikom čuvanja vozila: " + ex.getMessage(), "Greška!", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -74,8 +79,8 @@ public class VehicleAddController implements Responsive {
             Arrays.asList(Currency.values()).stream().sorted().forEach(vehicleAddForm.getComboCurrency()::addItem);
 
         } catch (Exception ex) {
-            ex.printStackTrace();
-            JOptionPane.showMessageDialog(vehicleAddForm, ex.getMessage(), "Paznja!", JOptionPane.WARNING_MESSAGE);
+            log.error("Neočekivana greška prilikom učitavanja poslovnih jedinica u combobox: " + ex.getClass().getSimpleName() + " : " + ex.getMessage());
+            JOptionPane.showMessageDialog(vehicleAddForm, "Došlo je do neočekivane greške prilikom učitavanja poslovnih jedinica u combobox: " + ex.getMessage(), "Greška!", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -93,8 +98,8 @@ public class VehicleAddController implements Responsive {
                         .filter(model -> model.getBrand().equals(brand)).forEach(vehicleAddForm.getComboModel()::addItem);
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
-            JOptionPane.showMessageDialog(vehicleAddForm, ex.getMessage(), "Paznja!", JOptionPane.WARNING_MESSAGE);
+            log.error("Neočekivana greška prilikom učitavanja modela u combobox: " + ex.getClass().getSimpleName() + " : " + ex.getMessage());
+            JOptionPane.showMessageDialog(vehicleAddForm, "Došlo je do neočekivane greške prilikom učitavanja modela u combobox: " + ex.getMessage(), "Greška!", JOptionPane.ERROR_MESSAGE);
         }
     }
 

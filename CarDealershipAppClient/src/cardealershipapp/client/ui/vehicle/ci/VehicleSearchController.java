@@ -16,20 +16,20 @@ import cardealershipapp.client.ui.purchaseorder.PurchaseOrderCreateForm;
 import cardealershipapp.client.ui.exception.SelectRowException;
 import cardealershipapp.client.ui.vehicle.filter.Criterium;
 import cardealershipapp.client.ui.vehicle.sort.SortList;
+import cardealershipapp.common.exception.ServiceException;
 import cardealershipapp.common.transfer.Operation;
 import cardealershipapp.common.transfer.Response;
 import cardealershipapp.client.ui.vehicle.VehicleAddForm;
 import cardealershipapp.client.ui.vehicle.VehicleEditForm;
 import cardealershipapp.common.domain.PurchaseOrder;
 import cardealershipapp.common.exception.InputValidationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.Component;
 import java.net.SocketException;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -48,6 +48,7 @@ import javax.swing.table.TableCellRenderer;
  */
 public class VehicleSearchController implements Responsive {
 
+    private static final Logger log = LoggerFactory.getLogger(VehicleSearchController.class);
     private List<Vehicle> mainVehicleList = new ArrayList<>();
     private VehicleSearchForm vehicleSearchForm;
 
@@ -89,11 +90,12 @@ public class VehicleSearchController implements Responsive {
             vehicleEditDialog.setLocationRelativeTo(vehicleEditDialog);
             vehicleEditDialog.setVisible(true);
 
-        } catch (SelectRowException sre) {
-            JOptionPane.showMessageDialog(vehicleSearchForm, sre.getMessage(), "Paznja!", JOptionPane.INFORMATION_MESSAGE);
+        } catch (InputValidationException | ServiceException e) {
+            log.warn("VehicleSearchController (edit) metoda: " + e.getClass().getSimpleName() + " : " + e.getMessage());
+            JOptionPane.showMessageDialog(vehicleSearchForm, e.getMessage(), "Pažnja!", JOptionPane.WARNING_MESSAGE);
         } catch (Exception ex) {
-            ex.printStackTrace();
-            JOptionPane.showMessageDialog(vehicleSearchForm, ex.getMessage(), "Paznja!", JOptionPane.WARNING_MESSAGE);
+            log.error("Neočekivana greška prilikom ažuriranja vozila: " + ex.getClass().getSimpleName() + " : " + ex.getMessage());
+            JOptionPane.showMessageDialog(vehicleSearchForm, "Došlo je do neočekivane greške prilikom ažuriranja vozila: " + ex.getMessage(), "Greška!", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -138,11 +140,12 @@ public class VehicleSearchController implements Responsive {
 
             }
 
-        } catch (SelectRowException | InputValidationException val) {
-            JOptionPane.showMessageDialog(vehicleSearchForm, val.getMessage(), "Paznja!", JOptionPane.INFORMATION_MESSAGE);
+        } catch (InputValidationException | ServiceException e) {
+            log.warn("VehicleSearchController (delete) metoda: " + e.getClass().getSimpleName() + " : " + e.getMessage());
+            JOptionPane.showMessageDialog(vehicleSearchForm, e.getMessage(), "Pažnja!", JOptionPane.WARNING_MESSAGE);
         } catch (Exception ex) {
-            ex.printStackTrace();
-            JOptionPane.showMessageDialog(vehicleSearchForm, ex.getMessage(), "Paznja!", JOptionPane.WARNING_MESSAGE);
+            log.error("Neočekivana greška prilikom brisanja vozila: " + ex.getClass().getSimpleName() + " : " + ex.getMessage());
+            JOptionPane.showMessageDialog(vehicleSearchForm, "Došlo je do neočekivane greške prilikom brisanja vozila: " + ex.getMessage(), "Greška!", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -181,11 +184,12 @@ public class VehicleSearchController implements Responsive {
             purchaseOrderDialog.setLocationRelativeTo(vehicleSearchForm);
             purchaseOrderDialog.setVisible(true);
 
-        } catch (SelectRowException | InputValidationException val) {
-            JOptionPane.showMessageDialog(vehicleSearchForm, val.getMessage(), "Paznja!", JOptionPane.INFORMATION_MESSAGE);
+        } catch (SelectRowException | InputValidationException | ServiceException e) {
+            log.warn("VehicleSearchController (addToPurchaseOrder) metoda: " + e.getClass().getSimpleName() + " : " + e.getMessage());
+            JOptionPane.showMessageDialog(vehicleSearchForm, e.getMessage(), "Pažnja!", JOptionPane.WARNING_MESSAGE);
         } catch (Exception ex) {
-            ex.printStackTrace();
-            JOptionPane.showMessageDialog(vehicleSearchForm, ex.getMessage(), "Paznja!", JOptionPane.WARNING_MESSAGE);
+            log.error("Neočekivana greška prilikom dodavanja vozila u porudžbenicu: " + ex.getClass().getSimpleName() + " : " + ex.getMessage());
+            JOptionPane.showMessageDialog(vehicleSearchForm, "Došlo je do neočekivane greške prilikom dodavanja vozila u porudžbenicu: " + ex.getMessage(), "Greška!", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -209,7 +213,7 @@ public class VehicleSearchController implements Responsive {
             List<Vehicle> allVehicles = (List<Vehicle>) getResponse(Operation.VEHICLE_GET_ALL, null).getResult();
 
             Criterium criterium = new Criterium(allVehicles, vehicleSearchForm.getComboBrand(), vehicleSearchForm.getComboModel(),
-                    vehicleSearchForm.getComboBodyType(),vehicleSearchForm.getComboYearFrom(), vehicleSearchForm.getComboYearTo(),  vehicleSearchForm.getComboFuelType(),
+                    vehicleSearchForm.getComboBodyType(), vehicleSearchForm.getComboYearFrom(), vehicleSearchForm.getComboYearTo(), vehicleSearchForm.getComboFuelType(),
                     vehicleSearchForm.getComboCity());
             mainVehicleList = criterium.getFilteredVehicles();
 
@@ -221,9 +225,12 @@ public class VehicleSearchController implements Responsive {
 
             renderImage(vehicleSearchForm.getTblVehicles());
 
+        } catch (ServiceException e) {
+            log.warn("VehicleSearchController (search) metoda: " + e.getClass().getSimpleName() + " : " + e.getMessage());
+            JOptionPane.showMessageDialog(vehicleSearchForm, e.getMessage(), "Pažnja!", JOptionPane.WARNING_MESSAGE);
         } catch (Exception ex) {
-            ex.printStackTrace();
-            JOptionPane.showMessageDialog(vehicleSearchForm, "Doslo je do greske prilikom pretrage!!", "Paznja!", JOptionPane.WARNING_MESSAGE);
+            log.error("Neočekivana greška prilikom pretrage vozila: " + ex.getClass().getSimpleName() + " : " + ex.getMessage());
+            JOptionPane.showMessageDialog(vehicleSearchForm, "Došlo je do neočekivane greške prilikom pretrage vozila: " + ex.getMessage(), "Greška!", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -258,9 +265,12 @@ public class VehicleSearchController implements Responsive {
                 vehicleSearchForm.getStringBuilder().delete(0, vehicleSearchForm.getStringBuilder().length());
             }
 
+        } catch (ServiceException e) {
+            log.warn("VehicleSearchController (infoArea) metoda: " + e.getClass().getSimpleName() + " : " + e.getMessage());
+            JOptionPane.showMessageDialog(vehicleSearchForm, e.getMessage(), "Pažnja!", JOptionPane.WARNING_MESSAGE);
         } catch (Exception ex) {
-            ex.printStackTrace();
-            JOptionPane.showMessageDialog(vehicleSearchForm, ex.getMessage(), "Paznja!", JOptionPane.WARNING_MESSAGE);
+            log.error("Neočekivana greška prilikom popunjavanja info podataka poslovne jedinice: " + ex.getClass().getSimpleName() + " : " + ex.getMessage());
+            JOptionPane.showMessageDialog(vehicleSearchForm, "Došlo je do neočekivane greške prilikom popunjavanja info podataka poslovne jedinice: " + ex.getMessage(), "Greška!", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -275,11 +285,15 @@ public class VehicleSearchController implements Responsive {
             MyTableCustomComponents.centerCellText(vehicleSearchForm.getTblVehicles());
 
         } catch (SocketException soe) {
-            JOptionPane.showMessageDialog(vehicleSearchForm, soe.getMessage(), "Upozorenje!", JOptionPane.ERROR_MESSAGE);
+            log.error("Došlo je do greške prilikom komunikacije socketa: " + soe.getClass().getSimpleName() + " : " + soe.getMessage());
+            JOptionPane.showMessageDialog(vehicleSearchForm, soe.getMessage(), "Pažnja!", JOptionPane.WARNING_MESSAGE);
             System.exit(0);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            JOptionPane.showMessageDialog(vehicleSearchForm, ex.getMessage(), "Paznja!", JOptionPane.WARNING_MESSAGE);
+        } catch (ServiceException se) {
+            log.warn("VehicleSearchController (fillTable) metoda: " + se.getClass().getSimpleName() + " : " + se.getMessage());
+            JOptionPane.showMessageDialog(vehicleSearchForm, se.getMessage(), "Pažnja!", JOptionPane.WARNING_MESSAGE);
+        } catch (Exception e) {
+            log.error("Greška prilikom popunjavanja tabele: " + e.getClass().getSimpleName() + " : " + e.getMessage());
+            JOptionPane.showMessageDialog(vehicleSearchForm, "Desila se neočekivana greška prilikom popunjavanja tabele: " + e.getMessage(), "Greška!", JOptionPane.WARNING_MESSAGE);
         }
     }
 
@@ -305,9 +319,12 @@ public class VehicleSearchController implements Responsive {
             years.forEach(vehicleSearchForm.getComboYearFrom()::addItem);
             years.forEach(vehicleSearchForm.getComboYearTo()::addItem);
 
+        } catch (ServiceException se) {
+            log.warn("VehicleSearchController (fillCombo) metoda: " + se.getClass().getSimpleName() + " : " + se.getMessage());
+            JOptionPane.showMessageDialog(vehicleSearchForm, se.getMessage(), "Pažnja!", JOptionPane.WARNING_MESSAGE);
         } catch (Exception ex) {
-            ex.printStackTrace();
-            JOptionPane.showMessageDialog(vehicleSearchForm, ex.getMessage(), "Paznja!", JOptionPane.WARNING_MESSAGE);
+            log.error("Neočekivana greška prilikom učitavanja podataka u combobox: " + ex.getClass().getSimpleName() + " : " + ex.getMessage());
+            JOptionPane.showMessageDialog(vehicleSearchForm, "Došlo je do neočekivane greške prilikom učitavanja podataka u combobox: " + ex.getMessage(), "Greška!", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -326,8 +343,8 @@ public class VehicleSearchController implements Responsive {
             }
 
         } catch (Exception ex) {
-            ex.printStackTrace();
-            JOptionPane.showMessageDialog(vehicleSearchForm, ex.getMessage(), "Paznja!", JOptionPane.WARNING_MESSAGE);
+            log.error("Neočekivana greška prilikom učitavanja modela u combobox: " + ex.getClass().getSimpleName() + " : " + ex.getMessage());
+            JOptionPane.showMessageDialog(vehicleSearchForm, "Došlo je do neočekivane greške prilikom učitavanja modela u combobox: " + ex.getMessage(), "Greška!", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -343,10 +360,15 @@ public class VehicleSearchController implements Responsive {
             List<PurchaseOrder> po = (List<PurchaseOrder>) getResponse(Operation.PURCHASE_ORDER_GET_ALL, null).getResult();
             VehicleTableModel.setPurchaseOrders(po);
         } catch (SocketException soe) {
-            JOptionPane.showMessageDialog(vehicleSearchForm, soe.getMessage(), "Warning", JOptionPane.ERROR_MESSAGE);
+            log.error("Došlo je do greške prilikom komunikacije socketa: " + soe.getClass().getSimpleName() + " : " + soe.getMessage());
+            JOptionPane.showMessageDialog(vehicleSearchForm, soe.getMessage(), "Pažnja!", JOptionPane.WARNING_MESSAGE);
             System.exit(0);
-        } catch (Exception ex) {
-            Logger.getLogger(VehicleSearchController.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ServiceException se) {
+            log.warn("VehicleSearchController (loadPurchaseOrders) metoda: " + se.getClass().getSimpleName() + " : " + se.getMessage());
+            JOptionPane.showMessageDialog(vehicleSearchForm, se.getMessage(), "Pažnja!", JOptionPane.WARNING_MESSAGE);
+        } catch (Exception e) {
+            log.error("Greška prilikom ucitavanja porudžbina u listu: " + e.getClass().getSimpleName() + " : " + e.getMessage());
+            JOptionPane.showMessageDialog(vehicleSearchForm, "Desila se neočekivana greška prilikom ucitavanja porudžbina u listu: " + e.getMessage(), "Greška!", JOptionPane.WARNING_MESSAGE);
         }
     }
 
@@ -379,15 +401,14 @@ public class VehicleSearchController implements Responsive {
     private void checkBeforeDelete(List<Vehicle> vehicleList) throws Exception {
         List<PurchaseOrder> purchaseOrders = (List<PurchaseOrder>) getResponse(Operation.PURCHASE_ORDER_GET_ALL, null).getResult();
 
-        for (PurchaseOrder purchaseOrder : purchaseOrders) {
+        Set<String> vinNumbers = new HashSet<>();
+        purchaseOrders.forEach( purchaseOrder -> vinNumbers.add(purchaseOrder.getVehicle().getViNumber()));
 
-            for (Vehicle v : vehicleList) {
-                if (v.getViNumber().equals(purchaseOrder.getVehicle().getViNumber())) {
-                    throw new InputValidationException("Vozila koja su prodata nije moguce obrisati iz baze!");
-                }
-
-            }
+        for (Vehicle v : vehicleList) {
+            if(vinNumbers.contains(v.getViNumber()))
+                throw new InputValidationException("Vozila koja su prodata nije moguce obrisati iz baze!");
         }
+
     }
 
     private int option(String message, JDialog dialog) {

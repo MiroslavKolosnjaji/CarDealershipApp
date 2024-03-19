@@ -9,11 +9,12 @@ import cardealershipapp.common.domain.Currency;
 import cardealershipapp.common.domain.FuelType;
 import cardealershipapp.common.domain.Model;
 import cardealershipapp.common.domain.Vehicle;
-
 import cardealershipapp.client.session.ApplicationSession;
 import cardealershipapp.common.exception.InputValidationException;
 import cardealershipapp.common.exception.ServiceException;
 import cardealershipapp.common.transfer.Operation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
@@ -26,6 +27,7 @@ import javax.swing.JOptionPane;
  */
 public class VehicleEditController implements Responsive {
 
+    private static final Logger log = LoggerFactory.getLogger(VehicleEditController.class);
     private VehicleEditForm vehicleEditForm;
 
     public VehicleEditController(VehicleEditForm vehicleEditForm) {
@@ -56,11 +58,11 @@ public class VehicleEditController implements Responsive {
             JOptionPane.showMessageDialog(vehicleEditForm, "Podaci o vozilu su uspesno izmenjeni!");
             vehicleEditForm.dispose();
         } catch (InputValidationException | ServiceException e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(vehicleEditForm, e.getMessage(), "Paznja!", JOptionPane.WARNING_MESSAGE);
+            log.warn("VehicleEditController (update) metoda: " + e.getClass().getSimpleName() + " : " + e.getMessage());
+            JOptionPane.showMessageDialog(vehicleEditForm, e.getMessage(), "Pažnja!", JOptionPane.WARNING_MESSAGE);
         } catch (Exception ex) {
-            ex.printStackTrace();
-            JOptionPane.showMessageDialog(vehicleEditForm, ex.getMessage(), "Paznja!", JOptionPane.WARNING_MESSAGE);
+            log.error("Neočekivana greška prilikom ažuriranja vozila: " + ex.getClass().getSimpleName() + " : " + ex.getMessage());
+            JOptionPane.showMessageDialog(vehicleEditForm, "Došlo je do neočekivane greške prilikom ažuriranja vozila: " + ex.getMessage(), "Greška!", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -78,8 +80,8 @@ public class VehicleEditController implements Responsive {
             Arrays.asList(Currency.values()).stream().sorted().forEach(vehicleEditForm.getComboCurrency()::addItem);
 
         } catch (Exception ex) {
-            ex.printStackTrace();
-            JOptionPane.showMessageDialog(vehicleEditForm, ex.getMessage(), "Paznja!", JOptionPane.WARNING_MESSAGE);
+            log.error("Neočekivana greška prilikom učitavanja poslovnih jedinica u combobox: " + ex.getClass().getSimpleName() + " : " + ex.getMessage());
+            JOptionPane.showMessageDialog(vehicleEditForm, "Došlo je do neočekivane greške prilikom učitavanja poslovnih jedinica u combobox: " + ex.getMessage(), "Greška!", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -97,8 +99,8 @@ public class VehicleEditController implements Responsive {
                         .filter(model -> model.getBrand().equals(brand)).forEach(vehicleEditForm.getComboModel()::addItem);
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
-            JOptionPane.showMessageDialog(vehicleEditForm, ex.getMessage(), "Paznja!", JOptionPane.WARNING_MESSAGE);
+            log.error("Neočekivana greška prilikom učitavanja modela u combobox: " + ex.getClass().getSimpleName() + " : " + ex.getMessage());
+            JOptionPane.showMessageDialog(vehicleEditForm, "Došlo je do neočekivane greške prilikom učitavanja modela u combobox: " + ex.getMessage(), "Greška!", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -168,6 +170,7 @@ public class VehicleEditController implements Responsive {
         }
 
     }
+
     public void prepareForm() {
         Vehicle vehicle = ApplicationSession.getInstance().getVehicle();
 
