@@ -2,6 +2,7 @@ package cardealershipapp.client.ui.vehicle.controller;
 
 import cardealershipapp.client.ui.response.Responsive;
 import cardealershipapp.client.ui.vehicle.VehicleAddForm;
+import cardealershipapp.client.util.ControllerUtils;
 import cardealershipapp.common.exception.InputValidationException;
 import cardealershipapp.common.domain.Brand;
 import cardealershipapp.common.domain.BusinessUnit;
@@ -54,8 +55,9 @@ public class VehicleAddController implements Responsive {
             Vehicle vehicle = new Vehicle(null, model, ViNumber, bodyType, engineDispl, enginePower, year, fuelType, price, currency, businessUnit);
             getResponse(Operation.VEHICLE_ADD, vehicle);
 
-            JOptionPane.showMessageDialog(vehicleAddForm, "Vozilo je uspesno sacuvano!");
+            ControllerUtils.showMessageDialog(vehicleAddForm, "Vozilo je uspesno sacuvano!");
             vehicleAddForm.dispose();
+
         } catch (InputValidationException | ServiceException e) {
             log.warn("VehicleAddController (save) metoda: " + e.getClass().getSimpleName() + " : " + e.getMessage());
             JOptionPane.showMessageDialog(vehicleAddForm, e.getMessage(), "Pažnja!", JOptionPane.WARNING_MESSAGE);

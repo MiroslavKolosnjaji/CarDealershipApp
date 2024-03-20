@@ -2,6 +2,7 @@ package cardealershipapp.client.ui.vehicle.controller;
 
 import cardealershipapp.client.ui.response.Responsive;
 import cardealershipapp.client.ui.vehicle.VehicleEditForm;
+import cardealershipapp.client.util.ControllerUtils;
 import cardealershipapp.common.domain.Brand;
 import cardealershipapp.common.domain.BusinessUnit;
 import cardealershipapp.common.domain.CarBodyType;
@@ -55,7 +56,7 @@ public class VehicleEditController implements Responsive {
             Vehicle vehicle = new Vehicle(id, model, ViNumber, bodyType, engineDispl, enginePower, year, fuelType, price, currency, businessUnit);
             getResponse(Operation.VEHICLE_UPDATE, vehicle);
 
-            JOptionPane.showMessageDialog(vehicleEditForm, "Podaci o vozilu su uspesno izmenjeni!");
+            ControllerUtils.showMessageDialog(vehicleEditForm, "Podaci o vozilu su uspesno izmenjeni!");
             vehicleEditForm.dispose();
         } catch (InputValidationException | ServiceException e) {
             log.warn("VehicleEditController (update) metoda: " + e.getClass().getSimpleName() + " : " + e.getMessage());

@@ -2,6 +2,7 @@ package cardealershipapp.client.ui.vehicle.controller;
 
 import cardealershipapp.client.ui.response.Responsive;
 import cardealershipapp.client.ui.vehicle.VehicleSearchForm;
+import cardealershipapp.client.util.ControllerUtils;
 import cardealershipapp.common.domain.Brand;
 import cardealershipapp.common.domain.BusinessUnit;
 import cardealershipapp.common.domain.CarBodyType;
@@ -106,35 +107,37 @@ public class VehicleSearchController implements Responsive {
             if (selectedRows.length == 1) {
                 String brand = (String) vehicleSearchForm.getTblVehicles().getValueAt(selectedRows[0], 0);
                 String model = (String) vehicleSearchForm.getTblVehicles().getValueAt(selectedRows[0], 1);
-                answer = option("Da li ste sigurni da zelite da obrisete vozilo " + brand.toUpperCase() + " " + model.toUpperCase(), vehicleSearchForm);
+                answer = ControllerUtils.optionPane("Da li ste sigurni da zelite da obrisete vozilo " + brand.toUpperCase() + " " + model.toUpperCase(), vehicleSearchForm);
                 confirmMessage = "Vozilo je uspesno obrisano!";
             } else {
-                answer = option("Da li ste sigurni da zelite da obrisete selektovane redove?", vehicleSearchForm);
+                answer = ControllerUtils.optionPane("Da li ste sigurni da zelite da obrisete selektovane redove?", vehicleSearchForm);
                 confirmMessage = "Selektovana vozila su uspesno obrisana!";
             }
 
-            if (answer == JOptionPane.YES_OPTION) {
-                List<Vehicle> checkList = new ArrayList<>();
-                if (selectedRows.length == 1) {
-                    String vin = (String) vehicleSearchForm.getTblVehicles().getValueAt(selectedRows[0], 2);
+            if (answer != JOptionPane.YES_OPTION)
+                return;
+
+            List<Vehicle> checkList = new ArrayList<>();
+            if (selectedRows.length == 1) {
+                String vin = (String) vehicleSearchForm.getTblVehicles().getValueAt(selectedRows[0], 2);
+                Vehicle v = new Vehicle();
+                v.setViNumber(vin);
+                checkList.add(v);
+                checkBeforeDelete(checkList);
+                getResponse(Operation.VEHICLE_DELETE_BY_VIN, v);
+
+            } else {
+
+                List<Vehicle> vehicles = new ArrayList<>();
+                for (int row : selectedRows) {
                     Vehicle v = new Vehicle();
-                    v.setViNumber(vin);
-                    checkList.add(v);
-                    checkBeforeDelete(checkList);
-                    getResponse(Operation.VEHICLE_DELETE_BY_VIN, v);
-                } else {
-
-                    List<Vehicle> vehicles = new ArrayList<>();
-                    for (int row : selectedRows) {
-                        Vehicle v = new Vehicle();
-                        v.setViNumber((String) vehicleSearchForm.getTblVehicles().getValueAt(row, 2));
-                        vehicles.add(v);
-                    }
-                    getResponse(Operation.VEHICLE_DELETE_MULTIPLE_BY_VIN, vehicles);
-
+                    v.setViNumber((String) vehicleSearchForm.getTblVehicles().getValueAt(row, 2));
+                    vehicles.add(v);
                 }
+                getResponse(Operation.VEHICLE_DELETE_MULTIPLE_BY_VIN, vehicles);
 
-                JOptionPane.showMessageDialog(vehicleSearchForm, confirmMessage);
+
+                ControllerUtils.showMessageDialog(vehicleSearchForm, confirmMessage);
 
             }
 
@@ -400,19 +403,11 @@ public class VehicleSearchController implements Responsive {
         List<PurchaseOrder> purchaseOrders = (List<PurchaseOrder>) getResponse(Operation.PURCHASE_ORDER_GET_ALL, null).getResult();
 
         Set<String> vinNumbers = new HashSet<>();
-        purchaseOrders.forEach( purchaseOrder -> vinNumbers.add(purchaseOrder.getVehicle().getViNumber()));
+        purchaseOrders.forEach(purchaseOrder -> vinNumbers.add(purchaseOrder.getVehicle().getViNumber()));
 
         for (Vehicle v : vehicleList) {
-            if(vinNumbers.contains(v.getViNumber()))
+            if (vinNumbers.contains(v.getViNumber()))
                 throw new InputValidationException("Vozila koja su prodata nije moguce obrisati iz baze!");
         }
-
     }
-
-    private int option(String message, JDialog dialog) {
-        String[] options = {"Da", "Ne"};
-        return JOptionPane.showOptionDialog(dialog, message, "Paznja!",
-                JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE, null, options, EXIT_ON_CLOSE);
-    }
-
 }
