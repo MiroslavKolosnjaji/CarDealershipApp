@@ -1,6 +1,7 @@
 package cardealershipapp.client.ui.purchaseorder.controller;
 
 import cardealershipapp.client.ui.response.Responsive;
+import cardealershipapp.client.util.ControllerUtils;
 import cardealershipapp.common.domain.Customer;
 import cardealershipapp.common.domain.Equipment;
 import cardealershipapp.common.domain.FuelType;
@@ -75,7 +76,7 @@ public class PurchaseOrderCreateController implements Responsive {
 
             getResponse(Operation.PURCHASE_ORDER_ADD, purchaseOrder);
 
-            JOptionPane.showMessageDialog(purchaseOrderCreateForm, "Porudžbenica je uspešno kreirana","", JOptionPane.INFORMATION_MESSAGE);
+            ControllerUtils.showMessageDialog(purchaseOrderCreateForm, "Porudžbenica je uspešno kreirana");
             closeForm(purchaseOrderCreateForm);
 
         } catch (InputValidationException | ServiceException e) {
@@ -83,7 +84,7 @@ public class PurchaseOrderCreateController implements Responsive {
             JOptionPane.showMessageDialog(purchaseOrderCreateForm, e.getMessage(), "Pažnja!", JOptionPane.WARNING_MESSAGE);
         } catch (Exception ex) {
             log.error("Neočekivana greška prilikom čuvanja porudžbine: " + ex.getClass().getSimpleName() + " : " + ex.getMessage());
-            JOptionPane.showMessageDialog(purchaseOrderCreateForm,"Došlo je do neočekivane greške prilikom čuvanja porudžbine: " + ex.getMessage(),"Greška!", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(purchaseOrderCreateForm, "Došlo je do neočekivane greške prilikom čuvanja porudžbine: " + ex.getMessage(), "Greška!", JOptionPane.ERROR_MESSAGE);
         }
 
     }
@@ -134,36 +135,17 @@ public class PurchaseOrderCreateController implements Responsive {
 
             Response equipmentResponse = getResponse(Operation.EQUIPMENT_GET_ALL, null);
             List<Equipment> equipments = (List<Equipment>) equipmentResponse.getResult();
+
             populateCombo(vehicle, purchaseOrderCreateForm.getComboItem(), equipments);
             totalAmount(purchaseOrderCreateForm.getTxtTotalPrice());
+
         } catch (ServiceException e) {
             log.warn("PurchaseOrderCreateController (populateVehicleInfoFields) metoda: " + e.getClass().getSimpleName() + " : " + e.getMessage());
             JOptionPane.showMessageDialog(purchaseOrderCreateForm, e.getMessage(), "Pažnja!", JOptionPane.WARNING_MESSAGE);
         } catch (Exception ex) {
             log.error("Neočekivana greška prilikom popunjavanja polja porudžbine: " + ex.getClass().getSimpleName() + " : " + ex.getMessage());
-            JOptionPane.showMessageDialog(purchaseOrderCreateForm,"Došlo je do neočekivane greške prilikom popunjavanja polja porudžbine: " + ex.getMessage(),"Greška!", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(purchaseOrderCreateForm, "Došlo je do neočekivane greške prilikom popunjavanja polja porudžbine: " + ex.getMessage(), "Greška!", JOptionPane.ERROR_MESSAGE);
         }
-    }
-
-    private void validateInput() throws InputValidationException {
-
-        String phoneNumber = purchaseOrderCreateForm.getTxtCustomerPhone().getText().trim();
-
-        if (purchaseOrderCreateForm.getTxtCustomerName().getText().trim().isEmpty()) {
-            throw new InputValidationException("Polje Ime i prezime nije popunjeno!");
-        } else if (purchaseOrderCreateForm.getTxtCustomerName().getText().trim().isEmpty()) {
-            throw new InputValidationException("Polje Adresa nije popunjeno!");
-        }
-
-        if (phoneNumber.isEmpty()) {
-            throw new InputValidationException("Polje Telefon nije popunjeno!");
-        }
-        if (phoneNumber.length() != 11) {
-            throw new InputValidationException("Duzina broja telefona zajedno sa (/) i (-) treba da bude 11");
-        } else if (!phoneNumber.substring(3, 4).equals("/") || !phoneNumber.substring(7, 8).equals("-")) {
-            throw new InputValidationException("Broj telefona mora biti bbb/bbb-bbb formata");
-        }
-
     }
 
     public void addItem() {
@@ -255,16 +237,35 @@ public class PurchaseOrderCreateController implements Responsive {
         }
     }
 
-    public int confirmDialog(String message, JDialog dialog) {
-        String[] options = {"Da", "Ne", "Odustani"};
-        int answer = JOptionPane.showOptionDialog(dialog, message, "Upozorenje!", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, null);
-        return answer;
-    }
-
     public void closeForm(JDialog dialog) {
+
+        if (ControllerUtils.confirmOption("Porudzbenica nije kreirana, da li zelite da izadjete?", dialog) != JOptionPane.YES_OPTION)
+            return;
+
         ApplicationSession.getInstance().setOrderSelectedVehicle(null);
         ApplicationSession.getInstance().setPurchaseOrderFormIsOpen(false);
         dialog.dispose();
+    }
+
+    private void validateInput() throws InputValidationException {
+
+        String phoneNumber = purchaseOrderCreateForm.getTxtCustomerPhone().getText().trim();
+
+        if (purchaseOrderCreateForm.getTxtCustomerName().getText().trim().isEmpty()) {
+            throw new InputValidationException("Polje Ime i prezime nije popunjeno!");
+        } else if (purchaseOrderCreateForm.getTxtCustomerName().getText().trim().isEmpty()) {
+            throw new InputValidationException("Polje Adresa nije popunjeno!");
+        }
+
+        if (phoneNumber.isEmpty()) {
+            throw new InputValidationException("Polje Telefon nije popunjeno!");
+        }
+        if (phoneNumber.length() != 11) {
+            throw new InputValidationException("Duzina broja telefona zajedno sa (/) i (-) treba da bude 11");
+        } else if (!phoneNumber.substring(3, 4).equals("/") || !phoneNumber.substring(7, 8).equals("-")) {
+            throw new InputValidationException("Broj telefona mora biti bbb/bbb-bbb formata");
+        }
+
     }
 
 }

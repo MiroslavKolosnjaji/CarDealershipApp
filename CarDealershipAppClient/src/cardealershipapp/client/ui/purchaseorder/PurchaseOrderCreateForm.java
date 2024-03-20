@@ -1,5 +1,6 @@
 package cardealershipapp.client.ui.purchaseorder;
 
+import cardealershipapp.client.util.ControllerUtils;
 import cardealershipapp.common.domain.PurchaseOrderItem;
 import cardealershipapp.client.session.ApplicationSession;
 import cardealershipapp.client.ui.purchaseorder.controller.PurchaseOrderCreateController;
@@ -660,10 +661,7 @@ public class PurchaseOrderCreateForm extends javax.swing.JDialog {
     }//GEN-LAST:event_btnChoseVehicleActionPerformed
 
     private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
-        int answer = purchaseOrderCreateController.confirmDialog("Porudzbenica nije kreirana, da li zelite da izadjete?", this);
-        if (answer == JOptionPane.YES_OPTION) {
             purchaseOrderCreateController.closeForm(this);
-        }
     }//GEN-LAST:event_formWindowClosing
 
     private void formWindowActivated(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowActivated

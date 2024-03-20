@@ -1,5 +1,6 @@
 package cardealershipapp.client.ui.purchaseorder;
 
+import cardealershipapp.client.util.ControllerUtils;
 import cardealershipapp.common.domain.PurchaseOrderItem;
 import cardealershipapp.client.session.ApplicationSession;
 import cardealershipapp.client.ui.purchaseorder.controller.PurchaseOrderEditController;
@@ -682,12 +683,14 @@ public class PurchaseOrderEditForm extends javax.swing.JDialog {
     }//GEN-LAST:event_btnChoseVehicleActionPerformed
 
     private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
-        int answer = purchaseOrderEditController.confirmDialog("Promene nisu sacuvane, da li zelite da izadjete?", this);
-        if (answer == JOptionPane.YES_OPTION) {
-            ApplicationSession.getInstance().setOrderSelectedVehicle(null);
-            ApplicationSession.getInstance().setPurchaseOrderFormIsOpen(false);
-            dispose();
-        }
+
+        if (ControllerUtils.confirmOption("Promene nisu sacuvane, da li zelite da izadjete?", this) != JOptionPane.YES_OPTION)
+            return;
+
+        ApplicationSession.getInstance().setOrderSelectedVehicle(null);
+        ApplicationSession.getInstance().setPurchaseOrderFormIsOpen(false);
+        dispose();
+
     }//GEN-LAST:event_formWindowClosing
 
     private void formWindowActivated(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowActivated

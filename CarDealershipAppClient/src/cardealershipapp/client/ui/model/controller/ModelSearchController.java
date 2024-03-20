@@ -146,7 +146,7 @@ public class ModelSearchController implements Responsive {
             JOptionPane.showMessageDialog(modelSearchForm, "Došlo je do neočekivane greške prilikom učitavanja brendova u combobox: " + ex.getMessage(), "Greška!", JOptionPane.ERROR_MESSAGE);
         }
     }
-    
+
     private int[] validateSelection(JTable tblCities) throws SelectRowException {
         int[] selectedRows = tblCities.getSelectedRows();
 

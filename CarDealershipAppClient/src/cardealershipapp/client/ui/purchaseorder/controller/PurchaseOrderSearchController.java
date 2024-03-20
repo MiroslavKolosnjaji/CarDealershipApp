@@ -2,6 +2,7 @@ package cardealershipapp.client.ui.purchaseorder.controller;
 
 import cardealershipapp.client.ui.purchaseorder.PurchaseOrderDetailsForm;
 import cardealershipapp.client.ui.response.Responsive;
+import cardealershipapp.client.util.ControllerUtils;
 import cardealershipapp.common.domain.PurchaseOrder;
 import cardealershipapp.common.domain.PurchaseOrderItem;
 import cardealershipapp.client.session.ApplicationSession;
@@ -27,8 +28,6 @@ import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
 
-import static javax.swing.WindowConstants.EXIT_ON_CLOSE;
-
 /**
  * @author Miroslav Kološnjaji
  */
@@ -50,10 +49,10 @@ public class PurchaseOrderSearchController implements Responsive {
             if (selectedRows.length == 1) {
                 Long purchaseOrderNumber = (Long) purchaseOrderSearchForm.getTblPurchaseOrders().getValueAt(selectedRows[0], 0);
 
-                answer = option("Da li ste sigurni da zelite da obrisete porudzbenicu " + purchaseOrderNumber, purchaseOrderSearchForm);
+                answer = ControllerUtils.optionPane("Da li ste sigurni da zelite da obrisete porudzbenicu " + purchaseOrderNumber, purchaseOrderSearchForm);
                 confirmMessage = "Porudzbenica " + purchaseOrderNumber + " je uspesno obrisana!";
             } else {
-                answer = option("Da li ste sigurni da zelite da obrisete selektovane porudzbenice?", purchaseOrderSearchForm);
+                answer = ControllerUtils.optionPane("Da li ste sigurni da zelite da obrisete selektovane porudzbenice?", purchaseOrderSearchForm);
                 confirmMessage = "Porudzbenice su uspesno obrisane!";
             }
 
@@ -66,7 +65,7 @@ public class PurchaseOrderSearchController implements Responsive {
                 List<Customer> customers = purchaseOrders.stream().map(PurchaseOrder::getCustomer).collect(Collectors.toList());
                 getResponse(Operation.CUSTOMER_DELETE_MULTI, customers);
 
-                JOptionPane.showMessageDialog(purchaseOrderSearchForm, confirmMessage);
+                ControllerUtils.showMessageDialog(purchaseOrderSearchForm, confirmMessage);
             }
 
         } catch (SelectRowException | ServiceException e) {
@@ -80,10 +79,12 @@ public class PurchaseOrderSearchController implements Responsive {
 
     public void edit() {
         try {
+
             ApplicationSession.getInstance().setPurchaseOrder(getPurchaseOrder());
             JDialog dialogPurchaseEditForm = new PurchaseOrderEditForm(null, true);
             dialogPurchaseEditForm.setLocationRelativeTo(purchaseOrderSearchForm);
             dialogPurchaseEditForm.setVisible(true);
+
         } catch (SelectRowException | ServiceException e) {
             log.warn("PurchaseOrderSearchController (edit) metoda: " + e.getClass().getSimpleName() + " : " + e.getMessage());
             JOptionPane.showMessageDialog(purchaseOrderSearchForm, e.getMessage(), "Pažnja!", JOptionPane.WARNING_MESSAGE);
@@ -95,10 +96,12 @@ public class PurchaseOrderSearchController implements Responsive {
 
     public void details() {
         try {
+
             ApplicationSession.getInstance().setPurchaseOrder(getPurchaseOrder());
             JDialog purchaseOrderDetail = new PurchaseOrderDetailsForm(null, true);
             purchaseOrderDetail.setLocationRelativeTo(purchaseOrderDetail);
             purchaseOrderDetail.setVisible(true);
+
         } catch (SelectRowException | ServiceException e) {
             log.warn("PurchaseOrderSearchController (details) metoda: " + e.getClass().getSimpleName() + " : " + e.getMessage());
             JOptionPane.showMessageDialog(purchaseOrderSearchForm, e.getMessage(), "Pažnja!", JOptionPane.WARNING_MESSAGE);
@@ -154,12 +157,6 @@ public class PurchaseOrderSearchController implements Responsive {
         return selectedRows;
     }
 
-    private int option(String message, JDialog dialog) {
-        String[] options = {"Da", "Ne"};
-        return JOptionPane.showOptionDialog(dialog, message, "Paznja!",
-                JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE, null, options, EXIT_ON_CLOSE);
-    }
-
     public void fillTable() {
         try {
 
@@ -185,6 +182,7 @@ public class PurchaseOrderSearchController implements Responsive {
 
     public void filterByDate() {
         try {
+
             LocalDate date = purchaseOrderSearchForm.getdCDate().getDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
 
             List<PurchaseOrder> purchaseOrders = (List<PurchaseOrder>) getResponse(Operation.PURCHASE_ORDER_GET_ALL, null).getResult();

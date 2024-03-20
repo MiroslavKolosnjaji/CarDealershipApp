@@ -1,6 +1,7 @@
 package cardealershipapp.client.ui.purchaseorder.controller;
 
 import cardealershipapp.client.ui.response.Responsive;
+import cardealershipapp.client.util.ControllerUtils;
 import cardealershipapp.common.exception.ServiceException;
 import cardealershipapp.common.transfer.Operation;
 import cardealershipapp.common.domain.Customer;
@@ -134,7 +135,7 @@ public class PurchaseOrderEditController implements Responsive {
 
     public void addItem() {
         if (purchaseOrderEditForm.getComboItem().getSelectedIndex() == 0) {
-            JOptionPane.showMessageDialog(purchaseOrderEditForm, "Niste izabrali opremu!");
+            ControllerUtils.showMessageDialog(purchaseOrderEditForm, "Niste izabrali opremu!");
             return;
         }
 
@@ -210,11 +211,10 @@ public class PurchaseOrderEditController implements Responsive {
     public void update() {
         try {
 
-            int answer = confirmDialog("Podaci porudzbenice ce biti promenjeni! Da li se slazete?", purchaseOrderEditForm);
 
-            if (answer == JOptionPane.NO_OPTION) {
+            if (ControllerUtils.confirmOption("Podaci porudzbenice ce biti promenjeni! Da li se slazete?", purchaseOrderEditForm) != JOptionPane.YES_OPTION)
                 return;
-            }
+
 
             String customerName = purchaseOrderEditForm.getTxtCustomerName().getText().trim();
             String customerCompany = purchaseOrderEditForm.getTxtCustomerCompany().getText().trim();
@@ -252,11 +252,12 @@ public class PurchaseOrderEditController implements Responsive {
             }
 
             getResponse(Operation.PURCHASE_ORDER_UPDATE, purchaseOrder);
-            JOptionPane.showMessageDialog(purchaseOrderEditForm, "Porudzbenica je uspesno azurirana");
+            ControllerUtils.showMessageDialog(purchaseOrderEditForm, "Porudzbenica je uspesno azurirana");
 
             purchaseOrderEditForm.dispose();
             ApplicationSession.getInstance().setPurchaseOrder(purchaseOrder);
             showDetails();
+
         } catch (InputValidationException | ServiceException e) {
             log.warn("PurchaseOrderEditController (update) metoda: " + e.getClass().getSimpleName() + " : " + e.getMessage());
             JOptionPane.showMessageDialog(purchaseOrderEditForm, e.getMessage(), "Pažnja!", JOptionPane.WARNING_MESSAGE);

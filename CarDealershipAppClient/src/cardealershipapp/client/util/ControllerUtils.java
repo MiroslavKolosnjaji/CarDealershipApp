@@ -2,6 +2,8 @@ package cardealershipapp.client.util;
 
 import javax.swing.*;
 
+import java.awt.*;
+
 import static javax.swing.WindowConstants.EXIT_ON_CLOSE;
 
 public class ControllerUtils {
@@ -14,23 +16,24 @@ public class ControllerUtils {
         return option("Da li ste sigurni da želite da se izlogujete?", "Odjavljivanje", frame);
     }
 
-    private static int option(String message, String title, JFrame frame) {
-        String[] options = {"Da", "Ne", "Odustani"};
-        return JOptionPane.showOptionDialog(frame, message, title, JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, EXIT_ON_CLOSE);
+    public static int confirmOption(String message, Container container) {
+        return option(message, "Upozorenje!", container);
     }
 
-    public static int optionPane(String message, JDialog dialog) {
+    public static int optionPane(String message, Container container) {
         String[] options = {"Da", "Ne"};
-        return JOptionPane.showOptionDialog(dialog, message, "Pažnja!",
+        return JOptionPane.showOptionDialog(container, message, "Pažnja!",
                 JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE, null, options, EXIT_ON_CLOSE);
     }
 
-    public static void showMessageDialog(JFrame frame, String message) {
-        JOptionPane.showMessageDialog(frame, message, "Obaveštenje", JOptionPane.INFORMATION_MESSAGE);
+    public static void showMessageDialog(Container container, String message) {
+        JOptionPane.showMessageDialog(container, message, "Obaveštenje", JOptionPane.INFORMATION_MESSAGE);
     }
 
-    public static void showMessageDialog(JDialog dialog, String message) {
-        JOptionPane.showMessageDialog(dialog, message, "Obaveštenje", JOptionPane.INFORMATION_MESSAGE);
+    private static int option(String message, String title, Container container) {
+        String[] options = {"Da", "Ne", "Odustani"};
+        int answer = JOptionPane.showOptionDialog(container, message, title, JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, null);
+        return answer;
     }
 
 
