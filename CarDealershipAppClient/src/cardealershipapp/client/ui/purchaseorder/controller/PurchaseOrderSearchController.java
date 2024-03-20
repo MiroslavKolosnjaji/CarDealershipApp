@@ -70,10 +70,10 @@ public class PurchaseOrderSearchController implements Responsive {
 
         } catch (SelectRowException | ServiceException e) {
             log.warn("PurchaseOrderSearchController (delete) metoda: " + e.getClass().getSimpleName() + " : " + e.getMessage());
-            JOptionPane.showMessageDialog(purchaseOrderSearchForm, e.getMessage(), "Pažnja!", JOptionPane.WARNING_MESSAGE);
+            ControllerUtils.showWarningMessageDialog(purchaseOrderSearchForm, e.getMessage());
         } catch (Exception ex) {
             log.error("Neočekivana greška prilikom brisanja porudžbine: " + ex.getClass().getSimpleName() + " : " + ex.getMessage());
-            JOptionPane.showMessageDialog(purchaseOrderSearchForm,"Došlo je do neočekivane greške prilikom brisanja porudžbine: " + ex.getMessage(),"Greška!", JOptionPane.ERROR_MESSAGE);
+            ControllerUtils.showErrorMessageDialog(purchaseOrderSearchForm,"Došlo je do neočekivane greške prilikom brisanja porudžbine: " + ex.getMessage());
         }
     }
 
@@ -87,10 +87,10 @@ public class PurchaseOrderSearchController implements Responsive {
 
         } catch (SelectRowException | ServiceException e) {
             log.warn("PurchaseOrderSearchController (edit) metoda: " + e.getClass().getSimpleName() + " : " + e.getMessage());
-            JOptionPane.showMessageDialog(purchaseOrderSearchForm, e.getMessage(), "Pažnja!", JOptionPane.WARNING_MESSAGE);
+            ControllerUtils.showWarningMessageDialog(purchaseOrderSearchForm, e.getMessage());
         } catch (Exception ex) {
             log.error("Neočekivana greška prilikom otvaranja dialoga za editovanje porudžbine: " + ex.getClass().getSimpleName() + " : " + ex.getMessage());
-            JOptionPane.showMessageDialog(purchaseOrderSearchForm,"Došlo je do neočekivane greške prilikom otvaranja dialoga za editovanje porudžbine: " + ex.getMessage(),"Greška!", JOptionPane.ERROR_MESSAGE);
+            ControllerUtils.showErrorMessageDialog(purchaseOrderSearchForm,"Došlo je do neočekivane greške prilikom otvaranja dialoga za editovanje porudžbine: " + ex.getMessage());
         }
     }
 
@@ -104,10 +104,10 @@ public class PurchaseOrderSearchController implements Responsive {
 
         } catch (SelectRowException | ServiceException e) {
             log.warn("PurchaseOrderSearchController (details) metoda: " + e.getClass().getSimpleName() + " : " + e.getMessage());
-            JOptionPane.showMessageDialog(purchaseOrderSearchForm, e.getMessage(), "Pažnja!", JOptionPane.WARNING_MESSAGE);
+           ControllerUtils.showWarningMessageDialog(purchaseOrderSearchForm, e.getMessage());
         } catch (Exception ex) {
             log.error("Neočekivana greška prilikom otvaranja dialoga za detalje porudžbine: " + ex.getClass().getSimpleName() + " : " + ex.getMessage());
-            JOptionPane.showMessageDialog(purchaseOrderSearchForm,"Došlo je do neočekivane greške prilikom otvaranja dialoga za detalje porudžbine: " + ex.getMessage(),"Greška!", JOptionPane.ERROR_MESSAGE);
+            ControllerUtils.showErrorMessageDialog(purchaseOrderSearchForm,"Došlo je do neočekivane greške prilikom otvaranja dialoga za detalje porudžbine: " + ex.getMessage());
         }
     }
 
@@ -169,14 +169,14 @@ public class PurchaseOrderSearchController implements Responsive {
 
         } catch (SocketException soe) {
             log.error("Došlo je do greške prilikom komunikacije socketa: " + soe.getClass().getSimpleName() + " : " + soe.getMessage());
-            JOptionPane.showMessageDialog(purchaseOrderSearchForm, soe.getMessage(), "Pažnja!", JOptionPane.WARNING_MESSAGE);
+            ControllerUtils.showErrorMessageDialog(purchaseOrderSearchForm, soe.getMessage());
             System.exit(0);
         } catch (ServiceException se) {
             log.warn("PurchaseOrderSearchController (fillTable) metoda: " + se.getClass().getSimpleName() + " : " + se.getMessage());
-            JOptionPane.showMessageDialog(purchaseOrderSearchForm, se.getMessage(), "Pažnja!", JOptionPane.WARNING_MESSAGE);
+            ControllerUtils.showWarningMessageDialog(purchaseOrderSearchForm, se.getMessage());
         } catch (Exception e) {
             log.error("Greška prilikom popunjavanja tabele: " + e.getClass().getSimpleName() + " : " + e.getMessage());
-            JOptionPane.showMessageDialog(purchaseOrderSearchForm, "Desila se neočekivana greška prilikom popunjavanja tabele: " + e.getMessage(), "Greška!", JOptionPane.WARNING_MESSAGE);
+            ControllerUtils.showErrorMessageDialog(purchaseOrderSearchForm, "Desila se neočekivana greška prilikom popunjavanja tabele: " + e.getMessage());
         }
     }
 
@@ -192,10 +192,10 @@ public class PurchaseOrderSearchController implements Responsive {
 
         } catch (ServiceException se) {
             log.warn("PurchaseOrderSearchController (filterByDate) metoda: " + se.getClass().getSimpleName() + " : " + se.getMessage());
-            JOptionPane.showMessageDialog(purchaseOrderSearchForm, se.getMessage(), "Pažnja!", JOptionPane.WARNING_MESSAGE);
+            ControllerUtils.showWarningMessageDialog(purchaseOrderSearchForm, se.getMessage());
         } catch (Exception e) {
             log.error("Greška prilikom filtriranja po datumu: " + e.getClass().getSimpleName() + " : " + e.getMessage());
-            JOptionPane.showMessageDialog(purchaseOrderSearchForm, "Desila se neočekivana greška prilikom filtriranja po datumu: " + e.getMessage(), "Greška!", JOptionPane.WARNING_MESSAGE);
+            ControllerUtils.showErrorMessageDialog(purchaseOrderSearchForm, "Desila se neočekivana greška prilikom filtriranja po datumu: " + e.getMessage());
         }
 
     }

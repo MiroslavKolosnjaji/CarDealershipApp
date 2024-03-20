@@ -60,10 +60,10 @@ public class VehicleEditController implements Responsive {
             vehicleEditForm.dispose();
         } catch (InputValidationException | ServiceException e) {
             log.warn("VehicleEditController (update) metoda: " + e.getClass().getSimpleName() + " : " + e.getMessage());
-            JOptionPane.showMessageDialog(vehicleEditForm, e.getMessage(), "Pažnja!", JOptionPane.WARNING_MESSAGE);
+            ControllerUtils.showWarningMessageDialog(vehicleEditForm, e.getMessage());
         } catch (Exception ex) {
             log.error("Neočekivana greška prilikom ažuriranja vozila: " + ex.getClass().getSimpleName() + " : " + ex.getMessage());
-            JOptionPane.showMessageDialog(vehicleEditForm, "Došlo je do neočekivane greške prilikom ažuriranja vozila: " + ex.getMessage(), "Greška!", JOptionPane.ERROR_MESSAGE);
+            ControllerUtils.showErrorMessageDialog(vehicleEditForm, "Došlo je do neočekivane greške prilikom ažuriranja vozila: " + ex.getMessage());
         }
     }
 
@@ -82,7 +82,7 @@ public class VehicleEditController implements Responsive {
 
         } catch (Exception ex) {
             log.error("Neočekivana greška prilikom učitavanja poslovnih jedinica u combobox: " + ex.getClass().getSimpleName() + " : " + ex.getMessage());
-            JOptionPane.showMessageDialog(vehicleEditForm, "Došlo je do neočekivane greške prilikom učitavanja poslovnih jedinica u combobox: " + ex.getMessage(), "Greška!", JOptionPane.ERROR_MESSAGE);
+            ControllerUtils.showErrorMessageDialog(vehicleEditForm, "Došlo je do neočekivane greške prilikom učitavanja poslovnih jedinica u combobox: " + ex.getMessage());
         }
     }
 
@@ -101,7 +101,7 @@ public class VehicleEditController implements Responsive {
             }
         } catch (Exception ex) {
             log.error("Neočekivana greška prilikom učitavanja modela u combobox: " + ex.getClass().getSimpleName() + " : " + ex.getMessage());
-            JOptionPane.showMessageDialog(vehicleEditForm, "Došlo je do neočekivane greške prilikom učitavanja modela u combobox: " + ex.getMessage(), "Greška!", JOptionPane.ERROR_MESSAGE);
+            ControllerUtils.showErrorMessageDialog(vehicleEditForm, "Došlo je do neočekivane greške prilikom učitavanja modela u combobox: " + ex.getMessage());
         }
     }
 
@@ -145,7 +145,7 @@ public class VehicleEditController implements Responsive {
         }
     }
 
-    private void inputNumberValidation() throws Exception {
+    private void inputNumberValidation() throws InputValidationException {
         try {
             Integer.valueOf(vehicleEditForm.getTxtEngineDisplacement().getText().trim());
         } catch (NumberFormatException nfe) {

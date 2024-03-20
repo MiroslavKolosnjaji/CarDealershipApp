@@ -42,10 +42,10 @@ public class ModelAddController implements Responsive {
 
         } catch (InputValidationException | ServiceException e) {
             log.warn("ModelAddController (save) metoda: " + e.getClass().getSimpleName() + " : " + e.getMessage());
-            JOptionPane.showMessageDialog(modelAddForm, e.getMessage(), "Pažnja!", JOptionPane.WARNING_MESSAGE);
+            ControllerUtils.showWarningMessageDialog(modelAddForm, e.getMessage());
         } catch (Exception e) {
             log.error("Neočekivana greška prilikom čuvanja modela: " + e.getClass().getSimpleName() + " : " + e.getMessage());
-            JOptionPane.showMessageDialog(modelAddForm,"Došlo je do neočekivane greške prilikom čuvanja modela: " + e.getMessage(),"Greška!", JOptionPane.ERROR_MESSAGE);
+            ControllerUtils.showErrorMessageDialog(modelAddForm,"Došlo je do neočekivane greške prilikom čuvanja modela: " + e.getMessage());
         }
     }
 
@@ -58,7 +58,7 @@ public class ModelAddController implements Responsive {
 
         } catch (Exception ex) {
             log.error("Neočekivana greška prilikom učitavanja modela u combobox: " + ex.getClass().getSimpleName() + " : " + ex.getMessage());
-            JOptionPane.showMessageDialog(modelAddForm, "Došlo je do neočekivane greške prilikom učitavanja modela u combobox: " + ex.getMessage(), "Greška!", JOptionPane.ERROR_MESSAGE);
+            ControllerUtils.showErrorMessageDialog(modelAddForm, "Došlo je do neočekivane greške prilikom učitavanja modela u combobox: " + ex.getMessage());
         }
     }
 

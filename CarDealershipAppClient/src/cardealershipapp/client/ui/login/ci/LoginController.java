@@ -3,6 +3,7 @@ package cardealershipapp.client.ui.login.ci;
 import cardealershipapp.client.session.ApplicationSession;
 import cardealershipapp.client.ui.login.LoginForm;
 import cardealershipapp.client.ui.response.Responsive;
+import cardealershipapp.client.util.ControllerUtils;
 import cardealershipapp.common.domain.UserProfile;
 import cardealershipapp.common.exception.ServiceException;
 import cardealershipapp.common.transfer.Operation;
@@ -43,14 +44,14 @@ public class LoginController implements Responsive {
 
         } catch (InputValidationException | ServiceException e) {
             log.warn("LoginController (logIn) metoda: " + e.getClass().getSimpleName() + " : " + e.getMessage());
-            JOptionPane.showMessageDialog(loginForm, e.getMessage(), "Paznja!", JOptionPane.WARNING_MESSAGE);
+            ControllerUtils.showWarningMessageDialog(loginForm, e.getMessage());
         } catch (SocketException se) {
             log.error("Došlo je do greške prilikom komunikacije socketa: " + se.getClass().getSimpleName() + " : " + se.getMessage());
-            JOptionPane.showMessageDialog(loginForm, se.getMessage(), "Upozorenje!", JOptionPane.ERROR_MESSAGE);
+            ControllerUtils.showErrorMessageDialog(loginForm, se.getMessage());
             System.exit(0);
         } catch (Exception ex) {
             log.error("Desila se greska u logIn metodi: " + ex.getClass().getSimpleName() + " : " + ex.getMessage());
-            JOptionPane.showMessageDialog(loginForm, "Desila se neočekivana greška prilikom logovanja!", " ", JOptionPane.ERROR_MESSAGE);
+            ControllerUtils.showErrorMessageDialog(loginForm, "Desila se neočekivana greška prilikom logovanja!");
         }
     }
 

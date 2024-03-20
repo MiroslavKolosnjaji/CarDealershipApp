@@ -37,9 +37,6 @@ import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
 
-
-import static javax.swing.WindowConstants.EXIT_ON_CLOSE;
-
 import javax.swing.table.TableCellRenderer;
 
 /**
@@ -91,10 +88,10 @@ public class VehicleSearchController implements Responsive {
 
         } catch (InputValidationException | ServiceException e) {
             log.warn("VehicleSearchController (edit) metoda: " + e.getClass().getSimpleName() + " : " + e.getMessage());
-            JOptionPane.showMessageDialog(vehicleSearchForm, e.getMessage(), "Pažnja!", JOptionPane.WARNING_MESSAGE);
+            ControllerUtils.showWarningMessageDialog(vehicleSearchForm, e.getMessage());
         } catch (Exception ex) {
             log.error("Neočekivana greška prilikom ažuriranja vozila: " + ex.getClass().getSimpleName() + " : " + ex.getMessage());
-            JOptionPane.showMessageDialog(vehicleSearchForm, "Došlo je do neočekivane greške prilikom ažuriranja vozila: " + ex.getMessage(), "Greška!", JOptionPane.ERROR_MESSAGE);
+            ControllerUtils.showErrorMessageDialog(vehicleSearchForm, "Došlo je do neočekivane greške prilikom ažuriranja vozila: " + ex.getMessage());
         }
     }
 
@@ -143,10 +140,10 @@ public class VehicleSearchController implements Responsive {
 
         } catch (InputValidationException | ServiceException e) {
             log.warn("VehicleSearchController (delete) metoda: " + e.getClass().getSimpleName() + " : " + e.getMessage());
-            JOptionPane.showMessageDialog(vehicleSearchForm, e.getMessage(), "Pažnja!", JOptionPane.WARNING_MESSAGE);
+            ControllerUtils.showWarningMessageDialog(vehicleSearchForm, e.getMessage());
         } catch (Exception ex) {
             log.error("Neočekivana greška prilikom brisanja vozila: " + ex.getClass().getSimpleName() + " : " + ex.getMessage());
-            JOptionPane.showMessageDialog(vehicleSearchForm, "Došlo je do neočekivane greške prilikom brisanja vozila: " + ex.getMessage(), "Greška!", JOptionPane.ERROR_MESSAGE);
+            ControllerUtils.showErrorMessageDialog(vehicleSearchForm, "Došlo je do neočekivane greške prilikom brisanja vozila: " + ex.getMessage());
         }
     }
 
@@ -187,10 +184,10 @@ public class VehicleSearchController implements Responsive {
 
         } catch (SelectRowException | InputValidationException | ServiceException e) {
             log.warn("VehicleSearchController (addToPurchaseOrder) metoda: " + e.getClass().getSimpleName() + " : " + e.getMessage());
-            JOptionPane.showMessageDialog(vehicleSearchForm, e.getMessage(), "Pažnja!", JOptionPane.WARNING_MESSAGE);
+            ControllerUtils.showWarningMessageDialog(vehicleSearchForm, e.getMessage());
         } catch (Exception ex) {
             log.error("Neočekivana greška prilikom dodavanja vozila u porudžbenicu: " + ex.getClass().getSimpleName() + " : " + ex.getMessage());
-            JOptionPane.showMessageDialog(vehicleSearchForm, "Došlo je do neočekivane greške prilikom dodavanja vozila u porudžbenicu: " + ex.getMessage(), "Greška!", JOptionPane.ERROR_MESSAGE);
+            ControllerUtils.showErrorMessageDialog(vehicleSearchForm, "Došlo je do neočekivane greške prilikom dodavanja vozila u porudžbenicu: " + ex.getMessage());
         }
     }
 
@@ -228,10 +225,10 @@ public class VehicleSearchController implements Responsive {
 
         } catch (ServiceException e) {
             log.warn("VehicleSearchController (search) metoda: " + e.getClass().getSimpleName() + " : " + e.getMessage());
-            JOptionPane.showMessageDialog(vehicleSearchForm, e.getMessage(), "Pažnja!", JOptionPane.WARNING_MESSAGE);
+            ControllerUtils.showWarningMessageDialog(vehicleSearchForm, e.getMessage());
         } catch (Exception ex) {
             log.error("Neočekivana greška prilikom pretrage vozila: " + ex.getClass().getSimpleName() + " : " + ex.getMessage());
-            JOptionPane.showMessageDialog(vehicleSearchForm, "Došlo je do neočekivane greške prilikom pretrage vozila: " + ex.getMessage(), "Greška!", JOptionPane.ERROR_MESSAGE);
+            ControllerUtils.showErrorMessageDialog(vehicleSearchForm, "Došlo je do neočekivane greške prilikom pretrage vozila: " + ex.getMessage());
         }
     }
 
@@ -268,10 +265,10 @@ public class VehicleSearchController implements Responsive {
 
         } catch (ServiceException e) {
             log.warn("VehicleSearchController (infoArea) metoda: " + e.getClass().getSimpleName() + " : " + e.getMessage());
-            JOptionPane.showMessageDialog(vehicleSearchForm, e.getMessage(), "Pažnja!", JOptionPane.WARNING_MESSAGE);
+            ControllerUtils.showWarningMessageDialog(vehicleSearchForm, e.getMessage());
         } catch (Exception ex) {
             log.error("Neočekivana greška prilikom popunjavanja info podataka poslovne jedinice: " + ex.getClass().getSimpleName() + " : " + ex.getMessage());
-            JOptionPane.showMessageDialog(vehicleSearchForm, "Došlo je do neočekivane greške prilikom popunjavanja info podataka poslovne jedinice: " + ex.getMessage(), "Greška!", JOptionPane.ERROR_MESSAGE);
+            ControllerUtils.showErrorMessageDialog(vehicleSearchForm, "Došlo je do neočekivane greške prilikom popunjavanja info podataka poslovne jedinice: " + ex.getMessage());
         }
     }
 
@@ -287,14 +284,14 @@ public class VehicleSearchController implements Responsive {
 
         } catch (SocketException soe) {
             log.error("Došlo je do greške prilikom komunikacije socketa: " + soe.getClass().getSimpleName() + " : " + soe.getMessage());
-            JOptionPane.showMessageDialog(vehicleSearchForm, soe.getMessage(), "Pažnja!", JOptionPane.WARNING_MESSAGE);
+            ControllerUtils.showErrorMessageDialog(vehicleSearchForm, soe.getMessage());
             System.exit(0);
         } catch (ServiceException se) {
             log.warn("VehicleSearchController (fillTable) metoda: " + se.getClass().getSimpleName() + " : " + se.getMessage());
-            JOptionPane.showMessageDialog(vehicleSearchForm, se.getMessage(), "Pažnja!", JOptionPane.WARNING_MESSAGE);
+            ControllerUtils.showWarningMessageDialog(vehicleSearchForm, se.getMessage());
         } catch (Exception e) {
             log.error("Greška prilikom popunjavanja tabele: " + e.getClass().getSimpleName() + " : " + e.getMessage());
-            JOptionPane.showMessageDialog(vehicleSearchForm, "Desila se neočekivana greška prilikom popunjavanja tabele: " + e.getMessage(), "Greška!", JOptionPane.WARNING_MESSAGE);
+            ControllerUtils.showErrorMessageDialog(vehicleSearchForm, "Desila se neočekivana greška prilikom popunjavanja tabele: " + e.getMessage());
         }
     }
 
@@ -322,10 +319,10 @@ public class VehicleSearchController implements Responsive {
 
         } catch (ServiceException se) {
             log.warn("VehicleSearchController (fillCombo) metoda: " + se.getClass().getSimpleName() + " : " + se.getMessage());
-            JOptionPane.showMessageDialog(vehicleSearchForm, se.getMessage(), "Pažnja!", JOptionPane.WARNING_MESSAGE);
+            ControllerUtils.showWarningMessageDialog(vehicleSearchForm, se.getMessage());
         } catch (Exception ex) {
             log.error("Neočekivana greška prilikom učitavanja podataka u combobox: " + ex.getClass().getSimpleName() + " : " + ex.getMessage());
-            JOptionPane.showMessageDialog(vehicleSearchForm, "Došlo je do neočekivane greške prilikom učitavanja podataka u combobox: " + ex.getMessage(), "Greška!", JOptionPane.ERROR_MESSAGE);
+            ControllerUtils.showErrorMessageDialog(vehicleSearchForm, "Došlo je do neočekivane greške prilikom učitavanja podataka u combobox: " + ex.getMessage());
         }
     }
 
@@ -345,7 +342,7 @@ public class VehicleSearchController implements Responsive {
 
         } catch (Exception ex) {
             log.error("Neočekivana greška prilikom učitavanja modela u combobox: " + ex.getClass().getSimpleName() + " : " + ex.getMessage());
-            JOptionPane.showMessageDialog(vehicleSearchForm, "Došlo je do neočekivane greške prilikom učitavanja modela u combobox: " + ex.getMessage(), "Greška!", JOptionPane.ERROR_MESSAGE);
+            ControllerUtils.showErrorMessageDialog(vehicleSearchForm, "Došlo je do neočekivane greške prilikom učitavanja modela u combobox: " + ex.getMessage());
         }
     }
 
@@ -362,14 +359,14 @@ public class VehicleSearchController implements Responsive {
             VehicleTableModel.setPurchaseOrders(po);
         } catch (SocketException soe) {
             log.error("Došlo je do greške prilikom komunikacije socketa: " + soe.getClass().getSimpleName() + " : " + soe.getMessage());
-            JOptionPane.showMessageDialog(vehicleSearchForm, soe.getMessage(), "Pažnja!", JOptionPane.WARNING_MESSAGE);
+            ControllerUtils.showErrorMessageDialog(vehicleSearchForm, soe.getMessage());
             System.exit(0);
         } catch (ServiceException se) {
             log.warn("VehicleSearchController (loadPurchaseOrders) metoda: " + se.getClass().getSimpleName() + " : " + se.getMessage());
-            JOptionPane.showMessageDialog(vehicleSearchForm, se.getMessage(), "Pažnja!", JOptionPane.WARNING_MESSAGE);
+            ControllerUtils.showWarningMessageDialog(vehicleSearchForm, se.getMessage());
         } catch (Exception e) {
             log.error("Greška prilikom ucitavanja porudžbina u listu: " + e.getClass().getSimpleName() + " : " + e.getMessage());
-            JOptionPane.showMessageDialog(vehicleSearchForm, "Desila se neočekivana greška prilikom ucitavanja porudžbina u listu: " + e.getMessage(), "Greška!", JOptionPane.WARNING_MESSAGE);
+            ControllerUtils.showErrorMessageDialog(vehicleSearchForm, "Desila se neočekivana greška prilikom ucitavanja porudžbina u listu: " + e.getMessage());
         }
     }
 

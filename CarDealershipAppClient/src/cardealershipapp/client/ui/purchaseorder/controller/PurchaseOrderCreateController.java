@@ -81,10 +81,10 @@ public class PurchaseOrderCreateController implements Responsive {
 
         } catch (InputValidationException | ServiceException e) {
             log.warn("PurchaseOrderCreateController (save) metoda: " + e.getClass().getSimpleName() + " : " + e.getMessage());
-            JOptionPane.showMessageDialog(purchaseOrderCreateForm, e.getMessage(), "Pažnja!", JOptionPane.WARNING_MESSAGE);
+            ControllerUtils.showWarningMessageDialog(purchaseOrderCreateForm, e.getMessage());
         } catch (Exception ex) {
             log.error("Neočekivana greška prilikom čuvanja porudžbine: " + ex.getClass().getSimpleName() + " : " + ex.getMessage());
-            JOptionPane.showMessageDialog(purchaseOrderCreateForm, "Došlo je do neočekivane greške prilikom čuvanja porudžbine: " + ex.getMessage(), "Greška!", JOptionPane.ERROR_MESSAGE);
+            ControllerUtils.showErrorMessageDialog(purchaseOrderCreateForm, "Došlo je do neočekivane greške prilikom čuvanja porudžbine: " + ex.getMessage());
         }
 
     }
@@ -141,10 +141,10 @@ public class PurchaseOrderCreateController implements Responsive {
 
         } catch (ServiceException e) {
             log.warn("PurchaseOrderCreateController (populateVehicleInfoFields) metoda: " + e.getClass().getSimpleName() + " : " + e.getMessage());
-            JOptionPane.showMessageDialog(purchaseOrderCreateForm, e.getMessage(), "Pažnja!", JOptionPane.WARNING_MESSAGE);
+            ControllerUtils.showWarningMessageDialog(purchaseOrderCreateForm, e.getMessage());
         } catch (Exception ex) {
             log.error("Neočekivana greška prilikom popunjavanja polja porudžbine: " + ex.getClass().getSimpleName() + " : " + ex.getMessage());
-            JOptionPane.showMessageDialog(purchaseOrderCreateForm, "Došlo je do neočekivane greške prilikom popunjavanja polja porudžbine: " + ex.getMessage(), "Greška!", JOptionPane.ERROR_MESSAGE);
+            ControllerUtils.showErrorMessageDialog(purchaseOrderCreateForm, "Došlo je do neočekivane greške prilikom popunjavanja polja porudžbine: " + ex.getMessage());
         }
     }
 
@@ -212,7 +212,7 @@ public class PurchaseOrderCreateController implements Responsive {
 
         } catch (Exception ex) {
             log.error("Neočekivana greška prilikom učitavanja opreme u combobox: " + ex.getClass().getSimpleName() + " : " + ex.getMessage());
-            JOptionPane.showMessageDialog(purchaseOrderCreateForm, "Došlo je do neočekivane greške prilikom učitavanja opreme u combobox: " + ex.getMessage(), "Greška!", JOptionPane.ERROR_MESSAGE);
+            ControllerUtils.showErrorMessageDialog(purchaseOrderCreateForm, "Došlo je do neočekivane greške prilikom učitavanja opreme u combobox: " + ex.getMessage());
         }
     }
 

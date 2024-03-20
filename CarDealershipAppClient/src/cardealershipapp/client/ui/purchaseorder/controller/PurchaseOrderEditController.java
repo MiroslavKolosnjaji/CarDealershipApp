@@ -62,9 +62,9 @@ public class PurchaseOrderEditController implements Responsive {
 
             equipmentsByBrand.forEach(comboItem::addItem);
 
-        }  catch (Exception ex) {
+        } catch (Exception ex) {
             log.error("Neočekivana greška prilikom učitavanja modela u combobox: " + ex.getClass().getSimpleName() + " : " + ex.getMessage());
-            JOptionPane.showMessageDialog(purchaseOrderEditForm, "Došlo je do neočekivane greške prilikom učitavanja modela u combobox: " + ex.getMessage(), "Greška!", JOptionPane.ERROR_MESSAGE);
+            ControllerUtils.showErrorMessageDialog(purchaseOrderEditForm, "Došlo je do neočekivane greške prilikom učitavanja modela u combobox: " + ex.getMessage());
         }
     }
 
@@ -126,10 +126,10 @@ public class PurchaseOrderEditController implements Responsive {
             fillTable(purchaseOrderEditForm.getTblItems(), purchaseOrderEditForm.getPurchaseOrderItems());
         } catch (ServiceException e) {
             log.warn("PurchaseOrderEditController (prepareVehicleInfoFields) metoda: " + e.getClass().getSimpleName() + " : " + e.getMessage());
-            JOptionPane.showMessageDialog(purchaseOrderEditForm, e.getMessage(), "Pažnja!", JOptionPane.WARNING_MESSAGE);
+            ControllerUtils.showWarningMessageDialog(purchaseOrderEditForm, e.getMessage());
         } catch (Exception ex) {
             log.error("Neočekivana greška prilikom popunjavanja polja porudžbine: " + ex.getClass().getSimpleName() + " : " + ex.getMessage());
-            JOptionPane.showMessageDialog(purchaseOrderEditForm,"Došlo je do neočekivane greške prilikom popunjavanja polja porudžbine: " + ex.getMessage(),"Greška!", JOptionPane.ERROR_MESSAGE);
+            ControllerUtils.showErrorMessageDialog(purchaseOrderEditForm, "Došlo je do neočekivane greške prilikom popunjavanja polja porudžbine: " + ex.getMessage());
         }
     }
 
@@ -188,12 +188,6 @@ public class PurchaseOrderEditController implements Responsive {
 
     public void setLabelDate() {
         purchaseOrderEditForm.getLblPurchaseDate().setText(purchaseOrderEditForm.getDate().format(DateTimeFormatter.ofPattern("dd.MM.yyyy")));
-    }
-
-    public int confirmDialog(String message, JDialog dialog) {
-        String[] options = {"Da", "Ne", "Odustani"};
-        int answer = JOptionPane.showOptionDialog(dialog, message, "Upozorenje!", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, null);
-        return answer;
     }
 
     public void setEngineLblName(Vehicle vehicle, JLabel lblEngineDisplacement) {
@@ -260,10 +254,10 @@ public class PurchaseOrderEditController implements Responsive {
 
         } catch (InputValidationException | ServiceException e) {
             log.warn("PurchaseOrderEditController (update) metoda: " + e.getClass().getSimpleName() + " : " + e.getMessage());
-            JOptionPane.showMessageDialog(purchaseOrderEditForm, e.getMessage(), "Pažnja!", JOptionPane.WARNING_MESSAGE);
+            ControllerUtils.showWarningMessageDialog(purchaseOrderEditForm, e.getMessage());
         } catch (Exception ex) {
             log.error("Neočekivana greška prilikom ažuriranja porudžbine: " + ex.getClass().getSimpleName() + " : " + ex.getMessage());
-            JOptionPane.showMessageDialog(purchaseOrderEditForm,"Došlo je do neočekivane greške prilikom ažuriranja porudžbine: " + ex.getMessage(),"Greška!", JOptionPane.ERROR_MESSAGE);
+            ControllerUtils.showErrorMessageDialog(purchaseOrderEditForm, "Došlo je do neočekivane greške prilikom ažuriranja porudžbine: " + ex.getMessage());
         }
 
     }
@@ -312,9 +306,10 @@ public class PurchaseOrderEditController implements Responsive {
             purchaseOrderEditForm.getPurchaseOrderItems().forEach(item -> totalPrice = totalPrice.add(item.getEquipment().getPrice()));
             totalAmount(purchaseOrderEditForm.getTxtTotalPrice());
 
+            //TODO catch ServiceException
         } catch (Exception ex) {
             log.error("Neočekivana greška prilikom ažuriranja polja porudžbine: " + ex.getClass().getSimpleName() + " : " + ex.getMessage());
-            JOptionPane.showMessageDialog(purchaseOrderEditForm,"Došlo je do neočekivane greške prilikom ažuriranja polja porudžbine: " + ex.getMessage(),"Greška!", JOptionPane.ERROR_MESSAGE);
+            ControllerUtils.showErrorMessageDialog(purchaseOrderEditForm, "Došlo je do neočekivane greške prilikom ažuriranja polja porudžbine: " + ex.getMessage());
         }
 
     }
@@ -362,9 +357,9 @@ public class PurchaseOrderEditController implements Responsive {
     private void fillTable(JTable tblItems, List<PurchaseOrderItem> purchaseOrderItems) {
         try {
             tblItems.setModel(new PurchaseOrderItemTableModel(purchaseOrderItems));
-        }  catch (Exception ex) {
+        } catch (Exception ex) {
             log.error("Neočekivana greška prilikom popunjavanja tabele stavki: " + ex.getClass().getSimpleName() + " : " + ex.getMessage());
-            JOptionPane.showMessageDialog(purchaseOrderEditForm,"Došlo je do neočekivane greške prilikom popunjavanja tabele stavki: " + ex.getMessage(),"Greška!", JOptionPane.ERROR_MESSAGE);
+            ControllerUtils.showErrorMessageDialog(purchaseOrderEditForm, "Došlo je do neočekivane greške prilikom popunjavanja tabele stavki: " + ex.getMessage());
         }
     }
 

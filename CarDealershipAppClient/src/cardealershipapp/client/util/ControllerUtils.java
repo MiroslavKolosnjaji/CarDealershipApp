@@ -27,7 +27,20 @@ public class ControllerUtils {
     }
 
     public static void showMessageDialog(Container container, String message) {
-        JOptionPane.showMessageDialog(container, message, "Obaveštenje", JOptionPane.INFORMATION_MESSAGE);
+        messageDialog(container, message, "Obaveštenje", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    public static void showWarningMessageDialog(Container container, String message) {
+        messageDialog(container, message, "Pažnja!", JOptionPane.WARNING_MESSAGE);
+    }
+    public static void showErrorMessageDialog(Container container, String message) {
+        messageDialog(container, message, "Greška!", JOptionPane.ERROR_MESSAGE);
+    }
+
+
+
+    private static void messageDialog(Container container, String message, String tittle, int option){
+            JOptionPane.showMessageDialog(container, message, tittle, option);
     }
 
     private static int option(String message, String title, Container container) {

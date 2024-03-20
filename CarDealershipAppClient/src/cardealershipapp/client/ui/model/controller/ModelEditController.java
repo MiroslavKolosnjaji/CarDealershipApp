@@ -43,10 +43,10 @@ public class ModelEditController implements Responsive {
 
         } catch (InputValidationException | ServiceException e) {
             log.warn("ModelEditController (update) metoda: "  + e.getClass().getSimpleName() + " : " + e.getMessage());
-            JOptionPane.showMessageDialog(modelEditForm, e.getMessage(), "Pažnja!", JOptionPane.WARNING_MESSAGE);
+            ControllerUtils.showWarningMessageDialog(modelEditForm, e.getMessage());
         } catch (Exception ex) {
             log.error("Neočekivana greška prilikom ažuriranja podataka modela: " + ex.getClass().getSimpleName() + " : " + ex.getMessage());
-            JOptionPane.showMessageDialog(modelEditForm, "Desila se neočekivana greška prilikom ažuriranja podataka modela!","Greška!", JOptionPane.ERROR_MESSAGE);
+            ControllerUtils.showErrorMessageDialog(modelEditForm, "Desila se neočekivana greška prilikom ažuriranja podataka modela!");
         }
     }
 
@@ -64,7 +64,7 @@ public class ModelEditController implements Responsive {
 
         } catch (Exception ex) {
             log.error("Neočekivana greška prilikom učitavanja modela u combobox: " + ex.getClass().getSimpleName() + " : " + ex.getMessage());
-            JOptionPane.showMessageDialog(modelEditForm, "Došlo je do neočekivane greške prilikom učitavanja modela u combobox: " + ex.getMessage(), "Greška!", JOptionPane.ERROR_MESSAGE);
+            ControllerUtils.showErrorMessageDialog(modelEditForm, "Došlo je do neočekivane greške prilikom učitavanja modela u combobox: " + ex.getMessage());
         }
     }
 
@@ -80,10 +80,10 @@ public class ModelEditController implements Responsive {
 
         }catch (ServiceException se){
             log.warn("ModelEditController (prepareForm) metoda: " + se.getClass().getSimpleName() + " : " + se.getMessage());
-            JOptionPane.showMessageDialog(modelEditForm, se.getMessage(), "Pažnja!", JOptionPane.WARNING_MESSAGE);
+            ControllerUtils.showWarningMessageDialog(modelEditForm, se.getMessage());
         }catch (Exception ex) {
             log.error("Neočekivana greška prilikom pripreme forme sa neophodnim podacima modela: " + ex.getClass().getSimpleName() + " : " + ex.getMessage());
-            JOptionPane.showMessageDialog(modelEditForm, "Došlo je do greške prilikom popunjavanja forme sa neophodnim podacima izabranog modela: " + ex.getMessage(), "Greška!", JOptionPane.ERROR_MESSAGE);
+            ControllerUtils.showErrorMessageDialog(modelEditForm, "Došlo je do greške prilikom popunjavanja forme sa neophodnim podacima izabranog modela: " + ex.getMessage());
         }
 
     }

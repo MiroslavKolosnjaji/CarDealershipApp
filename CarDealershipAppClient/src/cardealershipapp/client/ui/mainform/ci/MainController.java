@@ -27,7 +27,7 @@ import static javax.swing.WindowConstants.EXIT_ON_CLOSE;
 public class MainController implements Responsive {
 
     private static final Logger log = LoggerFactory.getLogger(MainController.class);
-    private MainForm mainForm;
+    private final MainForm mainForm;
 
     public MainController(MainForm mainForm) {
         this.mainForm = mainForm;
@@ -83,15 +83,14 @@ public class MainController implements Responsive {
 
         } catch (ServiceException se) {
             log.warn("MainController (logOff) metoda: " + se.getClass().getSimpleName() + " : " + se.getMessage());
-            JOptionPane.showMessageDialog(mainForm, se.getMessage(), "Pažnja!", JOptionPane.INFORMATION_MESSAGE);
-
+            ControllerUtils.showWarningMessageDialog(mainForm, se.getMessage());
         } catch (SocketException soe) {
             log.error("Došlo je do greške prilikom komunikacije socketa: " + soe.getClass().getSimpleName() + " : " + soe.getMessage());
-            JOptionPane.showMessageDialog(mainForm, "Dogodila se greška prilikom logout-a: " + soe.getMessage(), "Pažnja!", JOptionPane.ERROR_MESSAGE);
+            ControllerUtils.showErrorMessageDialog(mainForm, "Dogodila se greška prilikom logout-a: " + soe.getMessage());
             System.exit(0);
         } catch (Exception ex) {
             log.error("Desila se greška u logOff metodi: " + ex.getClass().getSimpleName() + " : " + ex.getMessage());
-            JOptionPane.showMessageDialog(mainForm, "Desila se neočekivana greška prilikom logout-a: " + ex.getMessage(), "Greška!", JOptionPane.ERROR_MESSAGE);
+            ControllerUtils.showErrorMessageDialog(mainForm, "Desila se neočekivana greška prilikom logout-a: " + ex.getMessage());
         }
 
     }
@@ -117,14 +116,14 @@ public class MainController implements Responsive {
             System.exit(0);
         } catch (ServiceException se) {
             log.warn("MainController (closingApplication) metoda: " + se.getClass().getSimpleName() + " : " + se.getMessage());
-            JOptionPane.showMessageDialog(mainForm, se.getMessage(), "Pažnja!", JOptionPane.INFORMATION_MESSAGE);
+            ControllerUtils.showWarningMessageDialog(mainForm, se.getMessage());
         } catch (SocketException soe) {
             log.error("Došlo je do greške prilikom komunikacije socketa: " + soe.getClass().getSimpleName() + " : " + soe.getMessage());
-            JOptionPane.showMessageDialog(mainForm, "Dogodila se greška prilikom zatvaranja aplikacije: " + soe.getMessage(), "Pažnja!", JOptionPane.ERROR_MESSAGE);
+            ControllerUtils.showErrorMessageDialog(mainForm, "Dogodila se greška prilikom zatvaranja aplikacije: " + soe.getMessage());
             System.exit(0);
         } catch (Exception ex) {
             log.error("Desila se greška u logOff metodi: " + ex.getClass().getSimpleName() + " : " + ex.getMessage());
-            JOptionPane.showMessageDialog(mainForm, "Desila se neočekivana greška prilikom zatvaranja aplikacije: " + ex.getMessage(), "Greška!", JOptionPane.ERROR_MESSAGE);
+            ControllerUtils.showErrorMessageDialog(mainForm, "Desila se neočekivana greška prilikom zatvaranja aplikacije: " + ex.getMessage());
         }
 
     }
