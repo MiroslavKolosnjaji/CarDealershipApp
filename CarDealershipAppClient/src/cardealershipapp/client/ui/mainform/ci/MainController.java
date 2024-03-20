@@ -8,6 +8,7 @@ import cardealershipapp.client.ui.purchaseorder.PurchaseOrderCreateForm;
 import cardealershipapp.client.ui.purchaseorder.PurchaseOrderSearchForm;
 import cardealershipapp.client.ui.response.Responsive;
 import cardealershipapp.client.ui.vehicle.VehicleSearchForm;
+import cardealershipapp.client.util.ControllerUtils;
 import cardealershipapp.common.exception.ServiceException;
 import cardealershipapp.common.transfer.Operation;
 import org.slf4j.Logger;
@@ -66,33 +67,33 @@ public class MainController implements Responsive {
 
     public void logOff() {
 
-        int answer = option("Da li ste sigurni da zelite da se izlogujete?", "Odjavljivanje", mainForm);
+        if (ControllerUtils.logoutOption(mainForm) != JOptionPane.YES_OPTION)
+            return;
 
-        if (answer == JOptionPane.YES_OPTION) {
-            try {
+        try {
 
-                getResponse(Operation.LOGOUT, null);
+            getResponse(Operation.LOGOUT, null);
 
-                ApplicationSession.getInstance().setLoggedUser(null);
-                mainForm.getMenuProfile().setEnabled(false);
-                mainForm.getMenuPurchase().setEnabled(false);
-                mainForm.getMenuControlPanel().setEnabled(false);
-                mainForm.getMenuLogin().setEnabled(true);
-                mainForm.getLblLoggedUser().setText("");
+            ApplicationSession.getInstance().setLoggedUser(null);
+            mainForm.getMenuProfile().setEnabled(false);
+            mainForm.getMenuPurchase().setEnabled(false);
+            mainForm.getMenuControlPanel().setEnabled(false);
+            mainForm.getMenuLogin().setEnabled(true);
+            mainForm.getLblLoggedUser().setText("");
 
-            } catch (ServiceException se) {
-                log.warn("MainController (logOff) metoda: " + se.getClass().getSimpleName() + " : " + se.getMessage());
-                JOptionPane.showMessageDialog(mainForm, se.getMessage(), "Pažnja!", JOptionPane.INFORMATION_MESSAGE);
+        } catch (ServiceException se) {
+            log.warn("MainController (logOff) metoda: " + se.getClass().getSimpleName() + " : " + se.getMessage());
+            JOptionPane.showMessageDialog(mainForm, se.getMessage(), "Pažnja!", JOptionPane.INFORMATION_MESSAGE);
 
-            } catch (SocketException soe) {
-                log.error("Došlo je do greške prilikom komunikacije socketa: " + soe.getClass().getSimpleName() + " : " + soe.getMessage());
-                JOptionPane.showMessageDialog(mainForm, "Dogodila se greška prilikom logout-a: " + soe.getMessage(), "Pažnja!", JOptionPane.ERROR_MESSAGE);
-                System.exit(0);
-            } catch (Exception ex) {
-                log.error("Desila se greška u logOff metodi: " + ex.getClass().getSimpleName() + " : " + ex.getMessage());
-                JOptionPane.showMessageDialog(mainForm, "Desila se neočekivana greška prilikom logout-a: " + ex.getMessage(), "Greška!", JOptionPane.ERROR_MESSAGE);
-            }
+        } catch (SocketException soe) {
+            log.error("Došlo je do greške prilikom komunikacije socketa: " + soe.getClass().getSimpleName() + " : " + soe.getMessage());
+            JOptionPane.showMessageDialog(mainForm, "Dogodila se greška prilikom logout-a: " + soe.getMessage(), "Pažnja!", JOptionPane.ERROR_MESSAGE);
+            System.exit(0);
+        } catch (Exception ex) {
+            log.error("Desila se greška u logOff metodi: " + ex.getClass().getSimpleName() + " : " + ex.getMessage());
+            JOptionPane.showMessageDialog(mainForm, "Desila se neočekivana greška prilikom logout-a: " + ex.getMessage(), "Greška!", JOptionPane.ERROR_MESSAGE);
         }
+
     }
 
     public void availableOptions() {
@@ -108,30 +109,25 @@ public class MainController implements Responsive {
 
     public void closingApplication() {
 
-        int answer = option("Aplikacija ce biti prekinuta! Da li zelite da nastavite dalje?", "Izlaz", mainForm);
-        if (answer == JOptionPane.YES_OPTION) {
-            try {
-                getResponse(Operation.EXIT, null);
-                System.exit(0);
-            } catch (ServiceException se) {
-                log.warn("MainController (closingApplication) metoda: " + se.getClass().getSimpleName() + " : " + se.getMessage());
-                JOptionPane.showMessageDialog(mainForm, se.getMessage(), "Pažnja!", JOptionPane.INFORMATION_MESSAGE);
-            } catch (SocketException soe) {
-                log.error("Došlo je do greške prilikom komunikacije socketa: " + soe.getClass().getSimpleName() + " : " + soe.getMessage());
-                JOptionPane.showMessageDialog(mainForm, "Dogodila se greška prilikom zatvaranja aplikacije: " + soe.getMessage(), "Pažnja!", JOptionPane.ERROR_MESSAGE);
-                System.exit(0);
-            } catch (Exception ex) {
-                log.error("Desila se greška u logOff metodi: " + ex.getClass().getSimpleName() + " : " + ex.getMessage());
-                JOptionPane.showMessageDialog(mainForm, "Desila se neočekivana greška prilikom zatvaranja aplikacije: " + ex.getMessage(), "Greška!", JOptionPane.ERROR_MESSAGE);
-            }
+        if (ControllerUtils.exitOption(mainForm) != JOptionPane.YES_OPTION)
+            return;
+
+        try {
+            getResponse(Operation.EXIT, null);
+            System.exit(0);
+        } catch (ServiceException se) {
+            log.warn("MainController (closingApplication) metoda: " + se.getClass().getSimpleName() + " : " + se.getMessage());
+            JOptionPane.showMessageDialog(mainForm, se.getMessage(), "Pažnja!", JOptionPane.INFORMATION_MESSAGE);
+        } catch (SocketException soe) {
+            log.error("Došlo je do greške prilikom komunikacije socketa: " + soe.getClass().getSimpleName() + " : " + soe.getMessage());
+            JOptionPane.showMessageDialog(mainForm, "Dogodila se greška prilikom zatvaranja aplikacije: " + soe.getMessage(), "Pažnja!", JOptionPane.ERROR_MESSAGE);
+            System.exit(0);
+        } catch (Exception ex) {
+            log.error("Desila se greška u logOff metodi: " + ex.getClass().getSimpleName() + " : " + ex.getMessage());
+            JOptionPane.showMessageDialog(mainForm, "Desila se neočekivana greška prilikom zatvaranja aplikacije: " + ex.getMessage(), "Greška!", JOptionPane.ERROR_MESSAGE);
         }
+
     }
 
-
-    private int option(String message, String title, JFrame frame) {
-        String[] options = {"Da", "Ne", "Odustani"};
-        int answer = JOptionPane.showOptionDialog(frame, message, title, JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, EXIT_ON_CLOSE);
-        return answer;
-    }
 
 }

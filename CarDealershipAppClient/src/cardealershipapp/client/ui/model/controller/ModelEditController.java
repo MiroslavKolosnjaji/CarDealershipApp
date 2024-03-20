@@ -2,6 +2,7 @@ package cardealershipapp.client.ui.model.controller;
 
 import cardealershipapp.client.ui.model.ModelEditForm;
 import cardealershipapp.client.ui.response.Responsive;
+import cardealershipapp.client.util.ControllerUtils;
 import cardealershipapp.common.domain.Brand;
 import cardealershipapp.common.domain.Model;
 import cardealershipapp.client.session.ApplicationSession;
@@ -38,7 +39,7 @@ public class ModelEditController implements Responsive {
             Model model = new Model(modelId, name, brand);
             getResponse(Operation.MODEL_UPDATE, model);
 
-            JOptionPane.showMessageDialog(modelEditForm, "Podaci su uspešno promenjeni!","Obaveštenje", JOptionPane.INFORMATION_MESSAGE);
+            ControllerUtils.showMessageDialog(modelEditForm, "Podaci su uspešno promenjeni!");
 
         } catch (InputValidationException | ServiceException e) {
             log.warn("ModelEditController (update) metoda: "  + e.getClass().getSimpleName() + " : " + e.getMessage());

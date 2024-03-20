@@ -2,6 +2,7 @@ package cardealershipapp.client.ui.model.controller;
 
 import cardealershipapp.client.ui.model.ModelAddForm;
 import cardealershipapp.client.ui.response.Responsive;
+import cardealershipapp.client.util.ControllerUtils;
 import cardealershipapp.common.domain.Brand;
 import cardealershipapp.common.domain.Model;
 import cardealershipapp.common.exception.ServiceException;
@@ -36,7 +37,7 @@ public class ModelAddController implements Responsive {
             Model model = new Model(null, name, brand);
             getResponse(Operation.MODEL_ADD, model);
 
-            JOptionPane.showMessageDialog(modelAddForm, "Model je uspesno sačuvan!", "Obaveštenje", JOptionPane.INFORMATION_MESSAGE);
+            ControllerUtils.showMessageDialog(modelAddForm, "Model je uspešno sačuvan!");
             modelAddForm.getTxtModelName().setText("");
 
         } catch (InputValidationException | ServiceException e) {

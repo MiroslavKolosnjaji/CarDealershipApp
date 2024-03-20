@@ -2,6 +2,7 @@ package cardealershipapp.client.ui.model.controller;
 
 import cardealershipapp.client.ui.model.ModelSearchForm;
 import cardealershipapp.client.ui.response.Responsive;
+import cardealershipapp.client.util.ControllerUtils;
 import cardealershipapp.common.domain.Brand;
 import cardealershipapp.common.domain.Model;
 import cardealershipapp.client.session.ApplicationSession;
@@ -23,8 +24,6 @@ import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
 
-import static javax.swing.WindowConstants.EXIT_ON_CLOSE;
-
 /**
  * @author Miroslav Kološnjaji
  */
@@ -43,7 +42,7 @@ public class ModelSearchController implements Responsive {
             int[] selectedRows = validateSelection(modelSearchForm.getTblModels());
 
             if (selectedRows.length > 1)
-                throw new SelectRowException("Funkcija nije omogucena! Selektovano je vise od jednog reda!");
+                throw new SelectRowException("Funkcija nije omogućena! Selektovano je više od jednog reda!");
 
 
             Long modelId = (Long) modelSearchForm.getTblModels().getValueAt(selectedRows[0], 0);
@@ -72,10 +71,10 @@ public class ModelSearchController implements Responsive {
 
             if (selectedRows.length == 1) {
                 String modelName = (String) modelSearchForm.getTblModels().getValueAt(selectedRows[0], 1);
-                answer = option("Da li ste sigurni da zelite da obrisete model " + modelName.toUpperCase() + "?", modelSearchForm);
+                answer = ControllerUtils.optionPane("Da li ste sigurni da zelite da obrisete model " + modelName.toUpperCase() + "?", modelSearchForm);
                 confirmMessage = "Model je uspesno obrisan!";
             } else {
-                answer = option("Da li ste sigurni da zelite da obrisete selektovane modele?", modelSearchForm);
+                answer = ControllerUtils.optionPane("Da li ste sigurni da zelite da obrisete selektovane modele?", modelSearchForm);
                 confirmMessage = "Selektovani modeli su uspesno obrisani!";
             }
 
@@ -91,7 +90,7 @@ public class ModelSearchController implements Responsive {
                     getResponse(Operation.MODEL_DELETE_MULTI, models);
                 }
 
-                JOptionPane.showMessageDialog(modelSearchForm, confirmMessage);
+                ControllerUtils.showMessageDialog(modelSearchForm, confirmMessage);
             }
 
         } catch (SelectRowException | ServiceException ex) {
@@ -102,21 +101,6 @@ public class ModelSearchController implements Responsive {
             JOptionPane.showMessageDialog(modelSearchForm, ex.getMessage(), "Greška!", JOptionPane.WARNING_MESSAGE);
         }
 
-    }
-
-    private int option(String message, JDialog dialog) {
-        String[] options = {"Da", "Ne"};
-        return JOptionPane.showOptionDialog(dialog, message, "Paznja!",
-                JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE, null, options, EXIT_ON_CLOSE);
-    }
-
-    private int[] validateSelection(JTable tblCities) throws SelectRowException {
-        int[] selectedRows = tblCities.getSelectedRows();
-
-        if (selectedRows.length == 0) {
-            throw new SelectRowException("Niste selektovali red u tabeli!");
-        }
-        return selectedRows;
     }
 
     public void fillTable() {
@@ -162,4 +146,14 @@ public class ModelSearchController implements Responsive {
             JOptionPane.showMessageDialog(modelSearchForm, "Došlo je do neočekivane greške prilikom učitavanja brendova u combobox: " + ex.getMessage(), "Greška!", JOptionPane.ERROR_MESSAGE);
         }
     }
+    
+    private int[] validateSelection(JTable tblCities) throws SelectRowException {
+        int[] selectedRows = tblCities.getSelectedRows();
+
+        if (selectedRows.length == 0) {
+            throw new SelectRowException("Niste selektovali red u tabeli!");
+        }
+        return selectedRows;
+    }
+
 }
