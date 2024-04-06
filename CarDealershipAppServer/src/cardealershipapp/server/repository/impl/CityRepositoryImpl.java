@@ -92,14 +92,7 @@ public class CityRepositoryImpl implements Repository<City, Long> {
             ResultSet rs = statement.executeQuery(SqlQueries.Cities.SELECT_ALL);
 
             while (rs.next()) {
-                Long id = rs.getLong("Id");
-                Integer zipCode = rs.getInt("ZipCode");
-                String name = rs.getString("CityName");
-
-                City c = new City(id, zipCode, name);
-
-                cities.add(c);
-
+                cities.add(getCityFromResultSet(rs));
             }
 
             rs.close();
@@ -122,12 +115,11 @@ public class CityRepositoryImpl implements Repository<City, Long> {
             ResultSet rs = preparedStatement.executeQuery();
 
             if (rs.next()) {
-                City city = new City();
-                city.setZipCode(rs.getInt("ZipCode"));
-                city.setName(rs.getString("CityName"));
+                City city = getCityByIdFromResultSet(rs);
 
                 rs.close();
                 preparedStatement.close();
+
                 return city;
             }
 
@@ -140,6 +132,8 @@ public class CityRepositoryImpl implements Repository<City, Long> {
         }
     }
 
+
+
     @Override
     public List<City> findByQuery(String query) throws RepositoryException {
         try {
@@ -149,12 +143,8 @@ public class CityRepositoryImpl implements Repository<City, Long> {
             Statement statement = db.getConnection().createStatement();
             ResultSet rs = statement.executeQuery(query);
 
-            while (rs.next()) {
-                Integer zipCode = rs.getInt("ZipCode");
-                String name = rs.getString("CityName");
-
-                City city = new City(null, zipCode, name);
-                cities.add(city);
+            while (rs.next()) {;
+                cities.add(getCityByIdFromResultSet(rs));
             }
 
             rs.close();
@@ -165,6 +155,21 @@ public class CityRepositoryImpl implements Repository<City, Long> {
             log.error(ExceptionUtils.DATABASE_SQL_QUERY_EXECUTION_ERROR_MESSAGE + query + " u metodi findByQeury klase: " + this.getClass().getSimpleName() + " : " + sqle.getClass().getSimpleName() + ": " + sqle.getMessage());
             throw new RepositoryException("Doslo je do greske prilikom pretrazivanja grada po upitu!");
         }
+    }
+
+    private City getCityByIdFromResultSet(ResultSet rs) throws SQLException {
+        City city = new City();
+        city.setZipCode(rs.getInt("ZipCode"));
+        city.setName(rs.getString("CityName"));
+        return city;
+    }
+
+    private City getCityFromResultSet(ResultSet rs) throws SQLException {
+        City city = new City();
+        city.setId(rs.getLong("Id"));
+        city.setZipCode(rs.getInt("ZipCode"));
+        city.setName(rs.getString("CityName"));
+        return city;
     }
 
 }
