@@ -89,13 +89,7 @@ public class BrandRepositoryImpl implements Repository<Brand, Long> {
             ResultSet rs = statement.executeQuery(SqlQueries.Brands.SELECT_ALL);
 
             while (rs.next()) {
-                Long id = rs.getLong("Id");
-                String name = rs.getString("BrandName");
-
-                Brand b = new Brand(id, name);
-
-                brands.add(b);
-
+                brands.add(getBrandFromResultSet(rs));
             }
 
             rs.close();
@@ -118,10 +112,7 @@ public class BrandRepositoryImpl implements Repository<Brand, Long> {
             ResultSet rs = prepStat.executeQuery();
 
             if (rs.next()) {
-                Brand brand = new Brand();
-                brand.setId(rs.getLong("Id"));
-                brand.setBrandName(rs.getString("BrandName"));
-
+                Brand brand = getBrandFromResultSet(rs);
                 prepStat.close();
                 return brand;
 
@@ -145,9 +136,7 @@ public class BrandRepositoryImpl implements Repository<Brand, Long> {
             ResultSet rs = statement.executeQuery(query);
 
             while (rs.next()) {
-                Brand brand = new Brand();
-                brand.setBrandName(rs.getString("BrandName"));
-                brands.add(brand);
+                brands.add(getBrandByBrandNameFromResultSet(rs));
             }
 
             rs.close();
@@ -158,6 +147,19 @@ public class BrandRepositoryImpl implements Repository<Brand, Long> {
             log.error(ExceptionUtils.DATABASE_SQL_QUERY_EXECUTION_ERROR_MESSAGE + query + " u metodi findByQeury klase: " +this.getClass().getSimpleName()+ " : " + sqle.getClass().getSimpleName() + ": " + sqle.getMessage());
             throw new RepositoryException("Doslo je do greske prilikom pretrazivanja marke po upitu!");
         }
+    }
+
+    private Brand getBrandByBrandNameFromResultSet(ResultSet resultSet) throws SQLException {
+        Brand brand = new Brand();
+        brand.setBrandName(resultSet.getString("BrandName"));
+        return brand;
+    }
+
+    private Brand getBrandFromResultSet(ResultSet resultSet) throws SQLException {
+        Brand brand = new Brand();
+        brand.setId(resultSet.getLong("Id"));
+        brand.setBrandName(resultSet.getString("BrandName"));
+        return brand;
     }
 
 }
