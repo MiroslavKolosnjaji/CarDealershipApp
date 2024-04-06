@@ -93,7 +93,7 @@ public class SqlQueries {
                 BU.TaxId, BU.Address, BU.CityId, BU.Phone, BU.Email, C.ZipCode, C.CityName, U.FirstName, U.LastName FROM PURCHASE_ORDER PO JOIN Customer CU ON PO.CustomerId = CU.Id 
                 JOIN Vehicle V ON PO.VehicleId = V.Id JOIN `User` U ON PO.SalesPersonId = U.Id JOIN model M ON V.ModelId = M.Id JOIN brand BR ON M.BrandId = BR.Id JOIN business_unit BU ON V.BusinessUId = BU.Id
                 JOIN city C ON BU.CityId = C.Id;""";
-        public static final String SELECT_BY_ID = "SELECT PurchaseDate, CustomerId, VehicleId, SalesPersonId FROM purchase_order WHERE PONumber = ?";
+        public static final String SELECT_BY_ID = "SELECT PONumber, PurchaseDate, CustomerId, VehicleId, SalesPersonId FROM purchase_order WHERE PONumber = ?";
         public static final String DELETE_MULTIPLE_ID = "DELETE FROM purchase_order WHERE PONumber IN";
 
     }

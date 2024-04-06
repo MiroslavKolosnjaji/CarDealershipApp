@@ -119,66 +119,7 @@ public class PurchaseOrderRepositoryImpl implements ExtendedRepository<PurchaseO
             ResultSet rs = statement.executeQuery(SqlQueries.PurchaseOrders.SELECT_ALL);
 
             while (rs.next()) {
-
-                Long purchaseOrderNumb = rs.getLong("PO.PONumber");
-                LocalDate purchaseDate = rs.getDate("PO.Purchasedate").toLocalDate();
-
-                //CUSTOMER
-                Long customerId = rs.getLong("PO.CustomerId");
-                String customerName = rs.getString("CU.Name");
-                String customerCompName = rs.getString("CU.CompanyName");
-                String customerAddress = rs.getString("CU.Address");
-                String customerPhone = rs.getString("CU.Phone");
-                String customerEmail = rs.getString("CU.Email");
-                Customer customer = new Customer(customerId, customerName, customerCompName, customerAddress, customerPhone, customerEmail);
-
-                //VEHICLE
-                Long vehicleId = rs.getLong("PO.VehicleId");
-                String vin = rs.getString("V.ViNumber");
-                CarBodyType bodyType = Enum.valueOf(CarBodyType.class, rs.getString("V.BodyType").toUpperCase());
-                Integer engineCapacity = rs.getInt("V.EngDispl");
-                Integer enginePower = rs.getInt("V.EngPowerKW");
-                Integer year = rs.getInt("V.YearOfProd");
-                FuelType fuel = FuelType.valueOf(rs.getString("V.FuelType").toUpperCase());
-                BigDecimal price = rs.getBigDecimal("V.Price");
-                Currency currency = Currency.valueOf(rs.getString("V.Currency"));
-
-                //BRAND
-                Long brandId = rs.getLong("M.BrandId");
-                String brandName = rs.getString("BR.BrandName");
-                Brand brand = new Brand(brandId, brandName);
-
-                //MODEL
-                Long modelId = rs.getLong("V.ModelId");
-                String modelName = rs.getString("M.ModelName");
-                Model model = new Model(modelId, modelName, brand);
-
-                //CITY 
-                Long cityId = rs.getLong("BU.CityId");
-                String cityName = rs.getString("C.CityName");
-                Integer zipCode = rs.getInt("C.ZipCode");
-                City city = new City(cityId, zipCode, cityName);
-
-                //BUSINESS UNIT
-                Long businessId = rs.getLong("V.BusinessUId");
-                String businessUName = rs.getString("BU.Name");
-                String businessRegNum = rs.getString("BU.CompanyRegNum");
-                String businessTaxId = rs.getString("BU.TaxId");
-                String businessAddress = rs.getString("BU.Address");
-                String phoneNumber = rs.getString("BU.Phone");
-                String emailAddress = rs.getString("BU.Email");
-                BusinessUnit businessUnit = new BusinessUnit(businessId, businessUName, businessRegNum, businessTaxId, city, businessAddress, phoneNumber, emailAddress);
-
-                Vehicle vehicle = new Vehicle(vehicleId, model, vin, bodyType, engineCapacity, enginePower, year, fuel, price, currency, businessUnit);
-
-                //SALES PERSON (USER)
-                User user = new User();
-                user.setFirstName(rs.getString("U.FirstName"));
-                user.setLastName(rs.getString("U.LastName"));
-
-                PurchaseOrder purchaseOrder = new PurchaseOrder(purchaseOrderNumb, purchaseDate, customer, vehicle, user, null);
-
-                purchaseOrders.add(purchaseOrder);
+                purchaseOrders.add(getFullPurchaseOrderFromResultSet(rs));
             }
 
             rs.close();
@@ -199,15 +140,11 @@ public class PurchaseOrderRepositoryImpl implements ExtendedRepository<PurchaseO
             ResultSet rs = preparedStatement.executeQuery();
 
             if (rs.next()) {
-                PurchaseOrder purchaseOrder = new PurchaseOrder();
-                purchaseOrder.setPurchaseOrderNum(id);
-                purchaseOrder.setDate(rs.getDate("PurchaseDate").toLocalDate());
-                purchaseOrder.setCustomer(new Customer(rs.getLong("CustomerId")));
-                purchaseOrder.setVehicle(new Vehicle(rs.getLong("VehicleId")));
-                purchaseOrder.setSalesPerson(new User(rs.getLong("SalesPersonId")));
+                PurchaseOrder purchaseOrder = getPurchaseOrderFromResultSet(rs);
 
                 rs.close();
                 preparedStatement.close();
+
                 return purchaseOrder;
             }
 
@@ -230,14 +167,7 @@ public class PurchaseOrderRepositoryImpl implements ExtendedRepository<PurchaseO
             ResultSet rs = statement.executeQuery(query);
 
             while (rs.next()) {
-                PurchaseOrder purchaseOrder = new PurchaseOrder();
-                purchaseOrder.setPurchaseOrderNum(rs.getLong("PONumber"));
-                purchaseOrder.setDate(rs.getDate("PurchaseDate").toLocalDate());
-                purchaseOrder.setCustomer(new Customer(rs.getLong("CustomerId")));
-                purchaseOrder.setVehicle(new Vehicle(rs.getLong("VehicleId")));
-                purchaseOrder.setSalesPerson(new User(rs.getLong("SalesPersonId")));
-
-                purchaseOrders.add(purchaseOrder);
+                purchaseOrders.add(getPurchaseOrderFromResultSet(rs));
             }
 
             rs.close();
@@ -249,5 +179,75 @@ public class PurchaseOrderRepositoryImpl implements ExtendedRepository<PurchaseO
             throw new RepositoryException("Dogodila se greska prilikom pretrage porudzbenica po upitu!");
         }
 
+    }
+
+    private PurchaseOrder getFullPurchaseOrderFromResultSet(ResultSet rs) throws SQLException {
+        Long purchaseOrderNumb = rs.getLong("PO.PONumber");
+        LocalDate purchaseDate = rs.getDate("PO.Purchasedate").toLocalDate();
+
+        //CUSTOMER
+        Long customerId = rs.getLong("PO.CustomerId");
+        String customerName = rs.getString("CU.Name");
+        String customerCompName = rs.getString("CU.CompanyName");
+        String customerAddress = rs.getString("CU.Address");
+        String customerPhone = rs.getString("CU.Phone");
+        String customerEmail = rs.getString("CU.Email");
+        Customer customer = new Customer(customerId, customerName, customerCompName, customerAddress, customerPhone, customerEmail);
+
+        //VEHICLE
+        Long vehicleId = rs.getLong("PO.VehicleId");
+        String vin = rs.getString("V.ViNumber");
+        CarBodyType bodyType = Enum.valueOf(CarBodyType.class, rs.getString("V.BodyType").toUpperCase());
+        Integer engineCapacity = rs.getInt("V.EngDispl");
+        Integer enginePower = rs.getInt("V.EngPowerKW");
+        Integer year = rs.getInt("V.YearOfProd");
+        FuelType fuel = FuelType.valueOf(rs.getString("V.FuelType").toUpperCase());
+        BigDecimal price = rs.getBigDecimal("V.Price");
+        Currency currency = Currency.valueOf(rs.getString("V.Currency"));
+
+        //BRAND
+        Long brandId = rs.getLong("M.BrandId");
+        String brandName = rs.getString("BR.BrandName");
+        Brand brand = new Brand(brandId, brandName);
+
+        //MODEL
+        Long modelId = rs.getLong("V.ModelId");
+        String modelName = rs.getString("M.ModelName");
+        Model model = new Model(modelId, modelName, brand);
+
+        //CITY
+        Long cityId = rs.getLong("BU.CityId");
+        String cityName = rs.getString("C.CityName");
+        Integer zipCode = rs.getInt("C.ZipCode");
+        City city = new City(cityId, zipCode, cityName);
+
+        //BUSINESS UNIT
+        Long businessId = rs.getLong("V.BusinessUId");
+        String businessUName = rs.getString("BU.Name");
+        String businessRegNum = rs.getString("BU.CompanyRegNum");
+        String businessTaxId = rs.getString("BU.TaxId");
+        String businessAddress = rs.getString("BU.Address");
+        String phoneNumber = rs.getString("BU.Phone");
+        String emailAddress = rs.getString("BU.Email");
+        BusinessUnit businessUnit = new BusinessUnit(businessId, businessUName, businessRegNum, businessTaxId, city, businessAddress, phoneNumber, emailAddress);
+
+        Vehicle vehicle = new Vehicle(vehicleId, model, vin, bodyType, engineCapacity, enginePower, year, fuel, price, currency, businessUnit);
+
+        //SALES PERSON (USER)
+        User user = new User();
+        user.setFirstName(rs.getString("U.FirstName"));
+        user.setLastName(rs.getString("U.LastName"));
+
+        return new PurchaseOrder(purchaseOrderNumb, purchaseDate, customer, vehicle, user, null);
+    }
+
+    private PurchaseOrder getPurchaseOrderFromResultSet(ResultSet rs) throws SQLException {
+        PurchaseOrder purchaseOrder = new PurchaseOrder();
+        purchaseOrder.setPurchaseOrderNum(rs.getLong("PONumber"));
+        purchaseOrder.setDate(rs.getDate("PurchaseDate").toLocalDate());
+        purchaseOrder.setCustomer(new Customer(rs.getLong("CustomerId")));
+        purchaseOrder.setVehicle(new Vehicle(rs.getLong("VehicleId")));
+        purchaseOrder.setSalesPerson(new User(rs.getLong("SalesPersonId")));
+        return purchaseOrder;
     }
 }
