@@ -172,8 +172,7 @@ public class EquipmentRepositoryImpl implements Repository<Equipment, Long> {
         Currency priceCurrency = Currency.valueOf(resultSet.getString("E.Currency"));
 
         Brand brand = new Brand(brandId, brandName);
-        Equipment e = new Equipment(equipmentId, brand, equipmentName, equipmentPrice, priceCurrency);
-        return e;
+        return new Equipment(equipmentId, brand, equipmentName, equipmentPrice, priceCurrency);
     }
 
     private Equipment getEquipmentFromResultSet(ResultSet rs) throws SQLException {
@@ -182,7 +181,7 @@ public class EquipmentRepositoryImpl implements Repository<Equipment, Long> {
         equipment.setName(rs.getString("Name"));
         equipment.setPrice(rs.getBigDecimal("Price"));
         equipment.setCurrency(Currency.valueOf(rs.getString("Currency")));
-        
+
         Brand brand = new Brand(rs.getLong("BrandId"));
         equipment.setBrand(brand);
         return equipment;
