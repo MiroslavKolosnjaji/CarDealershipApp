@@ -91,16 +91,7 @@ public class ModelRepositoryImpl implements Repository<Model, Long> {
             ResultSet rs = statement.executeQuery(SqlQueries.Models.SELECT_ALL);
 
             while (rs.next()) {
-                Long modelId = rs.getLong("M.Id");
-                String modelName = rs.getString("M.ModelName");
-                Long brandId = rs.getLong("M.BrandId");
-                String brandName = rs.getString("B.BrandName");
-
-                Brand brand = new Brand(brandId, brandName);
-                Model model = new Model(modelId, modelName, brand);
-
-                models.add(model);
-
+                models.add(getFullModelFromResultSet(rs));
             }
 
             rs.close();
@@ -113,6 +104,7 @@ public class ModelRepositoryImpl implements Repository<Model, Long> {
         }
     }
 
+
     @Override
     public Model findById(Long id) throws RepositoryException, EntityNotFoundException {
         try {
@@ -123,13 +115,11 @@ public class ModelRepositoryImpl implements Repository<Model, Long> {
             ResultSet rs = preparedStatement.executeQuery();
 
             if (rs.next()) {
-                Model model = new Model();
-                model.setId(id);
-                model.setName(rs.getString("ModelName"));
-                model.setBrand(new Brand(rs.getLong("BrandId")));
+                Model model = getModelFromResultSet(rs);
 
                 rs.close();
                 preparedStatement.close();
+
                 return model;
             }
 
@@ -141,6 +131,8 @@ public class ModelRepositoryImpl implements Repository<Model, Long> {
         }
     }
 
+
+
     @Override
     public List<Model> findByQuery(String query) throws RepositoryException {
         try {
@@ -151,12 +143,7 @@ public class ModelRepositoryImpl implements Repository<Model, Long> {
             ResultSet rs = statement.executeQuery(query);
 
             while (rs.next()) {
-                Model model = new Model();
-                model.setId(rs.getLong("Id"));
-                model.setName(rs.getString("ModelName"));
-                model.setBrand(new Brand(rs.getLong("BrandId")));
-
-                models.add(model);
+                models.add(getModelFromResultSet(rs));
             }
 
             rs.close();
@@ -168,6 +155,25 @@ public class ModelRepositoryImpl implements Repository<Model, Long> {
             throw new RepositoryException("Doslo je do greske prilikom pretrazivanja modela!");
         }
 
+    }
+
+    private Model getFullModelFromResultSet(ResultSet rs) throws SQLException {
+        Long modelId = rs.getLong("M.Id");
+        String modelName = rs.getString("M.ModelName");
+        Long brandId = rs.getLong("M.BrandId");
+        String brandName = rs.getString("B.BrandName");
+
+        Brand brand = new Brand(brandId, brandName);
+        return new Model(modelId, modelName, brand);
+    }
+
+
+    private Model getModelFromResultSet(ResultSet rs) throws SQLException {
+        Model model = new Model();
+        model.setId(rs.getLong("Id"));
+        model.setName(rs.getString("ModelName"));
+        model.setBrand(new Brand(rs.getLong("BrandId")));
+        return model;
     }
 
 }

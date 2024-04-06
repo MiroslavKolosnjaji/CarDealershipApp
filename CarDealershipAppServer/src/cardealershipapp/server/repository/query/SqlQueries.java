@@ -64,7 +64,7 @@ public class SqlQueries {
         public static final String UPDATE = "UPDATE model SET ModelName = ?, BrandId = ? WHERE Id = ?";
         public static final String DELETE_BY_ID = "DELETE FROM model WHERE Id = ?";
         public static final String SELECT_ALL = "SELECT M.id, M.ModelName, M.BrandId, B.BrandName FROM model M JOIN Brand B ON M.BrandId = B.Id";
-        public static final String SELECT_BY_ID = "SELECT ModelName, BrandId from model WHERE Id = ?";
+        public static final String SELECT_BY_ID = "SELECT Id, ModelName, BrandId from model WHERE Id = ?";
         public static final String DELETE_MULTIPLE_ID = "DELETE FROM model WHERE Id IN";
 
     }
