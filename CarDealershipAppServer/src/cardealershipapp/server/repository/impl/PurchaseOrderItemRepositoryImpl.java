@@ -92,14 +92,11 @@ public class PurchaseOrderItemRepositoryImpl implements PurchaseOrderItemReposit
             ResultSet rs = preparedStatement.executeQuery();
 
             if (rs.next()) {
-                PurchaseOrderItem purchaseOrderItem = new PurchaseOrderItem();
-                purchaseOrderItem.setPurchaseOrder(new PurchaseOrder(id));
-                purchaseOrderItem.setOrdinalNum(rs.getLong("OrdinalNumber"));
-                purchaseOrderItem.setEquipment(new Equipment(rs.getLong("EquipmentId")));
-                purchaseOrderItem.setQuantity(rs.getInt("Quantity"));
+                PurchaseOrderItem purchaseOrderItem = getPurchaseOrderItemFromResultSet(rs);
 
                 rs.close();
                 preparedStatement.close();
+
                 return purchaseOrderItem;
             }
 
@@ -121,11 +118,7 @@ public class PurchaseOrderItemRepositoryImpl implements PurchaseOrderItemReposit
             ResultSet rs = preparedStatement.executeQuery();
 
             while (rs.next()) {
-                PurchaseOrderItem purchaseOrderItem = new PurchaseOrderItem();
-                purchaseOrderItem.setPurchaseOrder(new PurchaseOrder(rs.getLong("PONumber")));
-                purchaseOrderItem.setOrdinalNum(rs.getLong("OrdinalNumber"));
-                purchaseOrderItem.setEquipment(new Equipment(rs.getLong("EquipmentId")));
-                purchaseOrderItem.setQuantity(rs.getInt("Quantity"));
+                PurchaseOrderItem purchaseOrderItem = getPurchaseOrderItemFromResultSet(rs);
 
                 purchaseOrderItems.add(purchaseOrderItem);
             }
@@ -150,25 +143,7 @@ public class PurchaseOrderItemRepositoryImpl implements PurchaseOrderItemReposit
             ResultSet rs = statement.executeQuery(SqlQueries.PurchaseOrderItems.SELECT_ALL);
 
             while (rs.next()) {
-                PurchaseOrderItem purchaseOrderItem = new PurchaseOrderItem();
-                purchaseOrderItem.setPurchaseOrder(new PurchaseOrder(rs.getLong("PI.PONumber")));
-                purchaseOrderItem.setOrdinalNum(rs.getLong("PI.OrdinalNumber"));
-                purchaseOrderItem.setQuantity(rs.getInt("PI.Quantity"));
-
-                Brand brand = new Brand();
-                brand.setId(rs.getLong("E.BrandId"));
-                brand.setBrandName(rs.getString("B.BrandName"));
-
-                Equipment equipment = new Equipment();
-                equipment.setId(rs.getLong("PI.EquipmentId"));
-                equipment.setBrand(brand);
-                equipment.setName(rs.getString("E.Name"));
-                equipment.setPrice(rs.getBigDecimal("E.Price"));
-                equipment.setCurrency(Currency.valueOf(rs.getString("E.Currency")));
-
-                purchaseOrderItem.setEquipment(equipment);
-                purchaseOrderItems.add(purchaseOrderItem);
-
+                purchaseOrderItems.add(getFullPurchaseOrderItemFromResultSet(rs));
             }
 
             rs.close();
@@ -179,6 +154,37 @@ public class PurchaseOrderItemRepositoryImpl implements PurchaseOrderItemReposit
             log.error("Greška prilikom učitavanja stavki iz baze podataka: " + sqle.getClass().getSimpleName() + ": " + sqle.getMessage());
             throw new RepositoryException("Doslo je do greske prilikom ucitavanja stavki!");
         }
+    }
+
+    private PurchaseOrderItem getFullPurchaseOrderItemFromResultSet(ResultSet rs) throws SQLException {
+        PurchaseOrderItem purchaseOrderItem = new PurchaseOrderItem();
+        purchaseOrderItem.setPurchaseOrder(new PurchaseOrder(rs.getLong("PI.PONumber")));
+        purchaseOrderItem.setOrdinalNum(rs.getLong("PI.OrdinalNumber"));
+        purchaseOrderItem.setQuantity(rs.getInt("PI.Quantity"));
+
+        Brand brand = new Brand();
+        brand.setId(rs.getLong("E.BrandId"));
+        brand.setBrandName(rs.getString("B.BrandName"));
+
+        Equipment equipment = new Equipment();
+        equipment.setId(rs.getLong("PI.EquipmentId"));
+        equipment.setBrand(brand);
+        equipment.setName(rs.getString("E.Name"));
+        equipment.setPrice(rs.getBigDecimal("E.Price"));
+        equipment.setCurrency(Currency.valueOf(rs.getString("E.Currency")));
+
+        purchaseOrderItem.setEquipment(equipment);
+        return purchaseOrderItem;
+    }
+
+
+    private PurchaseOrderItem getPurchaseOrderItemFromResultSet(ResultSet rs) throws SQLException {
+        PurchaseOrderItem purchaseOrderItem = new PurchaseOrderItem();
+        purchaseOrderItem.setPurchaseOrder(new PurchaseOrder(rs.getLong("PONumber")));
+        purchaseOrderItem.setOrdinalNum(rs.getLong("OrdinalNumber"));
+        purchaseOrderItem.setEquipment(new Equipment(rs.getLong("EquipmentId")));
+        purchaseOrderItem.setQuantity(rs.getInt("Quantity"));
+        return purchaseOrderItem;
     }
 
 }

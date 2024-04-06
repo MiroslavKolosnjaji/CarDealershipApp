@@ -77,7 +77,7 @@ public class SqlQueries {
         public static final String SELECT_ALL = """
                 SELECT PI.PONumber, PI.OrdinalNumber, PI.Quantity, PI.EquipmentId, E.Name, E.Price, E.Currency, E.BrandId, B.BrandName FROM purchase_order_item `PI` JOIN
                 Equipment E ON PI.EquipmentId = E.Id JOIN Brand B ON E.BrandId = B.Id""";
-        public static final String SELECT_BY_ID = "SELECT OrdinalNumber, EquipmentId, Quantity FROM purchase_order_item WHERE PONumber = ?";
+        public static final String SELECT_BY_ID = "SELECT PONumber, OrdinalNumber, EquipmentId, Quantity FROM purchase_order_item WHERE PONumber = ?";
         public static final String DELETE_MULTIPLE_ID = "DELETE FROM purchase_order_item WHERE PONumber IN";
 
     }
