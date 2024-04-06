@@ -102,21 +102,9 @@ public class BusinessUnitRepositoryImpl implements Repository<BusinessUnit, Long
 
             Statement statement = db.getConnection().createStatement();
             ResultSet rs = statement.executeQuery(SqlQueries.BusinessUnits.SELECT_ALL);
-            while (rs.next()) {
-                Long id = rs.getLong("BU.Id");
-                String companyName = rs.getString("BU.Name");
-                String companyRegId = rs.getString("BU.CompanyRegNum");
-                String TaxId = rs.getString("BU.TaxId");
-                String Address = rs.getString("BU.Address");
-                Long CityId = rs.getLong("BU.CityId");
-                String Phone = rs.getString("BU.Phone");
-                String email = rs.getString("BU.Email");
-                Integer zipCode = rs.getInt("C.ZipCode");
-                String cityName = rs.getString("C.CityName");
 
-                City city = new City(CityId, zipCode, cityName);
-                BusinessUnit businessUnit = new BusinessUnit(id, companyName, companyRegId, TaxId, city, Address, Phone, email);
-                businessUnits.add(businessUnit);
+            while (rs.next()) {
+                businessUnits.add(getFullBusinessUnitFromResultSet(rs));
             }
 
             rs.close();
@@ -139,15 +127,7 @@ public class BusinessUnitRepositoryImpl implements Repository<BusinessUnit, Long
             ResultSet rs = prepStat.executeQuery();
 
             if (rs.next()) {
-                BusinessUnit businessUnit = new BusinessUnit();
-                businessUnit.setId(id);
-                businessUnit.setName(rs.getString("Name"));
-                businessUnit.setCompanyRegId(rs.getString("CompanyRegNum"));
-                businessUnit.setTaxId(rs.getString("TaxId"));
-                businessUnit.setAddress(rs.getString("Address"));
-                businessUnit.setCity(new City(rs.getLong("CityId")));
-                businessUnit.setPhone(rs.getString("Phone"));
-                businessUnit.setEmail(rs.getString("Email"));
+                BusinessUnit businessUnit = getBusinessUnitFromResultSet(rs);
 
                 rs.close();
                 prepStat.close();
@@ -172,14 +152,7 @@ public class BusinessUnitRepositoryImpl implements Repository<BusinessUnit, Long
             ResultSet rs = prepStat.executeQuery();
 
             while (rs.next()) {
-                BusinessUnit businessUnit = new BusinessUnit();
-                businessUnit.setName(rs.getString("Name"));
-                businessUnit.setCompanyRegId(rs.getString("CompanyRegNum"));
-                businessUnit.setTaxId(rs.getString("TaxId"));
-                businessUnit.setAddress(rs.getString("Address"));
-                businessUnit.setCity(new City(rs.getLong("CityId")));
-                businessUnit.setPhone(rs.getString("Phone"));
-                businessUnit.setEmail(rs.getString("Email"));
+                businessUnits.add(getBusinessUnitFromResultSet(rs));
             }
 
             rs.close();
@@ -190,6 +163,35 @@ public class BusinessUnitRepositoryImpl implements Repository<BusinessUnit, Long
             log.error(ExceptionUtils.DATABASE_SQL_QUERY_EXECUTION_ERROR_MESSAGE + query + " u metodi findByQeury klase: " +this.getClass().getSimpleName()+ " : " + sqle.getClass().getSimpleName() + ": " + sqle.getMessage());
             throw new RepositoryException("Doslo je do greske prilikom pretrazivanja poslovne jedinice po upitu!");
         }
+    }
+
+    private BusinessUnit getBusinessUnitFromResultSet(ResultSet rs) throws SQLException {
+        BusinessUnit businessUnit = new BusinessUnit();
+        businessUnit.setName(rs.getString("Name"));
+        businessUnit.setCompanyRegId(rs.getString("CompanyRegNum"));
+        businessUnit.setTaxId(rs.getString("TaxId"));
+        businessUnit.setAddress(rs.getString("Address"));
+        businessUnit.setCity(new City(rs.getLong("CityId")));
+        businessUnit.setPhone(rs.getString("Phone"));
+        businessUnit.setEmail(rs.getString("Email"));
+        return businessUnit;
+    }
+
+    private BusinessUnit getFullBusinessUnitFromResultSet(ResultSet rs) throws SQLException {
+        Long id = rs.getLong("BU.Id");
+        String companyName = rs.getString("BU.Name");
+        String companyRegId = rs.getString("BU.CompanyRegNum");
+        String TaxId = rs.getString("BU.TaxId");
+        String Address = rs.getString("BU.Address");
+        Long CityId = rs.getLong("BU.CityId");
+        String Phone = rs.getString("BU.Phone");
+        String email = rs.getString("BU.Email");
+        Integer zipCode = rs.getInt("C.ZipCode");
+        String cityName = rs.getString("C.CityName");
+
+        City city = new City(CityId, zipCode, cityName);
+        BusinessUnit businessUnit = new BusinessUnit(id, companyName, companyRegId, TaxId, city, Address, Phone, email);
+        return businessUnit;
     }
 
 }
