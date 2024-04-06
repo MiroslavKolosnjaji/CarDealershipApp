@@ -98,17 +98,7 @@ public class EquipmentRepositoryImpl implements Repository<Equipment, Long> {
             ResultSet rs = statement.executeQuery(SqlQueries.Equipments.SELECT_ALL);
 
             while (rs.next()) {
-                Long equipmentId = rs.getLong("E.Id");
-                Long brandId = rs.getLong("B.Id");
-                String brandName = rs.getString("B.BrandName");
-                String equipmentName = rs.getString("E.Name");
-                BigDecimal equipmentPrice = rs.getBigDecimal("E.Price");
-                Currency priceCurrency = Currency.valueOf(rs.getString("E.Currency"));
-
-                Brand brand = new Brand(brandId, brandName);
-                Equipment e = new Equipment(equipmentId, brand, equipmentName, equipmentPrice, priceCurrency);
-
-                equipments.add(e);
+                equipments.add(getFullEquipmentFromResultSet(rs));
             }
 
             rs.close();
@@ -121,6 +111,8 @@ public class EquipmentRepositoryImpl implements Repository<Equipment, Long> {
         }
     }
 
+
+
     @Override
     public Equipment findById(Long id) throws RepositoryException, EntityNotFoundException {
         try {
@@ -130,18 +122,11 @@ public class EquipmentRepositoryImpl implements Repository<Equipment, Long> {
             ResultSet rs = preparedStatement.executeQuery();
 
             if (rs.next()) {
-                Equipment equipment = new Equipment();
-                equipment.setId(id);
-                equipment.setName(rs.getString("Name"));
-                equipment.setPrice(rs.getBigDecimal("Price"));
-                equipment.setCurrency(Currency.valueOf(rs.getString("Currency")));
-
-                //BRAND
-                Brand brand = new Brand(rs.getLong("BrandId"));
-                equipment.setBrand(brand);
+                Equipment equipment = getEquipmentFromResultSet(rs);
 
                 rs.close();
                 preparedStatement.close();
+
                 return equipment;
             }
 
@@ -153,6 +138,8 @@ public class EquipmentRepositoryImpl implements Repository<Equipment, Long> {
         }
     }
 
+
+
     @Override
     public List<Equipment> findByQuery(String query) throws RepositoryException {
         try {
@@ -163,17 +150,7 @@ public class EquipmentRepositoryImpl implements Repository<Equipment, Long> {
             ResultSet rs = statement.executeQuery(query);
 
             while (rs.next()) {
-                Equipment equipment = new Equipment();
-                equipment.setId(rs.getLong("Id"));
-                equipment.setName(rs.getString("Name"));
-                equipment.setPrice(rs.getBigDecimal("Price"));
-                equipment.setCurrency(Currency.valueOf(rs.getString("Currency")));
-
-                //BRAND
-                Brand brand = new Brand(rs.getLong("BrandId"));
-                equipment.setBrand(brand);
-
-                equipments.add(equipment);
+                equipments.add(getEquipmentFromResultSet(rs));
             }
 
             rs.close();
@@ -184,5 +161,30 @@ public class EquipmentRepositoryImpl implements Repository<Equipment, Long> {
             log.error(ExceptionUtils.DATABASE_SQL_QUERY_EXECUTION_ERROR_MESSAGE + query + " u metodi findByQeury klase: " + this.getClass().getSimpleName() + " : " + sqle.getClass().getSimpleName() + ": " + sqle.getMessage());
             throw new RepositoryException("Doslo je do greske prilikom pretrazivanja opreme po upitu!");
         }
+    }
+
+    private Equipment getFullEquipmentFromResultSet(ResultSet resultSet) throws SQLException {
+        Long equipmentId = resultSet.getLong("E.Id");
+        Long brandId = resultSet.getLong("B.Id");
+        String brandName = resultSet.getString("B.BrandName");
+        String equipmentName = resultSet.getString("E.Name");
+        BigDecimal equipmentPrice = resultSet.getBigDecimal("E.Price");
+        Currency priceCurrency = Currency.valueOf(resultSet.getString("E.Currency"));
+
+        Brand brand = new Brand(brandId, brandName);
+        Equipment e = new Equipment(equipmentId, brand, equipmentName, equipmentPrice, priceCurrency);
+        return e;
+    }
+
+    private Equipment getEquipmentFromResultSet(ResultSet rs) throws SQLException {
+        Equipment equipment = new Equipment();
+        equipment.setId(rs.getLong("Id"));
+        equipment.setName(rs.getString("Name"));
+        equipment.setPrice(rs.getBigDecimal("Price"));
+        equipment.setCurrency(Currency.valueOf(rs.getString("Currency")));
+        
+        Brand brand = new Brand(rs.getLong("BrandId"));
+        equipment.setBrand(brand);
+        return equipment;
     }
 }
