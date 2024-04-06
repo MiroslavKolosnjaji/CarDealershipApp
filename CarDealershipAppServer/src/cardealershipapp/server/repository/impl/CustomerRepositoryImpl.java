@@ -117,15 +117,7 @@ public class CustomerRepositoryImpl implements ExtendedRepository<Customer, Long
             ResultSet rs = statement.executeQuery(SqlQueries.Customers.SELECT_ALL);
 
             while (rs.next()) {
-                Long customerId = rs.getLong("Id");
-                String name = rs.getString("Name");
-                String companyName = rs.getString("CompanyName");
-                String address = rs.getString("Address");
-                String phone = rs.getString("Phone");
-                String email = rs.getString("Email");
-
-                Customer customer = new Customer(customerId, name, companyName, address, phone, email);
-                customers.add(customer);
+                customers.add(getCustomerFromResultSet(rs));
             }
 
             rs.close();
@@ -147,16 +139,11 @@ public class CustomerRepositoryImpl implements ExtendedRepository<Customer, Long
             ResultSet rs = preparedStatement.executeQuery();
 
             if (rs.next()) {
-                Customer customer = new Customer();
-                customer.setId(rs.getLong("Id"));
-                customer.setName(rs.getString("Name"));
-                customer.setCompanyName(rs.getString("CompanyName"));
-                customer.setAddress(rs.getString("Address"));
-                customer.setPhone(rs.getString("Phone"));
-                customer.setEmail(rs.getString("Email"));
+                Customer customer = getCustomerFromResultSet(rs);
 
                 rs.close();
                 preparedStatement.close();
+
                 return customer;
             }
 
@@ -177,15 +164,7 @@ public class CustomerRepositoryImpl implements ExtendedRepository<Customer, Long
             ResultSet rs = statement.executeQuery(query);
 
             while (rs.next()) {
-                Customer customer = new Customer();
-                customer.setId(rs.getLong("Id"));
-                customer.setName(rs.getString("Name"));
-                customer.setCompanyName(rs.getString("CompanyName"));
-                customer.setAddress(rs.getString("Address"));
-                customer.setPhone(rs.getString("Phone"));
-                customer.setEmail(rs.getString("Email"));
-
-                customers.add(customer);
+                customers.add(getCustomerFromResultSet(rs));
             }
 
             rs.close();
@@ -196,6 +175,17 @@ public class CustomerRepositoryImpl implements ExtendedRepository<Customer, Long
             log.error(ExceptionUtils.DATABASE_SQL_QUERY_EXECUTION_ERROR_MESSAGE + query + " u metodi findByQeury klase: " +this.getClass().getSimpleName()+ " : " + sqle.getClass().getSimpleName() + ": " + sqle.getMessage());
             throw new RepositoryException("Doslo je do greske prilikom pretrazivanja kupca po upitu!");
         }
+    }
+
+    private Customer getCustomerFromResultSet(ResultSet rs) throws SQLException {
+        Customer customer = new Customer();
+        customer.setId(rs.getLong("Id"));
+        customer.setName(rs.getString("Name"));
+        customer.setCompanyName(rs.getString("CompanyName"));
+        customer.setAddress(rs.getString("Address"));
+        customer.setPhone(rs.getString("Phone"));
+        customer.setEmail(rs.getString("Email"));
+        return customer;
     }
 
 }
