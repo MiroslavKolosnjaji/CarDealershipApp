@@ -3,9 +3,17 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 ![GitHub forks](https://img.shields.io/github/forks/MiroslavKolosnjaji/CarDealershipApp)
 # CarDealershipApp
-Final course project client - server application
+### Final course project - (client - server) application
 
-This is a simple client/server Desktop application which is developed for final course exam. App is created for car dealership business. Purpose of this application is to show current status (available/sold) for all cars that dealership have in system. Also, there are implemented search mechanism where you can search cars by several criteria like brand, model, chasis etc.. Also, there are option to create an order for customer where you can chose car and add additional equipments for that car (if exists). And as last, you can see list of all orders, if you looking for specific order you don't need to look through whole list of orders to find it, you can narrow search by specific date. In orders you can see which car is sold, who sold it, which date.
+This is a client/server desktop application developed as a final course exam project. The application is designed for a car dealership business.
+Its purpose is to display the current status (available/sold) of all cars in the dealership's system.
+
+Additionally, a search mechanism is implemented, allowing users to search for cars based on several criteria, such as brand, model,
+chassis number, etc. There is also an option to create an order for a customer, where you can select a car and add additional equipment (if available).
+
+Finally, the application provides a list of all orders.
+If you're looking for a specific order, you don’t need to scroll through the entire list; you can narrow the search by a specific date.
+Each order displays details about the sold car, the salesperson who sold it, and the date of the sale.
 
 ## Technologies used
 
